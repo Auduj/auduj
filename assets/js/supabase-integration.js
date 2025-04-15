@@ -17,12 +17,16 @@
 const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE';
 
-// Vérification simple que les clés sont définies (à améliorer si nécessaire)
 if (!SUPABASE_URL || SUPABASE_URL === 'https://mbkiwpsbprcqhyafyifl.supabase.co' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE') {
     console.error("Erreur: Veuillez définir SUPABASE_URL et SUPABASE_ANON_KEY dans supabase-integration.js");
     // Pourrait afficher un message à l'utilisateur ici
+    // Peut-être arrêter l'exécution ou désactiver les fonctionnalités ?
+} else {
+    // Initialisation du client Supabase (peut être déplacé ici ou laissé après)
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase Client Initialized');
 }
-
 // Initialisation du client Supabase
 const { createClient } = supabase; // Accède à la fonction depuis le SDK global
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
