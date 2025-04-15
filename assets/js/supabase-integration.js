@@ -225,30 +225,36 @@ async function saveGameEntry(gameData) {
     }
 
     try {
-        // Préparer l'objet à insérer avec conversion et valeurs par défaut
+        // Préparer l'objet à insérer avec la structure de stats finale
         const dataToInsert = {
             user_id: userId,
             hero_id: parseInt(gameData.hero, 10) || null,
             map_id: parseInt(gameData.map, 10) || null,
+            // Stats principales
             kills: parseInt(gameData.kills, 10) || 0,
             deaths: parseInt(gameData.deaths, 10) || 0,
             assists: parseInt(gameData.assists, 10) || 0,
+            // Stats spécifiques ajoutées
             solo_kills: parseInt(gameData.solo_kills, 10) || 0,
             head_kills: parseInt(gameData.head_kills, 10) || 0,
             last_kills: parseInt(gameData.last_kills, 10) || 0,
-            accuracy: parseFloat(gameData.accuracy) || 0.00, // Utiliser parseFloat
-            damage_mitigated: parseInt(gameData.damage_mitigated, 10) || 0,
+            accuracy: parseFloat(gameData.accuracy) || 0.00,
+            damage_dealt: parseInt(gameData.damage_dealt, 10) || 0, // Ré-ajouté
+            // Autres stats conservées
+            damage_blocked: parseInt(gameData.damage_blocked, 10) || 0,
             healing_done: parseInt(gameData.healing_done, 10) || 0,
+            // Champs standard
             result: gameData.result || null,
             notes: gameData.notes || null
+            // objective_score est supprimé de l'objet
         };
 
-        console.log("Données à insérer:", dataToInsert); // Utile pour le débogage
+        console.log("Données à insérer (final):", dataToInsert);
 
         // Vérifications de base avant l'envoi
         if (!dataToInsert.hero_id) throw new Error("Veuillez sélectionner un héros.");
         if (!dataToInsert.map_id) throw new Error("Veuillez sélectionner une map.");
-        if (!dataToInsert.result) throw new Error("Veuillez sélectionner un résultat (Victoire/Défaite/Égalité).");
+        if (!dataToInsert.result) throw new Error("Veuillez sélectionner un résultat.");
         if (dataToInsert.accuracy < 0 || dataToInsert.accuracy > 100) {
             throw new Error("La précision doit être entre 0 et 100.");
         }
@@ -264,12 +270,12 @@ async function saveGameEntry(gameData) {
         // Succès de l'insertion
         console.log('Partie enregistrée:', data);
         if (feedbackDiv) {
-            feedbackDiv.classList.remove('hidden');
-            feedbackDiv.classList.add('text-green-500', 'border', 'border-green-500', 'p-2', 'rounded-md', 'text-sm');
-            feedbackDiv.textContent = 'Partie enregistrée avec succès !';
+             feedbackDiv.classList.remove('hidden');
+             feedbackDiv.classList.add('text-green-500', 'border', 'border-green-500', 'p-2', 'rounded-md', 'text-sm');
+             feedbackDiv.textContent = 'Partie enregistrée avec succès !';
         }
 
-        // Vider les champs de formulaire (sauf héros/map potentiellement)
+        // Vider les champs de formulaire
         const form = document.getElementById('game-entry-form');
         if(form) {
             form.kills.value = '';
@@ -279,7 +285,8 @@ async function saveGameEntry(gameData) {
             form.head_kills.value = '';
             form.last_kills.value = '';
             form.accuracy.value = '';
-            form.damage_mitigated.value = '';
+            form.damage_dealt.value = '';
+            form.damage_blocked.value = '';
             form.healing_done.value = '';
             form.result.value = '';
             form.notes.value = '';
@@ -294,7 +301,7 @@ async function saveGameEntry(gameData) {
             feedbackDiv.classList.remove('hidden');
             feedbackDiv.classList.add('text-red-500', 'border', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
             feedbackDiv.textContent = `Erreur: ${error.message}`;
-        }
+         }
     } finally {
         // Cacher le message de feedback après un délai
         setTimeout(() => { if (feedbackDiv) feedbackDiv.classList.add('hidden'); }, 5000);
@@ -518,7 +525,7 @@ async function fetchAndDisplayUserStats() {
         // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
-            // Sélectionner toutes les colonnes, y compris les nouvelles
+            // La sélection '*' inclut automatiquement les nouvelles colonnes
             .select(`*, heroes ( name ), maps ( name )`) // Jointures essentielles
             .eq('user_id', userId)
             .order('played_at', { ascending: false });
@@ -526,21 +533,18 @@ async function fetchAndDisplayUserStats() {
         if (error) throw error;
         console.log('Parties récupérées pour toutes les stats:', games);
 
-        // --- Calculs et Affichage Stats Globales ---
+        // --- Calculs et Affichage Stats Globales (Basé sur KDA/WR classiques) ---
         const totalGames = games.length;
         let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
         const heroCounts = {};
         games.forEach(game => {
-            totalKills += game.kills || 0;
-            totalDeaths += game.deaths || 0;
-            totalAssists += game.assists || 0;
+            totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
             if (game.result === 'win') wins++;
             if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
         });
         const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
         const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
-        let mostPlayedHero = 'N/A';
-        let maxHeroCount = 0;
+        let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
         for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
 
         const kdaElement = document.getElementById('stat-kda');
@@ -553,11 +557,11 @@ async function fetchAndDisplayUserStats() {
         if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
 
-        // --- Affichage Historique (15 dernières parties) ---
+        // --- Affichage Historique (N'affiche pas les nouvelles stats spécifiques) ---
         const historyTableBody = document.querySelector('#history-table tbody');
         if (historyTableBody) {
             historyTableBody.innerHTML = '';
-            const gamesToShow = games.slice(0, 15); // Déjà trié DESC par la requête
+            const gamesToShow = games.slice(0, 15); // Afficher les 15 dernières
             if (gamesToShow.length === 0) {
                  historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
             } else {
@@ -577,11 +581,12 @@ async function fetchAndDisplayUserStats() {
             }
         }
 
-        // --- Génération du Graphique ---
-        // Note: renderProgressionChart a besoin des données triées ASC (plus ancien d'abord)
+        // --- Génération du Graphique (Basé sur KDA classique) ---
         if (games.length > 0) {
-            renderProgressionChart(games); // La fonction inverse elle-même l'ordre
-        } else {
+             // Note: renderProgressionChart a besoin des données triées ASC (plus ancien d'abord)
+            renderProgressionChart(games); // La fonction inverse elle-même l'ordre maintenant
+        }
+        else {
              // Effacer le graphique si pas/plus de données
              const chartCanvas = document.getElementById('progressionChart');
              if (chartCanvas) {
@@ -594,7 +599,7 @@ async function fetchAndDisplayUserStats() {
              }
         }
 
-        // --- Calcul et Affichage Stats Détaillées ---
+        // --- Calcul et Affichage Stats Détaillées (Basé sur KDA/WR classiques) ---
         if (games.length > 0) {
             renderHeroStatsTable(games);
             renderMapStatsTable(games);
