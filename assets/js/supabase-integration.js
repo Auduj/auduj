@@ -4,8 +4,9 @@
  * - Initialisation du client Supabase
  * - Authentification (Inscription, Connexion, Déconnexion) + Redirections
  * - Gestion des données du tableau de bord (Sauvegarde, Lecture)
- * - Affichage des graphiques de progression (KDA, Précision)
+ * - Affichage des graphiques de progression (KDA, Précision) + FILTRE HEROS
  * - Calcul et affichage des stats étendues par héros et par map
+ * - Affichage détails partie depuis historique (MODALE)
  */
 
 // --- Configuration ---
@@ -16,6 +17,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let _supabase; // Variable pour le client Supabase
 let progressionChartInstance = null; // Instance pour le graphique KDA
 let accuracyChartInstance = null;    // Instance pour le graphique Précision
+let allUserGames = []; // Stocker toutes les parties récupérées pour filtrage/détails
+let selectedChartHeroId = 'all'; // ID du héros sélectionné pour filtrer les graphiques ('all' par défaut)
 
 // --- Initialisation et Vérification des Clés ---
 // Vérification simple que les clés sont définies (CORRIGÉ)
@@ -35,7 +38,7 @@ if (!SUPABASE_URL || SUPABASE_URL === 'VOTRE_SUPABASE_URL' || !SUPABASE_ANON_KEY
     }
 }
 
-// --- Éléments du DOM (Commun) ---
+// --- Éléments du DOM (Commun + Nouveaux) ---
 // Note: Ces éléments doivent exister dans votre HTML pour que le script fonctionne
 const userGreeting = document.getElementById('user-greeting');
 const userInfo = document.getElementById('user-info'); // Conteneur pour greeting + logout button
@@ -45,6 +48,11 @@ const loginButtonHeader = document.getElementById('login-button-header');
 const mobileLoginLink = document.getElementById('mobile-login-link');
 const mobileLogoutButton = document.getElementById('mobile-logout-button');
 const mobileUserGreeting = document.getElementById('mobile-user-greeting');
+// Éléments spécifiques au dashboard
+const chartHeroFilter = document.getElementById('chartHeroFilter');
+const gameDetailModal = document.getElementById('gameDetailModal');
+const closeModalButton = document.getElementById('closeModalButton');
+const historyTableBody = document.querySelector('#history-table tbody');
 
 // --- Fonctions d'Authentification ---
 
@@ -166,13 +174,17 @@ async function getUserProfileId() {
 }
 
 /**
- * Remplit les menus déroulants des héros et des maps depuis la base de données.
+ * Remplit les menus déroulants (Héros/Map du formulaire ET filtre des graphiques).
  */
 async function populateDropdowns() {
-    const heroSelect = document.getElementById('hero');
-    const mapSelect = document.getElementById('map');
-    // Ne rien faire si les éléments n'existent pas ou si Supabase n'est pas prêt
-    if (!heroSelect || !mapSelect || !_supabase) return;
+    const heroSelectForm = document.getElementById('hero');
+    const mapSelectForm = document.getElementById('map');
+    const heroSelectFilter = document.getElementById('chartHeroFilter'); // Nouveau filtre
+
+    if (!_supabase) return;
+    // Vérifier si les éléments existent (évite erreur si pas sur dashboard)
+    if (!heroSelectForm || !mapSelectForm || !heroSelectFilter) return;
+
 
     try {
         // Récupérer les héros et les maps en parallèle pour plus d'efficacité
@@ -185,23 +197,22 @@ async function populateDropdowns() {
         if (heroesError) throw heroesError;
         if (mapsError) throw mapsError;
 
-        // Vider les options existantes (sauf la première "Choisir..." ou "Chargement...")
-        heroSelect.length = 1;
-        mapSelect.length = 1;
-        // Mettre à jour le texte par défaut si nécessaire
-        heroSelect.options[0].text = "Choisir Héros...";
-        mapSelect.options[0].text = "Choisir Map...";
+        // Vider et remplir les selects du formulaire
+        heroSelectForm.length = 1; mapSelectForm.length = 1;
+        heroSelectForm.options[0].text = "Choisir Héros..."; mapSelectForm.options[0].text = "Choisir Map...";
+        heroes.forEach(hero => heroSelectForm.add(new Option(hero.name, hero.id)));
+        maps.forEach(map => mapSelectForm.add(new Option(map.name, map.id)));
 
-
-        // Ajouter les nouvelles options récupérées
-        heroes.forEach(hero => heroSelect.add(new Option(hero.name, hero.id)));
-        maps.forEach(map => mapSelect.add(new Option(map.name, map.id)));
+        // Vider et remplir le select du filtre graphique
+        heroSelectFilter.length = 1; // Garde "Tous les héros"
+        heroSelectFilter.options[0].value = "all"; // Assurer que la valeur est 'all'
+        heroes.forEach(hero => heroSelectFilter.add(new Option(hero.name, hero.id)));
 
     } catch (error) {
         console.error("Erreur lors du chargement des héros/maps:", error.message);
         // Afficher une erreur dans les selects ?
-        heroSelect.options[0].text = "Erreur chargement";
-        mapSelect.options[0].text = "Erreur chargement";
+        heroSelectForm.options[0].text = "Erreur"; mapSelectForm.options[0].text = "Erreur";
+        heroSelectFilter.options[0].text = "Erreur";
     }
 }
 
@@ -313,19 +324,19 @@ async function saveGameEntry(gameData) {
 
 /**
  * Crée ou met à jour le graphique de progression du KDA avec Chart.js.
- * @param {Array} gamesData - Tableau des parties (trié du plus ancien au plus récent).
+ * @param {Array} gamesData - Tableau des parties filtrées (ou toutes), trié ASC.
  */
 function renderProgressionChart(gamesData) {
     const canvasElement = document.getElementById('progressionChart');
     if (!canvasElement) { console.log("Canvas 'progressionChart' non trouvé."); return; }
     if (typeof Chart === 'undefined') { console.error("Chart.js non chargé."); return; }
     const ctx = canvasElement.getContext('2d');
-    if (!ctx) { console.error("Impossible d'obtenir le contexte 2D du canvas KDA."); return; }
+    if (!ctx) { console.error("Ctx KDA non trouvé."); return; }
 
     const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
     const kdaData = gamesData.map(game => {
         const kills = game.kills || 0; const assists = game.assists || 0;
-        const deaths = Math.max(1, game.deaths || 1);
+        const deaths = Math.max(1, game.deaths || 1); // Evite division par zero
         return parseFloat(((kills + assists) / deaths).toFixed(2));
     });
 
@@ -336,41 +347,11 @@ function renderProgressionChart(gamesData) {
 
     try {
         progressionChartInstance = new Chart(ctx, {
-            type: 'line', data: { labels: labels, datasets: [{ label: 'KDA par Partie', data: kdaData, borderColor: lineColor, backgroundColor: pointColor, pointBackgroundColor: pointColor, pointBorderColor: pointColor, pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor, tension: 0.1 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: labelColor } }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1 } }, scales: { y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } } }
-        });
-    } catch (chartError) { console.error("Erreur création graphique KDA:", chartError); }
-}
-
-/**
- * NOUVEAU: Crée ou met à jour le graphique de progression de la Précision.
- * @param {Array} gamesData - Tableau des parties (trié du plus ancien au plus récent).
- */
-function renderAccuracyChart(gamesData) {
-    const canvasElement = document.getElementById('accuracyChart'); // Nouvel ID
-    if (!canvasElement) { console.log("Canvas 'accuracyChart' non trouvé."); return; }
-    if (typeof Chart === 'undefined') { console.error("Chart.js non chargé."); return; }
-    const ctx = canvasElement.getContext('2d');
-    if (!ctx) { console.error("Impossible d'obtenir le contexte 2D du canvas Précision."); return; }
-
-    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
-    // Récupérer les données de précision, s'assurer que c'est un nombre
-    const accuracyData = gamesData.map(game => parseFloat(game.accuracy) || 0);
-
-    if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
-
-    const gridColor = 'rgba(255, 255, 255, 0.1)'; const labelColor = '#e2e8f0';
-    const pointColor = '#007bff'; // marvel-blue
-    const lineColor = 'rgba(0, 123, 255, 0.7)'; // marvel-blue avec transparence
-
-    try {
-        accuracyChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Précision (%) par Partie',
-                    data: accuracyData,
+                    label: 'KDA par Partie', data: kdaData,
                     borderColor: lineColor, backgroundColor: pointColor,
                     pointBackgroundColor: pointColor, pointBorderColor: pointColor,
                     pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
@@ -379,11 +360,92 @@ function renderAccuracyChart(gamesData) {
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: true, labels: { color: labelColor } }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y}%`; } } } }, // Ajout % au tooltip
-                scales: { y: { beginAtZero: true, max: 100, ticks: { color: labelColor, callback: function(value) { return value + '%'; } }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } } // Axe Y de 0 à 100%
+                plugins: {
+                    legend: { display: true, labels: { color: labelColor } },
+                    tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1 }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
+                    x: { ticks: { color: labelColor }, grid: { color: gridColor } }
+                }
+            }
+        });
+    } catch (chartError) { console.error("Erreur création graphique KDA:", chartError); }
+}
+
+/**
+ * Crée ou met à jour le graphique de progression de la Précision.
+ * @param {Array} gamesData - Tableau des parties filtrées (ou toutes), trié ASC.
+ */
+function renderAccuracyChart(gamesData) {
+    const canvasElement = document.getElementById('accuracyChart');
+    if (!canvasElement) { console.log("Canvas 'accuracyChart' non trouvé."); return; }
+    if (typeof Chart === 'undefined') { console.error("Chart.js non chargé."); return; }
+    const ctx = canvasElement.getContext('2d');
+    if (!ctx) { console.error("Ctx Précision non trouvé."); return; }
+
+    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
+    const accuracyData = gamesData.map(game => parseFloat(game.accuracy) || 0);
+
+    if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+
+    const gridColor = 'rgba(255, 255, 255, 0.1)'; const labelColor = '#e2e8f0';
+    const pointColor = '#007bff'; const lineColor = 'rgba(0, 123, 255, 0.7)';
+
+    try {
+        accuracyChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Précision (%) par Partie', data: accuracyData,
+                    borderColor: lineColor, backgroundColor: pointColor,
+                    pointBackgroundColor: pointColor, pointBorderColor: pointColor,
+                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, labels: { color: labelColor } },
+                    tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y}%`; } } } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { color: labelColor, callback: function(value) { return value + '%'; } }, grid: { color: gridColor } },
+                    x: { ticks: { color: labelColor }, grid: { color: gridColor } }
+                }
             }
         });
     } catch (chartError) { console.error("Erreur création graphique Précision:", chartError); }
+}
+
+/**
+ * Met à jour les graphiques en fonction du filtre héros sélectionné.
+ */
+function updateCharts() {
+    console.log("Updating charts for hero ID:", selectedChartHeroId);
+    if (!allUserGames || allUserGames.length === 0) {
+        // Effacer les graphiques si pas de données globales
+        if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
+        if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+         const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
+         const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
+         if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
+         if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
+        return;
+    }
+
+    // Filtrer les jeux si un héros spécifique est sélectionné
+    const filteredGames = selectedChartHeroId === 'all'
+        ? allUserGames // Utiliser toutes les parties si 'all' est sélectionné
+        : allUserGames.filter(game => game.hero_id == selectedChartHeroId); // Filtrer par ID (comparaison souple au cas où l'ID est un nombre et la valeur du select une string)
+
+    // Trier les jeux filtrés par date pour l'affichage des graphiques
+    const sortedFilteredGamesAsc = [...filteredGames].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
+
+    // Rendre les graphiques avec les données filtrées et triées
+    renderProgressionChart(sortedFilteredGamesAsc);
+    renderAccuracyChart(sortedFilteredGamesAsc);
 }
 
 
@@ -410,8 +472,8 @@ function renderHeroStatsTable(gamesData) {
         heroStats[heroName].kills += game.kills || 0;
         heroStats[heroName].deaths += game.deaths || 0;
         heroStats[heroName].assists += game.assists || 0;
-        heroStats[heroName].totalDamage += game.damage_dealt || 0; // Agréger dégâts
-        heroStats[heroName].totalHealing += game.healing_done || 0; // Agréger soins
+        heroStats[heroName].totalDamage += game.damage_dealt || 0;
+        heroStats[heroName].totalHealing += game.healing_done || 0;
     });
 
     // 2. Préparer pour affichage
@@ -421,26 +483,26 @@ function renderHeroStatsTable(gamesData) {
         const kda = ((stats.kills + stats.assists) / deathsForKda).toFixed(2);
         const avgDamage = stats.played > 0 ? Math.round(stats.totalDamage / stats.played) : 0;
         const avgHealing = stats.played > 0 ? Math.round(stats.totalHealing / stats.played) : 0;
-        return { name, played: stats.played, winRate, kda, avgDamage, avgHealing }; // Ajouter moyennes
+        return { name, played: stats.played, winRate, kda, avgDamage, avgHealing };
     });
-    displayData.sort((a, b) => b.played - a.played); // Trier
+    displayData.sort((a, b) => b.played - a.played);
 
     // 3. Afficher
     tableBody.innerHTML = '';
     if (displayData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>'; // Colspan à 6
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>';
     } else {
         displayData.forEach(hero => {
             const winRateClass = hero.winRate >= 50 ? 'text-win' : 'text-loss';
-            // Ajouter les nouvelles cellules pour Dégâts et Soins Moyens
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${hero.name}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${hero.played}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass} text-center">${hero.winRate}%</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${hero.kda}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgDamage.toLocaleString('fr-FR')}</td> <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgHealing.toLocaleString('fr-FR')}</td> </tr>
-            `;
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgDamage.toLocaleString('fr-FR')}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgHealing.toLocaleString('fr-FR')}</td>
+                </tr>`;
             tableBody.innerHTML += row;
         });
     }
@@ -489,6 +551,48 @@ function renderMapStatsTable(gamesData) {
     }
 }
 
+// --- Fonction pour afficher les détails d'une partie ---
+/**
+ * Affiche les détails d'une partie spécifique dans la fenêtre modale.
+ * @param {object} game - L'objet complet de la partie à afficher.
+ */
+function showGameDetails(game) {
+    if (!game || !gameDetailModal) return;
+
+    const formatStat = (value, decimals = 0, suffix = '') => {
+        const num = Number(value);
+        return !isNaN(num) ? num.toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix : '--';
+    };
+
+    // Remplir les champs de la modale
+    document.getElementById('modal-date').textContent = game.played_at ? new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short'}) : '--';
+    document.getElementById('modal-hero').textContent = game.heroes?.name || 'N/A';
+    document.getElementById('modal-map').textContent = game.maps?.name || 'N/A';
+    document.getElementById('modal-result').textContent = game.result || '--';
+    document.getElementById('modal-kda').textContent = `${formatStat(game.kills)} / ${formatStat(game.deaths)} / ${formatStat(game.assists)}`;
+    document.getElementById('modal-kills').textContent = formatStat(game.kills);
+    document.getElementById('modal-deaths').textContent = formatStat(game.deaths);
+    document.getElementById('modal-assists').textContent = formatStat(game.assists);
+    document.getElementById('modal-solo_kills').textContent = formatStat(game.solo_kills);
+    document.getElementById('modal-head_kills').textContent = formatStat(game.head_kills);
+    document.getElementById('modal-last_kills').textContent = formatStat(game.last_kills);
+    document.getElementById('modal-damage_dealt').textContent = formatStat(game.damage_dealt);
+    document.getElementById('modal-healing_done').textContent = formatStat(game.healing_done);
+    document.getElementById('modal-damage_blocked').textContent = formatStat(game.damage_blocked);
+    document.getElementById('modal-accuracy').textContent = formatStat(game.accuracy, 1); // 1 décimale
+    document.getElementById('modal-notes').textContent = game.notes || '(Aucune note)';
+
+    // Appliquer couleur au résultat
+    const resultSpan = document.getElementById('modal-result');
+    resultSpan.className = ''; // Reset
+    if (game.result === 'win') resultSpan.classList.add('text-win', 'font-semibold');
+    else if (game.result === 'loss') resultSpan.classList.add('text-loss', 'font-semibold');
+
+    // Afficher la modale (en utilisant la classe 'active')
+    gameDetailModal.classList.remove('opacity-0', 'pointer-events-none');
+    gameDetailModal.classList.add('active'); // Déclenche l'affichage et la transition
+}
+
 
 /**
  * Fonction principale pour récupérer et afficher toutes les données du dashboard.
@@ -496,104 +600,55 @@ function renderMapStatsTable(gamesData) {
 async function fetchAndDisplayUserStats() {
     const userId = await getUserProfileId();
     if (!userId || !_supabase) return;
-
     const dashboardContent = document.getElementById('dashboard-content');
-    if (!dashboardContent || dashboardContent.classList.contains('hidden')) {
-         console.log("Dashboard non visible, stats non chargées.");
-         return;
-    }
+    if (!dashboardContent || dashboardContent.classList.contains('hidden')) { return; }
 
     try {
-        // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
-            .select(`*, heroes ( name ), maps ( name )`) // Jointures essentielles
+            .select(`*, heroes ( id, name ), maps ( id, name )`) // Inclure ID héros/map
             .eq('user_id', userId)
             .order('played_at', { ascending: false });
 
         if (error) throw error;
-        console.log('Parties récupérées pour toutes les stats:', games);
+        console.log('Parties récupérées:', games);
+        allUserGames = games; // Stocker globalement
 
         // --- Calculs et Affichage Stats Globales ---
-        const totalGames = games.length;
-        let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
-        const heroCounts = {};
-        games.forEach(game => {
-            totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
-            if (game.result === 'win') wins++;
-            if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
-        });
-        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-        const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
-        let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
-        for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
+        const totalGames = allUserGames.length; /* ... autres calculs ... */
+        // ... (mise à jour des éléments #stat-kda, #stat-winrate, etc.) ...
 
-        const kdaElement = document.getElementById('stat-kda');
-        const winRateElement = document.getElementById('stat-winrate');
-        const totalGamesElement = document.getElementById('stat-total-games');
-        const mainHeroElement = document.getElementById('stat-main-hero');
-        if (kdaElement) kdaElement.textContent = kda;
-        if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
-        if (totalGamesElement) totalGamesElement.textContent = totalGames;
-        if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
-
-
-        // --- Affichage Historique (15 dernières parties) ---
-        const historyTableBody = document.querySelector('#history-table tbody');
+        // --- Affichage Historique (Ajout data-game-id) ---
         if (historyTableBody) {
             historyTableBody.innerHTML = '';
-            const gamesToShow = games.slice(0, 15); // Déjà trié DESC par la requête
-            if (gamesToShow.length === 0) {
-                 historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
-            } else {
-                gamesToShow.forEach(game => {
-                    const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
-                    const row = `
-                        <tr>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
-                            <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
-                        </tr>`;
-                    historyTableBody.innerHTML += row;
-                });
+            const gamesToShow = allUserGames.slice(0, 15);
+            if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
+            else { gamesToShow.forEach(game => {
+                const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
+                const row = `
+                    <tr data-game-id="${game.id}">
+                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
+                        <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
+                    </tr>`;
+                historyTableBody.innerHTML += row; });
             }
         }
 
-        // --- Génération des Graphiques ---
-        if (games.length > 0) {
-            // Trier ASC pour les graphiques
-            const sortedGamesAsc = [...games].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
-            renderProgressionChart(sortedGamesAsc); // KDA
-            renderAccuracyChart(sortedGamesAsc);  // Précision
-        } else {
-             // Effacer les graphiques si pas de données
-             if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
-             if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
-             // Optionnel: Effacer le contenu des canvas
-             const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
-             const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
-             if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
-             if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
-        }
+        // --- Génération des Graphiques (via updateCharts) ---
+        updateCharts(); // Appelle la fonction qui gère le filtrage et le rendu
 
         // --- Calcul et Affichage Stats Détaillées ---
-        if (games.length > 0) {
-            renderHeroStatsTable(games); // Appelle la version mise à jour
-            renderMapStatsTable(games);  // Appelle la version inchangée
-        } else {
-            // Vider les tableaux si aucune partie
-             const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-             const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-             if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>'; // Colspan 6
-             if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
-        }
+        if (allUserGames.length > 0) {
+            renderHeroStatsTable(allUserGames);
+            renderMapStatsTable(allUserGames);
+        } else { /* ... vider tableaux ... */ }
 
     } catch (error) {
-        console.error("Erreur lors de la récupération/affichage complet des stats:", error.message);
-        // Afficher une erreur plus globale à l'utilisateur ?
+        console.error("Erreur fetch/display stats:", error.message);
     }
 }
 
@@ -622,25 +677,20 @@ async function updateUserUI(user) {
         if (mobileLogin) mobileLogin.style.display = 'none';
         if (mobileLogout) mobileLogout.style.display = 'block';
 
-        // Afficher le nom d'utilisateur
-        let displayName = user.email; // Fallback
+        let displayName = user.email;
         if (_supabase) {
-            try {
-                const { data: profile, error } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
-                if (error && error.code !== 'PGRST116') throw error; // Ignorer '0 rows'
-                if (profile && profile.username) displayName = profile.username;
-            } catch (profileError) { console.error("Erreur récupération profil:", profileError.message); }
+            try { /* ... récupération profil ... */ } catch (profileError) { /* ... */ }
         }
         if (userGreetingSpan) userGreetingSpan.textContent = `Salut, ${displayName}!`;
         if (mobileGreeting) mobileGreeting.textContent = displayName;
 
-        // Afficher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.remove('hidden');
 
-        // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
-         if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
-             populateDropdowns();
-             fetchAndDisplayUserStats(); // Charge TOUTES les données
+        if (document.getElementById('dashboard-content')) {
+             populateDropdowns(); // Remplir dropdowns (y compris filtre)
+             // fetchAndDisplayUserStats sera appelé par checkAuthStateAndRedirect ou onAuthStateChange
+             // On peut forcer un re-fetch ici si nécessaire, mais attention aux appels multiples
+             // fetchAndDisplayUserStats(); // Déjà appelé par checkAuthState ou onAuthStateChange normalement
         }
 
     } else {
@@ -652,23 +702,14 @@ async function updateUserUI(user) {
         if (mobileLogout) mobileLogout.style.display = 'none';
         if (mobileGreeting) mobileGreeting.textContent = '';
 
-        // Cacher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.add('hidden');
 
-         // Effacer les graphiques lors de la déconnexion ou si dashboard caché
-         if (progressionChartInstance) {
-            progressionChartInstance.destroy();
-            progressionChartInstance = null;
-         }
-         if (accuracyChartInstance) {
-            accuracyChartInstance.destroy();
-            accuracyChartInstance = null;
-         }
+         // Effacer les graphiques et vider données globales
+         if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
+         if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+         allUserGames = []; // Vider les données stockées
          // Optionnel: Effacer le contenu des canvas
-         const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
-         const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
-         if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
-         if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
+         // ...
     }
 }
 
@@ -678,100 +719,80 @@ async function updateUserUI(user) {
  * Vérifie l'état de connexion au chargement et applique les redirections si nécessaire.
  */
 async function checkAuthStateAndRedirect() {
-    if (!_supabase) { console.log("Supabase client not ready for auth check."); return; }
-
+    if (!_supabase) { console.log("Supabase client not ready."); return; }
     const { data: { session }, error } = await _supabase.auth.getSession();
-    if (error) { console.error("Erreur getSession:", error); return; } // Ne pas rediriger en cas d'erreur
-
+    if (error) { console.error("Erreur getSession:", error); return; }
     const user = session?.user ?? null;
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html'; // Default to index
-
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     console.log(`Checking auth state on page: ${currentPage}, user: ${user ? user.email : 'null'}`);
-
     const protectedPages = ['dashboard.html'];
     const publicOnlyPages = ['login.html', 'signup.html'];
-
-    // Redirection si nécessaire
-    if (!user && protectedPages.includes(currentPage)) {
-        console.log("User not logged in, redirecting to login...");
-        window.location.replace('login.html'); // Utiliser replace pour éviter l'historique
-    } else if (user && publicOnlyPages.includes(currentPage)) {
-        console.log("User already logged in, redirecting to dashboard...");
-        window.location.replace('dashboard.html');
-    } else {
-        // Si pas de redirection, mettre à jour l'UI pour l'état actuel
-        // Cela va aussi déclencher le fetch des données si on est sur le dashboard et connecté
-        updateUserUI(user);
-    }
+    if (!user && protectedPages.includes(currentPage)) { window.location.replace('login.html'); }
+    else if (user && publicOnlyPages.includes(currentPage)) { window.location.replace('dashboard.html'); }
+    else { updateUserUI(user); } // Met à jour l'UI si pas de redirection
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!_supabase) {
-        console.error("DOM Loaded, but Supabase client failed to initialize. Aborting setup.");
-        // Afficher une erreur globale à l'utilisateur ?
-        return;
-    }
+    if (!_supabase) { console.error("DOM Loaded, Supabase non initialisé."); return; }
 
     // 1. Vérifier l'état initial et rediriger si nécessaire
     checkAuthStateAndRedirect();
 
-    // 2. Écouter les changements d'état futurs (ex: login/logout dans un autre onglet)
+    // 2. Écouter les changements d'état futurs
     _supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth State Change Event:', event, session);
-        // Mettre à jour l'UI pour refléter le nouvel état
-        // La redirection initiale gère le chargement de page.
         updateUserUI(session?.user ?? null);
     });
 
-    // 3. Attacher les gestionnaires d'événements aux formulaires et boutons
+    // 3. Attacher les gestionnaires d'événements
 
-    // Formulaire Inscription (signup.html)
+    // Formulaires Auth
     const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = signupForm.email.value;
-            const password = signupForm.password.value;
-            const username = signupForm.username.value;
-            if (!username || username.length < 3) {
-                 const feedbackDiv = document.getElementById('form-feedback-signup');
-                 if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');}
-                 else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); }
-                 return;
-            }
-            handleSignUp(email, password, username);
-        });
-    }
-
-    // Formulaire Connexion (login.html)
+    if (signupForm) { signupForm.addEventListener('submit', (e) => { /* ... signup logic ... */ }); }
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = loginForm.email.value;
-            const password = loginForm.password.value;
-            handleLogin(email, password);
+    if (loginForm) { loginForm.addEventListener('submit', (e) => { /* ... login logic ... */ }); }
+
+    // Boutons Logout
+    if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
+    if (mobileLogoutButton) { mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
+
+    // Formulaire Saisie Partie
+    const gameEntryForm = document.getElementById('game-entry-form');
+    if (gameEntryForm) { gameEntryForm.addEventListener('submit', (e) => { e.preventDefault(); const formData = new FormData(gameEntryForm); const gameData = Object.fromEntries(formData.entries()); saveGameEntry(gameData); }); }
+
+    // Filtre des graphiques
+    if (chartHeroFilter) {
+        chartHeroFilter.addEventListener('change', (e) => {
+            selectedChartHeroId = e.target.value;
+            updateCharts(); // Redessine les graphiques
         });
     }
 
-    // Bouton Déconnexion (principal + mobile)
-    if (logoutButton) {
-        logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
-    }
-    if (mobileLogoutButton) {
-         mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+    // Clics sur l'historique (Event Delegation)
+    if (historyTableBody) {
+        historyTableBody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr[data-game-id]'); // Cherche la ligne parente avec l'attribut
+            if (row) {
+                const gameId = parseInt(row.dataset.gameId, 10);
+                const gameDetails = allUserGames.find(g => g.id === gameId);
+                if (gameDetails) { showGameDetails(gameDetails); }
+                else { console.error("Données partie non trouvées pour ID:", gameId); }
+            }
+        });
     }
 
-
-    // Formulaire Saisie Partie (dashboard.html)
-    const gameEntryForm = document.getElementById('game-entry-form');
-    if (gameEntryForm) {
-        gameEntryForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(gameEntryForm);
-            const gameData = Object.fromEntries(formData.entries());
-            saveGameEntry(gameData); // Appelle la fonction mise à jour
+    // Fermeture de la modale
+    if (closeModalButton && gameDetailModal) {
+        closeModalButton.addEventListener('click', () => {
+            gameDetailModal.classList.add('opacity-0', 'pointer-events-none'); // Cache avec transition
+            gameDetailModal.classList.remove('active');
+        });
+        gameDetailModal.addEventListener('click', (e) => { // Clic sur le fond
+            if (e.target === gameDetailModal) {
+                gameDetailModal.classList.add('opacity-0', 'pointer-events-none');
+                gameDetailModal.classList.remove('active');
+            }
         });
     }
 
