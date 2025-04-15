@@ -4,7 +4,7 @@
  * - Initialisation du client Supabase
  * - Authentification (Inscription, Connexion, Déconnexion) + Redirections
  * - Gestion des données du tableau de bord (Sauvegarde, Lecture)
- * - Affichage des graphiques de progression (KDA, Précision) + FILTRE HEROS
+ * - Affichage des graphiques de progression (KDA, Précision) + FILTRE HEROS PERSISTANT
  * - Calcul et affichage des stats étendues par héros et par map
  * - Affichage détails partie depuis historique (MODALE)
  */
@@ -153,6 +153,8 @@ async function handleLogout() {
         const { error } = await _supabase.auth.signOut();
         if (error) throw error;
         console.log('Déconnexion réussie');
+        // Optionnel: Effacer la préférence de filtre lors de la déconnexion ?
+        // localStorage.removeItem('auduj_chartHeroFilter');
         window.location.href = 'index.html'; // Rediriger vers la page d'accueil
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error.message);
@@ -197,22 +199,34 @@ async function populateDropdowns() {
         if (heroesError) throw heroesError;
         if (mapsError) throw mapsError;
 
-        // Vider et remplir les selects du formulaire
+        // Sauvegarder la valeur actuelle du filtre avant de vider
+        const currentFilterValue = heroSelectFilter.value;
+
+        // Remplir formulaire
         heroSelectForm.length = 1; mapSelectForm.length = 1;
         heroSelectForm.options[0].text = "Choisir Héros..."; mapSelectForm.options[0].text = "Choisir Map...";
         heroes.forEach(hero => heroSelectForm.add(new Option(hero.name, hero.id)));
         maps.forEach(map => mapSelectForm.add(new Option(map.name, map.id)));
 
-        // Vider et remplir le select du filtre graphique
+        // Remplir filtre graphique
         heroSelectFilter.length = 1; // Garde "Tous les héros"
         heroSelectFilter.options[0].value = "all"; // Assurer que la valeur est 'all'
+        heroSelectFilter.options[0].text = "Tous les héros"; // Texte explicite
         heroes.forEach(hero => heroSelectFilter.add(new Option(hero.name, hero.id)));
+
+        // Essayer de restaurer la valeur précédente du filtre (utile si appelé plusieurs fois)
+        heroSelectFilter.value = currentFilterValue;
+         // Si la valeur restaurée n'existe plus (par ex après suppression d'un héros), remettre à 'all'
+         if (heroSelectFilter.value !== currentFilterValue) {
+             heroSelectFilter.value = 'all';
+         }
+
 
     } catch (error) {
         console.error("Erreur lors du chargement des héros/maps:", error.message);
         // Afficher une erreur dans les selects ?
         heroSelectForm.options[0].text = "Erreur"; mapSelectForm.options[0].text = "Erreur";
-        heroSelectFilter.options[0].text = "Erreur";
+        if(heroSelectFilter) heroSelectFilter.options[0].text = "Erreur";
     }
 }
 
@@ -423,7 +437,7 @@ function renderAccuracyChart(gamesData) {
 }
 
 /**
- * Met à jour les graphiques en fonction du filtre héros sélectionné.
+ * Met à jour les graphiques en fonction du filtre héros sélectionné (variable globale).
  */
 function updateCharts() {
     console.log("Updating charts for hero ID:", selectedChartHeroId);
@@ -438,15 +452,15 @@ function updateCharts() {
         return;
     }
 
-    // Filtrer les jeux si un héros spécifique est sélectionné
+    // Filtrer les jeux
     const filteredGames = selectedChartHeroId === 'all'
         ? allUserGames // Utiliser toutes les parties si 'all' est sélectionné
-        : allUserGames.filter(game => game.hero_id == selectedChartHeroId); // Filtrer par ID (comparaison souple au cas où l'ID est un nombre et la valeur du select une string)
+        : allUserGames.filter(game => game.hero_id == selectedChartHeroId); // Filtrer par ID (comparaison souple)
 
-    // Trier les jeux filtrés par date pour l'affichage des graphiques
+    // Trier les jeux filtrés ASC pour les graphiques
     const sortedFilteredGamesAsc = [...filteredGames].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
 
-    // Rendre les graphiques avec les données filtrées et triées
+    // Rendre les graphiques
     renderProgressionChart(sortedFilteredGamesAsc);
     renderAccuracyChart(sortedFilteredGamesAsc);
 }
@@ -673,7 +687,7 @@ async function fetchAndDisplayUserStats() {
             }
         }
 
-        // --- Génération des Graphiques (via updateCharts) ---
+        // --- Génération des Graphiques (via updateCharts qui utilise le filtre) ---
         updateCharts(); // Appelle la fonction qui gère le filtrage et le rendu
 
         // --- Calcul et Affichage Stats Détaillées ---
@@ -734,10 +748,8 @@ async function updateUserUI(user) {
 
         // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
          if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
-             populateDropdowns();
+             // populateDropdowns est appelé dans DOMContentLoaded maintenant
              // fetchAndDisplayUserStats sera appelé par checkAuthStateAndRedirect ou onAuthStateChange
-             // On peut forcer un re-fetch ici si nécessaire, mais attention aux appels multiples
-             // fetchAndDisplayUserStats(); // Déjà appelé par checkAuthState ou onAuthStateChange normalement
         }
 
     } else {
@@ -767,6 +779,35 @@ async function updateUserUI(user) {
 // --- Initialisation et Écouteurs ---
 
 /**
+ * NOUVEAU: Charge la préférence de filtre depuis localStorage.
+ */
+function loadFilterPreference() {
+    const savedHeroId = localStorage.getItem('auduj_chartHeroFilter');
+    if (savedHeroId) {
+        selectedChartHeroId = savedHeroId; // Mettre à jour la variable globale
+        if (chartHeroFilter) {
+            // Essayer de définir la valeur du dropdown.
+            // Important: Cela doit être appelé APRÈS que populateDropdowns a rempli les options.
+            chartHeroFilter.value = selectedChartHeroId;
+             // Vérifier si la valeur a bien été appliquée (au cas où l'ID sauvegardé n'existe plus)
+             if (chartHeroFilter.value !== selectedChartHeroId) {
+                 console.warn(`Hero ID ${selectedChartHeroId} non trouvé dans le filtre, retour à 'Tous'.`);
+                 selectedChartHeroId = 'all';
+                 chartHeroFilter.value = 'all';
+             } else {
+                console.log(`Filtre héros chargé depuis localStorage: ${selectedChartHeroId}`);
+             }
+        }
+    } else {
+        // Assurer la valeur par défaut si rien n'est sauvegardé
+        selectedChartHeroId = 'all';
+        if (chartHeroFilter) {
+            chartHeroFilter.value = 'all';
+        }
+    }
+}
+
+/**
  * Vérifie l'état de connexion au chargement et applique les redirections si nécessaire.
  */
 async function checkAuthStateAndRedirect() {
@@ -780,15 +821,30 @@ async function checkAuthStateAndRedirect() {
     const publicOnlyPages = ['login.html', 'signup.html'];
     if (!user && protectedPages.includes(currentPage)) { window.location.replace('login.html'); }
     else if (user && publicOnlyPages.includes(currentPage)) { window.location.replace('dashboard.html'); }
-    else { updateUserUI(user); } // Mettre à jour l'UI si pas de redirection
+    else {
+        // Si pas de redirection, mettre à jour l'UI pour l'état actuel
+        // L'appel à fetchAndDisplayUserStats est maintenant DANS updateUserUI
+        updateUserUI(user);
+    }
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!_supabase) { console.error("DOM Loaded, Supabase non initialisé."); return; }
 
-    // 1. Vérifier l'état initial et rediriger si nécessaire
-    checkAuthStateAndRedirect();
+    // 1. Charger la préférence de filtre AVANT de vérifier l'état d'auth
+    //    MAIS s'assurer que les dropdowns sont peuplés d'abord si on est sur le dashboard.
+    if (document.getElementById('dashboard-content')) {
+        // Peupler les dropdowns d'abord, puis charger la préférence, puis vérifier l'auth
+        populateDropdowns().then(() => {
+             loadFilterPreference(); // Charger la préférence après que les options existent
+             checkAuthStateAndRedirect(); // Vérifier l'auth et mettre à jour l'UI/charger les données
+        });
+    } else {
+        // Si on n'est pas sur le dashboard, pas besoin de populate/load filter
+         checkAuthStateAndRedirect();
+    }
+
 
     // 2. Écouter les changements d'état futurs
     _supabase.auth.onAuthStateChange((event, session) => {
@@ -841,11 +897,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Filtre des graphiques
+    // Filtre des graphiques (Sauvegarde dans localStorage)
     if (chartHeroFilter) {
         chartHeroFilter.addEventListener('change', (e) => {
-            selectedChartHeroId = e.target.value; // Met à jour la variable globale
-            updateCharts(); // Redessine les graphiques avec le filtre
+            selectedChartHeroId = e.target.value;
+            // SAUVEGARDER dans localStorage
+            try {
+                localStorage.setItem('auduj_chartHeroFilter', selectedChartHeroId);
+                console.log(`Filtre héros sauvegardé: ${selectedChartHeroId}`);
+            } catch (storageError) {
+                console.error("Erreur sauvegarde localStorage:", storageError);
+            }
+            updateCharts(); // Redessine les graphiques
         });
     }
 
@@ -868,11 +931,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fermeture de la modale
     if (closeModalButton && gameDetailModal) {
+        // Clic sur le bouton X
         closeModalButton.addEventListener('click', () => {
             gameDetailModal.classList.add('opacity-0', 'pointer-events-none'); // Cache avec transition
             gameDetailModal.classList.remove('active');
         });
-        // Fermer aussi si on clique en dehors du contenu de la modale
+        // Clic en dehors du contenu de la modale
         gameDetailModal.addEventListener('click', (e) => {
             if (e.target === gameDetailModal) { // Si le clic est sur le fond semi-transparent
                  gameDetailModal.classList.add('opacity-0', 'pointer-events-none');
