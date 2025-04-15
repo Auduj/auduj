@@ -45,7 +45,6 @@
     <header class="bg-card-bg shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
-            {/* */}
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
                 <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
@@ -53,22 +52,15 @@
                 <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
                 <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
                 <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
-                {/* */}
-                <div id="user-info" class="items-center space-x-4 hidden"> {/* Caché par défaut */}
-                    <span id="user-greeting" class="text-sm text-gray-300"></span>
-                    <button id="logout-button" class="btn-logout"> {/* Pas besoin de 'hidden' ici, géré par #user-info */}
-                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span>
+                    <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
                     </button>
                 </div>
-                 {/* */}
-                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> {/* Caché par défaut */}
-            </div>
-            {/* */}
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div>
             <div class="md:hidden">
                 <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button>
             </div>
         </nav>
-        {/* */}
         <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
              <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
             <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
@@ -76,21 +68,15 @@
             <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
             <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
             <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
-            {/* */}
             <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion</a>
             <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
             <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
         </div>
     </header>
 
-    {/* */}
-    {/* */}
-    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> {/* Caché par défaut, affiché par JS si connecté */}
-
-            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
-            {/* */}
             <section id="saisie-partie" class="mb-12 bg-card-bg p-6 rounded-lg shadow-lg">
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
                 <form id="game-entry-form" action="#" method="POST">
@@ -111,10 +97,9 @@
                 </form>
             </section>
 
-            {/* */}
             <section class="mb-12">
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-chart-bar mr-2"></i>Aperçu Global</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="stat-card"> <div id="stat-kda" class="stat-value">-.--</div> <div class="stat-label">KDA Global</div> </div>
                      <div class="stat-card"> <div id="stat-winrate" class="stat-value">--%</div> <div class="stat-label">Taux de Victoire</div> </div>
                      <div class="stat-card"> <div id="stat-total-games" class="stat-value">0</div> <div class="stat-label">Parties Jouées</div> </div>
@@ -122,35 +107,36 @@
                 </div>
             </section>
 
-            {/* */}
             <section>
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-search-plus mr-2"></i>Analyses Détaillées</h2>
                  <div class="mb-4 border-b border-gray-700"> <nav class="-mb-px flex space-x-1" aria-label="Tabs"> <button class="tab-button active" data-tab="progression">Progression</button> <button class="tab-button" data-tab="par-heros">Par Héros</button> <button class="tab-button" data-tab="par-map">Par Map</button> <button class="tab-button" data-tab="historique">Historique Parties</button> </nav> </div>
                  <div>
-                     <div class="tab-content" data-tab-content="progression"> <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA & Winrate)</h3> <div class="bg-input-bg p-4 rounded h-64 flex items-center justify-center text-gray-400">[Placeholder pour Graphique - Intégration future avec Chart.js]</div> </div>
+                     <div class="tab-content" data-tab-content="progression"> <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA & Winrate)</h3> <div class="bg-input-bg p-4 rounded h-64 flex items-center justify-center text-gray-400">[Graphique de Progression]</div> </div>
                      <div class="tab-content hidden" data-tab-content="par-heros"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="4" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div>
                      <div class="tab-content hidden" data-tab-content="par-map"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Map</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="3" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div>
                      <div class="tab-content hidden" data-tab-content="historique"> <h3 class="text-xl font-semibold mb-4 text-light-text">Historique des Parties</h3> <div class="overflow-x-auto"> <table id="history-table" class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr> </tbody> </table> </div> </div>
                  </div>
             </section>
 
-    </main> {/* */}
-
-    {/* */}
-     <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+    </main> <footer class="bg-card-bg text-gray-400 py-8 mt-16">
          <div class="container mx-auto px-6 text-center">
              <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
-              {/* */}
+              <div class="space-x-4 mb-4">
+                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
+                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
+                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
+            </div>
+            <div class="space-x-4">
+                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
+                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
+            </div>
+             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
          </div>
     </footer>
 
-    {/* */}
-    <script src="assets/js/script.js"></script> {/* Menu mobile, etc. */}
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> {/* SDK Supabase */}
-    <script src="assets/js/supabase-integration.js"></script> {/* Logique Supabase */}
-
-    {/* */}
-    <script>
+    <script src="assets/js/script.js"></script> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script src="assets/js/supabase-integration.js"></script> <script>
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
         tabButtons.forEach(button => {
