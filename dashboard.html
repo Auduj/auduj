@@ -23,21 +23,15 @@
         };
     </script>
     <style>
-        /* Styles CSS */
+        /* Styles CSS (inchangés) */
         .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
         body { font-family: 'Inter', sans-serif; }
         .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard (texte gris clair) */
-        .form-input-dash {
-            @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm;
-        }
-        /* Style des labels (au-dessus de l'input) */
-        .form-label-dash {
-            @apply block mb-1.5 text-xs font-medium text-gray-300; /* Suppression de flex et de l'icône */
-        }
+        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; }
+        .form-label-dash { @apply block mb-1.5 text-xs font-medium text-gray-300; }
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
         .stat-label { @apply text-sm text-gray-400; }
@@ -45,60 +39,33 @@
         .tab-button.active { @apply bg-card-bg text-marvel-yellow; }
         .tab-button:not(.active) { @apply text-gray-400 hover:bg-gray-700 hover:text-light-text; }
         .tab-content { @apply p-4 bg-card-bg rounded-b-lg rounded-tr-lg; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; /* Firefox */ }
-        /* Hauteur fixe pour les conteneurs de graphiques */
-        .chart-container {
-            @apply relative h-64 md:h-80; /* Ajustez la hauteur si nécessaire */
-        }
-         /* Style pour la modale */
-        .modal { @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none; } /* hidden remplacé par opacity/pointer-events */
-        .modal.active { @apply opacity-100 pointer-events-auto; } /* Classe pour afficher */
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; }
+        .chart-container { @apply relative h-64 md:h-80; }
+        .modal { @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none; }
+        .modal.active { @apply opacity-100 pointer-events-auto; }
         .modal-content { @apply bg-card-bg rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto relative transform scale-95 transition-transform duration-300; }
         .modal.active .modal-content { @apply scale-100; }
         .modal-close { @apply absolute top-3 right-3 text-gray-400 hover:text-white text-2xl cursor-pointer; }
-        /* Style pour rendre les lignes de l'historique cliquables */
         #history-table tbody tr { @apply cursor-pointer hover:bg-gray-700 transition-colors duration-150; }
     </style>
 </head>
 <body class="bg-dark-bg text-light-text">
 
     <header class="bg-card-bg shadow-lg sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
-            <div class="hidden md:flex space-x-6 items-center">
-                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
-                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
-                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
-                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
-                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span>
-                    <button id="logout-button" class="btn-logout">
-                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
-                    </button>
-                </div>
-                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button>
-            </div>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
-             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
-            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
-            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
-            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
-            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion</a>
-            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
-            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
-        </div>
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center"> <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a> <div class="hidden md:flex space-x-6 items-center"> <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a> <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a> <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a> <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a> <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span> <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button> </div> <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div> <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div> </nav> <div id="mobile-menu" class="hidden md:hidden bg-card-bg"> <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a> <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a> <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a> <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a> <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion</a> <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span> <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button> </div>
     </header>
 
-    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden">
+
+            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
                  <h2 class="text-3xl font-heading mb-8 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
-                <form id="game-entry-form" action="#" method="POST" class="space-y-5"> <div id="entry-feedback" class="mb-4 text-center hidden"></div>
+                <form id="game-entry-form" action="#" method="POST" class="space-y-6">
+                     <div id="entry-feedback" class="mb-4 text-center hidden"></div>
 
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label for="hero" class="form-label-dash">Héros Joué</label>
                             <select id="hero" name="hero" class="form-input-dash" required><option value="">Choisir Héros...</option></select>
@@ -107,9 +74,18 @@
                             <label for="map" class="form-label-dash">Map</label>
                              <select id="map" name="map" class="form-input-dash" required><option value="">Choisir Map...</option></select>
                         </div>
+                         <div>
+                            <label for="result" class="form-label-dash">Résultat</label>
+                            <select id="result" name="result" class="form-input-dash" required>
+                                <option value="">Choisir...</option>
+                                <option value="win" class="text-win">Victoire</option>
+                                <option value="loss" class="text-loss">Défaite</option>
+                                <option value="draw">Égalité</option>
+                            </select>
+                        </div>
                       </div>
 
-                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label for="kills" class="form-label-dash">Kills</label>
                             <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required>
@@ -122,6 +98,9 @@
                              <label for="assists" class="form-label-dash">Assists</label>
                              <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required>
                         </div>
+                      </div>
+
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
                             <label for="solo_kills" class="form-label-dash">Élim. Solo</label>
                             <input type="number" id="solo_kills" name="solo_kills" min="0" class="form-input-dash" placeholder="0">
@@ -130,13 +109,13 @@
                             <label for="head_kills" class="form-label-dash">Tirs Tête</label>
                             <input type="number" id="head_kills" name="head_kills" min="0" class="form-input-dash" placeholder="0">
                         </div>
-                      </div>
-
-                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
                          <div>
                             <label for="last_kills" class="form-label-dash">Last Kills</label>
                             <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0">
                         </div>
+                      </div>
+
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
                             <label for="damage_dealt" class="form-label-dash">Dégâts</label>
                             <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0">
@@ -149,21 +128,12 @@
                             <label for="damage_blocked" class="form-label-dash">Bloqués</label>
                             <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0">
                         </div>
-                         <div>
-                            <label for="accuracy" class="form-label-dash">Précision (%)</label>
-                            <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5">
-                        </div>
                      </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
-                            <label for="result" class="form-label-dash">Résultat</label>
-                            <select id="result" name="result" class="form-input-dash" required>
-                                <option value="">Choisir...</option>
-                                <option value="win" class="text-win">Victoire</option>
-                                <option value="loss" class="text-loss">Défaite</option>
-                                <option value="draw">Égalité</option>
-                            </select>
+                            <label for="accuracy" class="form-label-dash">Précision (%)</label>
+                            <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5">
                         </div>
                          <div class="md:col-span-2">
                             <label for="notes" class="form-label-dash">Notes (Optionnel)</label>
@@ -171,7 +141,9 @@
                          </div>
                      </div>
 
-                     <div class="pt-4 text-center"> <button type="submit" class="btn-marvel btn-red w-full sm:w-auto sm:px-10"> <i class="fas fa-save mr-2"></i> SAUVEGARDER LA PARTIE
+                     <div class="pt-4 text-center">
+                         <button type="submit" class="btn-marvel btn-red w-full sm:w-auto sm:px-10">
+                            <i class="fas fa-save mr-2"></i> SAUVEGARDER LA PARTIE
                         </button>
                      </div>
                 </form>
@@ -193,25 +165,9 @@
                 </div>
                 <div>
                     <div class="tab-content space-y-8" data-tab-content="progression">
-                         <div class="flex justify-end">
-                             <label for="chartHeroFilter" class="text-sm text-gray-400 mr-2 self-center">Filtrer par héros:</label>
-                             <select id="chartHeroFilter" class="form-input-dash w-auto bg-gray-800 text-sm">
-                                 <option value="all">Tous les héros</option>
-                                 </select>
-                         </div>
-                         <div>
-                            <h3 class="text-xl font-semibold mb-4 text-light-text">Progression KDA</h3>
-                            <div class="bg-card-bg p-4 rounded chart-container">
-                                <canvas id="progressionChart"></canvas>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-2">Évolution de votre KDA calculé pour chaque partie (filtré).</p>
-                         </div>
-                         <div>
-                            <h3 class="text-xl font-semibold mb-4 text-light-text">Progression Précision (%)</h3>
-                             <div class="bg-card-bg p-4 rounded chart-container">
-                                <canvas id="accuracyChart"></canvas> </div>
-                            <p class="text-sm text-gray-500 mt-2">Évolution de votre précision enregistrée (filtré).</p>
-                         </div>
+                         <div class="flex justify-end"> <label for="chartHeroFilter" class="text-sm text-gray-400 mr-2 self-center">Filtrer par héros:</label> <select id="chartHeroFilter" class="form-input-dash w-auto bg-gray-800 text-sm"> <option value="all">Tous les héros</option> </select> </div>
+                         <div> <h3 class="text-xl font-semibold mb-4 text-light-text">Progression KDA</h3> <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="progressionChart"></canvas> </div> <p class="text-sm text-gray-500 mt-2">Évolution de votre KDA calculé pour chaque partie (filtré).</p> </div>
+                         <div> <h3 class="text-xl font-semibold mb-4 text-light-text">Progression Précision (%)</h3> <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="accuracyChart"></canvas> </div> <p class="text-sm text-gray-500 mt-2">Évolution de votre précision enregistrée (filtré).</p> </div>
                      </div>
                      <div class="tab-content hidden" data-tab-content="par-heros">
                          <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3>
@@ -230,7 +186,8 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-card-bg divide-y divide-gray-700">
-                                    <tr><td colspan="8" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody>
+                                    <tr><td colspan="8" class="text-center text-gray-500 py-4">Chargement...</td></tr>
+                                </tbody>
                             </table>
                          </div>
                      </div>
@@ -259,7 +216,8 @@
                  </div>
             </section>
 
-    </main> <div id="gameDetailModal" class="modal opacity-0 pointer-events-none"> <div class="modal-content">
+    </main> <div id="gameDetailModal" class="modal opacity-0 pointer-events-none">
+        <div class="modal-content">
             <span id="closeModalButton" class="modal-close">&times;</span>
             <h2 class="text-2xl font-heading text-marvel-yellow mb-6 text-center">Détails de la Partie</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
