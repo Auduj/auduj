@@ -233,10 +233,12 @@ async function saveGameEntry(gameData) {
             kills: parseInt(gameData.kills, 10) || 0,
             deaths: parseInt(gameData.deaths, 10) || 0,
             assists: parseInt(gameData.assists, 10) || 0,
-            damage_dealt: parseInt(gameData.damage_dealt, 10) || 0,
-            healing_done: parseInt(gameData.healing_done, 10) || 0,
+            solo_kills: parseInt(gameData.solo_kills, 10) || 0,
+            head_kills: parseInt(gameData.head_kills, 10) || 0,
+            last_kills: parseInt(gameData.last_kills, 10) || 0,
+            accuracy: parseFloat(gameData.accuracy) || 0.00, // Utiliser parseFloat
             damage_mitigated: parseInt(gameData.damage_mitigated, 10) || 0,
-            objective_score: parseInt(gameData.objective_score, 10) || 0,
+            healing_done: parseInt(gameData.healing_done, 10) || 0,
             result: gameData.result || null,
             notes: gameData.notes || null
         };
@@ -247,6 +249,9 @@ async function saveGameEntry(gameData) {
         if (!dataToInsert.hero_id) throw new Error("Veuillez sélectionner un héros.");
         if (!dataToInsert.map_id) throw new Error("Veuillez sélectionner une map.");
         if (!dataToInsert.result) throw new Error("Veuillez sélectionner un résultat (Victoire/Défaite/Égalité).");
+        if (dataToInsert.accuracy < 0 || dataToInsert.accuracy > 100) {
+            throw new Error("La précision doit être entre 0 et 100.");
+        }
 
         // Envoyer les données à Supabase
         const { data, error } = await _supabase
@@ -270,10 +275,12 @@ async function saveGameEntry(gameData) {
             form.kills.value = '';
             form.deaths.value = '';
             form.assists.value = '';
-            form.damage_dealt.value = '';
-            form.healing_done.value = '';
+            form.solo_kills.value = '';
+            form.head_kills.value = '';
+            form.last_kills.value = '';
+            form.accuracy.value = '';
             form.damage_mitigated.value = '';
-            form.objective_score.value = '';
+            form.healing_done.value = '';
             form.result.value = '';
             form.notes.value = '';
         }
@@ -298,16 +305,17 @@ async function saveGameEntry(gameData) {
 
 /**
  * Crée ou met à jour le graphique de progression du KDA avec Chart.js.
- * @param {Array} gamesData - Tableau des parties, trié du plus ancien au plus récent.
+ * @param {Array} gamesData - Tableau des parties récupérées depuis Supabase.
  */
 function renderProgressionChart(gamesData) {
     const canvasElement = document.getElementById('progressionChart');
     if (!canvasElement) {
-         console.log("Canvas 'progressionChart' non trouvé.");
-         return;
+         console.log("Canvas 'progressionChart' non trouvé sur cette page.");
+         return; // Ne rien faire si le canvas n'est pas là
     }
+    // Vérifier si Chart.js est chargé
     if (typeof Chart === 'undefined') {
-        console.error("Chart.js n'est pas chargé.");
+        console.error("Chart.js n'est pas chargé. Assurez-vous d'inclure le script dans le HTML.");
         return;
     }
     const ctx = canvasElement.getContext('2d');
@@ -316,48 +324,57 @@ function renderProgressionChart(gamesData) {
         return;
     }
 
-    // Préparer les données
-    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
-    const kdaData = gamesData.map(game => {
+    // Trier les parties par date (du plus ancien au plus récent) pour le graphique
+    const sortedGames = [...gamesData].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
+
+    // Préparer les données pour Chart.js
+    const labels = sortedGames.map((_, index) => `Partie ${index + 1}`);
+    const kdaData = sortedGames.map(game => {
         const kills = game.kills || 0;
         const assists = game.assists || 0;
-        const deaths = Math.max(1, game.deaths || 1);
-        return parseFloat(((kills + assists) / deaths).toFixed(2));
+        const deaths = Math.max(1, game.deaths || 1); // Évite division par zéro
+        return parseFloat(((kills + assists) / deaths).toFixed(2)); // Assure que c'est un nombre
     });
 
-    // Détruire l'ancien graphique si existant
+    // Détruire l'ancien graphique s'il existe
     if (progressionChartInstance) {
         progressionChartInstance.destroy();
-        progressionChartInstance = null;
+        progressionChartInstance = null; // Réinitialiser la variable
     }
 
-    // Configuration des couleurs et options pour thème sombre
+    // Couleurs pour le thème sombre
     const gridColor = 'rgba(255, 255, 255, 0.1)';
-    const labelColor = '#e2e8f0';
+    const labelColor = '#e2e8f0'; // light-text
     const pointColor = '#e62429'; // marvel-red
-    const lineColor = 'rgba(229, 36, 41, 0.7)';
+    const lineColor = 'rgba(229, 36, 41, 0.7)'; // marvel-red avec transparence
 
-    // Créer le graphique
+    // Créer le nouveau graphique
     try {
         progressionChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'KDA par Partie', data: kdaData,
-                    borderColor: lineColor, backgroundColor: pointColor,
-                    pointBackgroundColor: pointColor, pointBorderColor: pointColor,
-                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
+                    label: 'KDA par Partie',
+                    data: kdaData,
+                    borderColor: lineColor,
+                    backgroundColor: pointColor,
+                    pointBackgroundColor: pointColor,
+                    pointBorderColor: pointColor,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: pointColor,
                     tension: 0.1
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: true, labels: { color: labelColor } },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff',
-                        bodyColor: '#fff', borderColor: gridColor, borderWidth: 1
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff', bodyColor: '#fff',
+                        borderColor: gridColor, borderWidth: 1
                     }
                 },
                 scales: {
@@ -378,33 +395,42 @@ function renderProgressionChart(gamesData) {
  * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderHeroStatsTable(gamesData) {
-    const heroStats = {};
+    const heroStats = {}; // { heroName: { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 }, ... }
     const tableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-    if (!tableBody) return;
+    if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
 
-    // 1. Agréger les données
+    // 1. Agréger les données par héros
     gamesData.forEach(game => {
         const heroName = game.heroes?.name;
-        if (!heroName) return;
-        if (!heroStats[heroName]) heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
+        if (!heroName) return; // Ignorer si pas de nom de héros
+
+        if (!heroStats[heroName]) {
+            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
+        }
+
         heroStats[heroName].played++;
-        if (game.result === 'win') heroStats[heroName].wins++;
+        if (game.result === 'win') {
+            heroStats[heroName].wins++;
+        }
         heroStats[heroName].kills += game.kills || 0;
         heroStats[heroName].deaths += game.deaths || 0;
         heroStats[heroName].assists += game.assists || 0;
     });
 
-    // 2. Préparer pour affichage
+    // 2. Préparer les données pour l'affichage (calculer WR et KDA)
     const displayData = Object.entries(heroStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
-        const deathsForKda = Math.max(1, stats.deaths);
+        const deathsForKda = Math.max(1, stats.deaths); // Évite division par zéro
         const kda = ((stats.kills + stats.assists) / deathsForKda).toFixed(2);
         return { name, played: stats.played, winRate, kda };
     });
-    displayData.sort((a, b) => b.played - a.played); // Trier
 
-    // 3. Afficher
-    tableBody.innerHTML = '';
+    // Optionnel: Trier les données (par ex: par nombre de parties jouées)
+    displayData.sort((a, b) => b.played - a.played);
+
+    // 3. Afficher dans le tableau HTML
+    tableBody.innerHTML = ''; // Vider le contenu précédent
+
     if (displayData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>';
     } else {
@@ -416,7 +442,8 @@ function renderHeroStatsTable(gamesData) {
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.played}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass}">${hero.winRate}%</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.kda}</td>
-                </tr>`;
+                </tr>
+            `;
             tableBody.innerHTML += row;
         });
     }
@@ -427,28 +454,36 @@ function renderHeroStatsTable(gamesData) {
  * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderMapStatsTable(gamesData) {
-    const mapStats = {};
+    const mapStats = {}; // { mapName: { played: 0, wins: 0 }, ... }
     const tableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-     if (!tableBody) return;
+     if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
 
-    // 1. Agréger
+    // 1. Agréger les données par map
     gamesData.forEach(game => {
         const mapName = game.maps?.name;
-        if (!mapName) return;
-        if (!mapStats[mapName]) mapStats[mapName] = { played: 0, wins: 0 };
+        if (!mapName) return; // Ignorer si pas de nom de map
+
+        if (!mapStats[mapName]) {
+            mapStats[mapName] = { played: 0, wins: 0 };
+        }
+
         mapStats[mapName].played++;
-        if (game.result === 'win') mapStats[mapName].wins++;
+        if (game.result === 'win') {
+            mapStats[mapName].wins++;
+        }
     });
 
-    // 2. Préparer
+    // 2. Préparer les données pour l'affichage (calculer WR)
     const displayData = Object.entries(mapStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
         return { name, played: stats.played, winRate };
     });
-    displayData.sort((a, b) => b.played - a.played); // Trier
 
-    // 3. Afficher
-    tableBody.innerHTML = '';
+    // Optionnel: Trier les données
+    displayData.sort((a, b) => b.played - a.played); // Trier par parties jouées
+
+    // 3. Afficher dans le tableau HTML
+    tableBody.innerHTML = ''; // Vider le contenu précédent
     if (displayData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée par map disponible.</td></tr>';
     } else {
@@ -483,6 +518,7 @@ async function fetchAndDisplayUserStats() {
         // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
+            // Sélectionner toutes les colonnes, y compris les nouvelles
             .select(`*, heroes ( name ), maps ( name )`) // Jointures essentielles
             .eq('user_id', userId)
             .order('played_at', { ascending: false });
@@ -544,7 +580,7 @@ async function fetchAndDisplayUserStats() {
         // --- Génération du Graphique ---
         // Note: renderProgressionChart a besoin des données triées ASC (plus ancien d'abord)
         if (games.length > 0) {
-            renderProgressionChart(games); // La fonction inverse elle-même l'ordre maintenant
+            renderProgressionChart(games); // La fonction inverse elle-même l'ordre
         } else {
              // Effacer le graphique si pas/plus de données
              const chartCanvas = document.getElementById('progressionChart');
@@ -619,7 +655,7 @@ async function updateUserUI(user) {
         // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
          if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
              populateDropdowns();
-             fetchAndDisplayUserStats();
+             fetchAndDisplayUserStats(); // Charger stats ET graphique ET tables
         }
 
     } else {
@@ -690,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     _supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth State Change Event:', event, session);
         // Mettre à jour l'UI pour refléter le nouvel état
-        // La redirection n'est généralement pas nécessaire ici, sauf cas spécifiques
+        // La redirection initiale gère le chargement de page.
         updateUserUI(session?.user ?? null);
     });
 
