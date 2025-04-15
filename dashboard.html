@@ -31,7 +31,7 @@
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
         /* Mettez ici la couleur de texte souhaitée (noir ou gris clair) */
-        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; }
+        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; } /* text-black ou text-gray-100 */
         .form-label-dash { @apply block mb-1 text-xs font-medium text-gray-300; }
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
@@ -86,8 +86,8 @@
                 <form id="game-entry-form" action="#" method="POST">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
                       <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required></select> </div>
-                        <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required></select> </div>
+                        <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
+                        <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
                       </div>
                       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                         <div> <label for="kills" class="form-label-dash">Kills</label> <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required> </div>
