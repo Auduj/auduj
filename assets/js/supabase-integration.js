@@ -13,12 +13,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let _supabase; // Variable pour le client Supabase
 
 // Vérification simple que les clés sont définies (CORRIGÉ)
-if (!SUPABASE_URL || SUPABASE_URL === 'https://mbkiwpsbprcqhyafyifl.supabase.co' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE') {
+if (!SUPABASE_URL || SUPABASE_URL === 'VOTRE_SUPABASE_URL' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'VOTRE_SUPABASE_ANON_KEY') {
     console.error("Erreur: Veuillez définir SUPABASE_URL et SUPABASE_ANON_KEY dans supabase-integration.js");
-    // Pourrait afficher un message à l'utilisateur ici ou désactiver les fonctionnalités
+    // Vous pouvez ajouter ici un 'return;' ou une autre logique pour arrêter si les clés manquent vraiment.
 } else {
     // Initialisation du client Supabase
-    const { createClient } = supabase; // Accède à la fonction depuis le SDK global
+    // Assurez-vous que cette partie est bien dans le 'else' ou après le bloc 'if' corrigé
+    const { createClient } = supabase;
     _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('Supabase Client Initialized');
 }
