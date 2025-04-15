@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Accédez à votre espace personnel Auduj pour saisir vos parties Marvel Rivals, consulter vos statistiques détaillées et analyser votre progression.">
+    <title>Tableau de Bord - Auduj | Suivi Stats Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée (Copier depuis index.html)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                        'input-bg': '#4a5568',
+                        'win': '#48bb78', // Vert pour victoire
+                        'loss': '#f56565', // Rouge pour défaite
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
+        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-input-bg border border-gray-600 text-light-text placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; }
+        .form-label-dash { @apply block mb-1 text-xs font-medium text-gray-300; }
+        .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
+        .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
+        .stat-label { @apply text-sm text-gray-400; }
+        .tab-button { @apply px-4 py-2 rounded-t-lg font-semibold transition duration-300; }
+        .tab-button.active { @apply bg-card-bg text-marvel-yellow; }
+        .tab-button:not(.active) { @apply text-gray-400 hover:bg-gray-700 hover:text-light-text; }
+        .tab-content { @apply p-4 bg-card-bg rounded-b-lg rounded-tr-lg; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
+                {/* */}
+                <div id="user-info" class="flex items-center space-x-4">
+                    <span id="user-greeting" class="text-sm text-gray-300"></span>
+                    <button id="logout-button" class="btn-logout hidden">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                    </button>
+                </div>
+                 {/* */}
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
+            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
+            {/* */}
+            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Connexion</a>
+            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400"></span>
+            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-16">
+
+        {/* */}
+        <section id="auth-section" class="text-center bg-card-bg p-10 rounded-lg shadow-lg hidden">
+             <h1 class="text-3xl font-heading mb-4 text-marvel-yellow">Accès au Tableau de Bord</h1>
+             <p class="text-gray-300 mb-8">Veuillez vous connecter ou créer un compte pour accéder à vos statistiques personnalisées.</p>
+             <div class="space-x-4">
+                 <a href="login.html" class="btn-marvel btn-blue text-lg">
+                     <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter
+                 </a>
+                 <a href="signup.html" class="btn-marvel btn-red text-lg">
+                     <i class="fas fa-user-plus mr-2"></i>Créer un Compte
+                 </a>
+             </div>
+        </section>
+
+        {/* */}
+        <section id="dashboard-content" class="hidden">
+            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+            <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
+
+            {/* */}
+            <section id="saisie-partie" class="mb-12 bg-card-bg p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
+                <form id="game-entry-form" action="#" method="POST">
+                     <div id="entry-feedback" class="mb-4 text-center hidden"></div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+                        <div>
+                            <label for="hero" class="form-label-dash">Héros Joué</label>
+                            <select id="hero" name="hero" class="form-input-dash" required>
+                                <option value="">Chargement...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="map" class="form-label-dash">Map</label>
+                            <select id="map" name="map" class="form-input-dash" required>
+                                 <option value="">Chargement...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="kills" class="form-label-dash">Kills</label>
+                            <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required>
+                        </div>
+                        <div>
+                            <label for="deaths" class="form-label-dash">Deaths</label>
+                            <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required>
+                        </div>
+                        <div>
+                            <label for="assists" class="form-label-dash">Assists</label>
+                            <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required>
+                        </div>
+                         <div>
+                            <label for="objective_score" class="form-label-dash">Score Objectif</label>
+                            <input type="number" id="objective_score" name="objective_score" min="0" class="form-input-dash" placeholder="0">
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 items-end">
+                        <div>
+                            <label for="result" class="form-label-dash">Résultat</label>
+                            <select id="result" name="result" class="form-input-dash" required>
+                                <option value="">Choisir...</option>
+                                <option value="win" class="text-win">Victoire</option>
+                                <option value="loss" class="text-loss">Défaite</option>
+                                <option value="draw">Égalité</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="notes" class="form-label-dash">Notes (Optionnel)</label>
+                            <input type="text" id="notes" name="notes" class="form-input-dash" placeholder="Ex: Bon focus sur healer adverse">
+                        </div>
+                        <div class="text-right">
+                             <button type="submit" class="btn-marvel btn-red w-full">
+                                <i class="fas fa-save mr-1"></i> Enregistrer
+                            </button>
+                        </div>
+                     </div>
+                </form>
+            </section>
+
+            {/* */}
+            <section class="mb-12">
+                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-chart-bar mr-2"></i>Aperçu Global</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stat-card">
+                        <div id="stat-kda" class="stat-value">-.--</div>
+                        <div class="stat-label">KDA Global</div>
+                    </div>
+                     <div class="stat-card">
+                        <div id="stat-winrate" class="stat-value">--%</div>
+                        <div class="stat-label">Taux de Victoire</div>
+                    </div>
+                     <div class="stat-card">
+                        <div id="stat-total-games" class="stat-value">0</div>
+                        <div class="stat-label">Parties Jouées</div>
+                    </div>
+                     <div class="stat-card">
+                        {/* */}
+                        <div id="stat-main-hero" class="stat-value text-xl truncate" title="Héros Principal">N/A</div>
+                        <div class="stat-label">Héros Principal</div>
+                     </div>
+                </div>
+            </section>
+
+            {/* */}
+            <section>
+                 <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-search-plus mr-2"></i>Analyses Détaillées</h2>
+                 <div class="mb-4 border-b border-gray-700">
+                     <nav class="-mb-px flex space-x-1" aria-label="Tabs">
+                         <button class="tab-button active" data-tab="progression">Progression</button>
+                         <button class="tab-button" data-tab="par-heros">Par Héros</button>
+                         <button class="tab-button" data-tab="par-map">Par Map</button>
+                         <button class="tab-button" data-tab="historique">Historique Parties</button>
+                     </nav>
+                 </div>
+                 <div>
+                     <div class="tab-content" data-tab-content="progression">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA & Winrate)</h3>
+                         <div class="bg-input-bg p-4 rounded h-64 flex items-center justify-center text-gray-400">
+                             [Placeholder pour Graphique - Intégration future avec Chart.js]
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="par-heros">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3>
+                         <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    {/* */}
+                                    <tr><td colspan="4" class="text-center text-gray-500 py-4">Chargement...</td></tr>
+                                </tbody>
+                            </table>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="par-map">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Map</h3>
+                         <div class="overflow-x-auto">
+                             <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th>
+                                    </tr>
+                                </thead>
+                                 <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    {/* */}
+                                     <tr><td colspan="3" class="text-center text-gray-500 py-4">Chargement...</td></tr>
+                                </tbody>
+                             </table>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="historique">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Historique des Parties</h3>
+                         <div class="overflow-x-auto">
+                             <table id="history-table" class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th>
+                                    </tr>
+                                </thead>
+                                 <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    {/* */}
+                                     <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr>
+                                </tbody>
+                             </table>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+
+            {/* */}
+            {/* <div class="text-center space-y-4 md:space-y-0 md:space-x-4 mt-16"> ... </div> */}
+
+        </section> {/* */}
+
+    </main>
+
+    {/* */}
+     <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+        {/* ... (Contenu du footer comme dans index.html) ... */}
+         <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            {/* ... autres liens ... */}
+         </div>
+    </footer>
+
+    {/* */}
+    <script src="assets/js/script.js"></script> {/* Menu mobile, etc. */}
+    {/* */}
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    {/* */}
+    <script src="assets/js/supabase-integration.js"></script>
+
+    {/* */}
+    <script>
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                tabButtons.forEach(btn => btn.classList.remove('active', 'bg-card-bg', 'text-marvel-yellow'));
+                button.classList.add('active', 'bg-card-bg', 'text-marvel-yellow');
+                tabContents.forEach(content => {
+                    if (content.getAttribute('data-tab-content') === tabName) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // Logique pour afficher/masquer les éléments d'auth mobile (simplifié, peut être amélioré dans supabase-integration.js)
+        const mobileLogoutButton = document.getElementById('mobile-logout-button');
+        const mobileLoginLink = document.getElementById('mobile-login-link');
+        const mobileUserGreeting = document.getElementById('mobile-user-greeting');
+        const mainLogoutButton = document.getElementById('logout-button'); // Pour synchroniser l'état
+
+        if (mobileLogoutButton && mainLogoutButton) {
+             mobileLogoutButton.addEventListener('click', () => {
+                 mainLogoutButton.click(); // Déclencher le logout principal
+             });
+        }
+
+         // Le script supabase-integration.js devrait maintenant gérer la visibilité
+         // de #auth-section, #dashboard-content, #user-info, #logout-button, #login-button-header
+         // et potentiellement mettre à jour les éléments mobiles aussi.
+         // Assurez-vous que la fonction updateUserUI dans supabase-integration.js
+         // gère correctement l'affichage/masquage de ces éléments.
+         // Exemple d'ajout dans updateUserUI pour les éléments mobiles:
+         /*
+         function updateUserUI(user) {
+             // ... (logique existante pour desktop) ...
+
+             const mobileLogout = document.getElementById('mobile-logout-button');
+             const mobileLogin = document.getElementById('mobile-login-link');
+             const mobileGreeting = document.getElementById('mobile-user-greeting');
+             const desktopLogin = document.getElementById('login-button-header');
+             const userInfo = document.getElementById('user-info');
+
+
+             if (user) {
+                 if (mobileLogin) mobileLogin.style.display = 'none';
+                 if (mobileLogout) mobileLogout.style.display = 'block';
+                 if (mobileGreeting) mobileGreeting.textContent = profile ? profile.username : user.email; // Mettre à jour avec le nom/email
+                 if (desktopLogin) desktopLogin.style.display = 'none';
+                 if (userInfo) userInfo.style.display = 'flex'; // Assurez-vous que user-info est flex
+
+             } else {
+                 if (mobileLogin) mobileLogin.style.display = 'block';
+                 if (mobileLogout) mobileLogout.style.display = 'none';
+                 if (mobileGreeting) mobileGreeting.textContent = '';
+                 if (desktopLogin) desktopLogin.style.display = 'inline-block'; // Ou 'block'
+                 if (userInfo) userInfo.style.display = 'none';
+             }
+         }
+         */
+
+    </script>
+</body>
+</html>

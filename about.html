@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apprenez-en plus sur Auduj, notre mission d'aider les joueurs de Marvel Rivals à progresser grâce à un suivi de performance précis et personnalisé.">
+    <title>À Propos d'Auduj - Notre Mission pour les Joueurs Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <a href="about.html" class="text-marvel-yellow font-semibold transition duration-300">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
+                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="about.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">À Propos</a>
+            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
+            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        <h1 class="text-4xl md:text-6xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Auduj : Créé par des Joueurs, pour les Joueurs de Marvel Rivals</h1>
+        <p class="text-lg text-center mb-16 max-w-3xl mx-auto text-gray-300">Notre passion pour Marvel Rivals et notre désir d'aider la communauté à s'améliorer sont au cœur de la création d'Auduj.</p>
+
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div class="bg-card-bg p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-heading mb-6 text-marvel-yellow"><i class="fas fa-bullseye mr-3 text-marvel-red"></i>Notre Mission</h2>
+                <p class="text-lg mb-4 text-gray-300">Chez Auduj, nous croyons que chaque joueur de Marvel Rivals mérite des outils efficaces pour comprendre et améliorer son jeu. Face au manque initial d'outils de suivi détaillés pour ce nouveau titre prometteur, nous avons décidé de créer une solution : une plateforme centrée sur le <strong class="text-white">suivi manuel précis</strong>.</p>
+                <p class="text-lg text-gray-300">Notre objectif est simple : vous donner le <strong class="text-white">contrôle total sur vos données</strong> et vous fournir des <strong class="text-white">analyses claires et pertinentes</strong> pour que vous puissiez identifier vos forces, corriger vos faiblesses et, au final, <strong class="text-marvel-yellow">grimper dans le classement</strong> plus rapidement.</p>
+            </div>
+
+            <div class="text-center">
+                 <img src="https://placehold.co/500x350/1a202c/e2e8f0?text=Illustration+Communaut%C3%A9+Auduj" alt="Illustration de la communauté Auduj" class="rounded-lg shadow-md mx-auto mb-6" onerror="this.src='https://placehold.co/500x350/1a202c/e2e8f0?text=Erreur+Image';">
+                 <h2 class="text-3xl font-heading mb-4 text-marvel-yellow">Une Équipe de Passionnés</h2>
+                 <p class="text-lg text-gray-300">Auduj est développé et maintenu par une petite équipe de joueurs invétérés de Marvel Rivals, tout comme vous. Nous comprenons les défis et les joies de la compétition et nous nous engageons à fournir un outil qui répond réellement aux besoins de la communauté.</p>
+            </div>
+        </div>
+
+        <section class="mt-16 bg-gray-800 p-8 rounded-lg shadow-inner">
+            <h2 class="text-3xl font-heading text-center mb-6 text-marvel-blue"><i class="fas fa-rocket mr-3"></i>Vision & Futur</h2>
+            <p class="text-lg mb-4 text-gray-300">Auduj n'est qu'au début de son aventure ! Nous prévoyons d'ajouter régulièrement de nouvelles fonctionnalités basées sur les retours de la communauté :</p>
+            <ul class="list-disc list-inside space-y-2 text-gray-300 mb-6 pl-4">
+                <li>Analyses plus poussées par héros et par map.</li>
+                <li>Comparaison de performances avec des objectifs personnalisés.</li>
+                <li>Fonctionnalités sociales (partage de profils, groupes - optionnel).</li>
+                <li>Intégration potentielle avec une API officielle si elle devient disponible.</li>
+                <li>Amélioration continue de l'ergonomie de saisie.</li>
+            </ul>
+            <p class="text-lg text-gray-300">Votre feedback est essentiel pour nous aider à construire le meilleur outil de suivi pour Marvel Rivals !</p>
+        </section>
+
+        <div class="text-center space-y-4 md:space-y-0 md:space-x-4 mt-16">
+            <a href="https://discord.gg/placeholder" target="_blank" class="btn-marvel bg-indigo-600 hover:bg-indigo-700 text-lg"> <i class="fab fa-discord mr-2"></i>Rejoignez la Communauté Auduj
+            </a>
+            <a href="contact.html" class="btn-marvel btn-red text-lg">
+                <i class="fas fa-envelope mr-2"></i>Contactez-Nous
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            <div class="space-x-4 mb-4">
+                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
+                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
+                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
+            </div>
+            <div class="space-x-4">
+                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
+                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
+            </div>
+             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

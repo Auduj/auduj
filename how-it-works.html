@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Découvrez le processus simple d'Auduj pour saisir manuellement vos stats Marvel Rivals et obtenir des analyses détaillées pour progresser.">
+    <title>Comment Ça Marche ? - Auduj | Suivi Stats Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        /* Style pour les étapes */
+        .step-icon { @apply bg-marvel-blue text-white rounded-full h-12 w-12 flex items-center justify-center text-xl font-bold mb-4 mx-auto; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="text-marvel-yellow font-semibold transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
+                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
+            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
+            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        <h1 class="text-4xl md:text-6xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Comment Auduj Simplifie le Suivi de Vos Performances Marvel Rivals</h1>
+        <p class="text-lg text-center mb-16 max-w-3xl mx-auto text-gray-300">Suivez ces étapes simples pour transformer vos données de jeu brutes en analyses puissantes et prendre une longueur d'avance.</p>
+
+        <div class="grid md:grid-cols-4 gap-8 text-center mb-16">
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg">
+                <div class="step-icon">1</div>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Inscription Rapide</h2>
+                <p class="text-gray-400">Créez votre compte Auduj gratuitement en quelques secondes. Votre tableau de bord personnel vous attend !</p>
+                 <i class="fas fa-user-plus fa-2x text-marvel-blue mt-4"></i>
+            </div>
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg">
+                <div class="step-icon">2</div>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Saisie Manuelle Facile</h2>
+                <p class="text-gray-400">Après chaque partie, entrez vos statistiques clés (Héros, KDA, Map, Victoire/Défaite...) via notre formulaire optimisé.</p>
+                 <i class="fas fa-keyboard fa-2x text-marvel-blue mt-4"></i>
+            </div>
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg">
+                <div class="step-icon">3</div>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Analyses Instantanées</h2>
+                <p class="text-gray-400">Auduj traite vos données et génère des graphiques et des analyses claires : KDA, taux de victoire, performance par héros...</p>
+                 <i class="fas fa-chart-bar fa-2x text-marvel-blue mt-4"></i>
+            </div>
+             <div class="bg-card-bg p-6 rounded-lg shadow-lg">
+                <div class="step-icon">4</div>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Suivi & Progression</h2>
+                <p class="text-gray-400">Visualisez votre évolution dans le temps, identifiez vos points forts et vos axes d'amélioration pour ajuster votre stratégie.</p>
+                 <i class="fas fa-bullseye fa-2x text-marvel-blue mt-4"></i>
+            </div>
+        </div>
+
+        <section class="mb-16 bg-gray-800 p-8 rounded-lg shadow-inner">
+            <h2 class="text-3xl font-heading text-center mb-6 text-marvel-yellow">Le Pouvoir de la Saisie Manuelle</h2>
+            <p class="text-lg mb-4 text-gray-300">Contrairement aux trackers automatiques (souvent indisponibles ou imprécis au lancement d'un jeu), la saisie manuelle vous garantit :</p>
+            <ul class="list-disc list-inside space-y-2 text-gray-300 mb-6 pl-4">
+                <li><strong class="text-marvel-red">Fiabilité Absolue :</strong> Vous contrôlez les données entrées. Pas d'erreurs d'API ou de statistiques manquantes.</li>
+                <li><strong class="text-marvel-red">Contexte Personnel :</strong> Ajoutez des notes sur vos parties (ex: "mauvais matchmaking", "testé nouvelle strat") pour une analyse plus riche.</li>
+                <li><strong class="text-marvel-red">Engagement Actif :</strong> Le simple fait de noter vos scores vous aide à mieux mémoriser et comprendre vos performances.</li>
+                <li><strong class="text-marvel-red">Indépendance Totale :</strong> Fonctionne dès le premier jour du jeu, sans attendre une API officielle.</li>
+            </ul>
+            <p class="text-lg text-gray-300">Auduj rend ce processus <strong class="text-marvel-yellow">rapide et agréable</strong> grâce à une interface pensée pour les joueurs.</p>
+        </section>
+
+        <section class="mb-16">
+             <h2 class="text-3xl font-heading text-center mb-10 text-marvel-yellow">Une Saisie Optimisée pour Vous</h2>
+             <div class="grid md:grid-cols-2 gap-8 items-center">
+                 <div>
+                     <p class="text-lg mb-4 text-gray-300">Nous savons que votre temps est précieux. C'est pourquoi le formulaire de saisie d'Auduj est conçu pour être :</p>
+                     <ul class="space-y-3 text-gray-300">
+                         <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span><strong class="text-white">Rapide :</strong> Moins d'une minute par partie.</span></li>
+                         <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span><strong class="text-white">Intuitif :</strong> Menus déroulants pré-remplis (Héros, Maps...).</span></li>
+                         <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span><strong class="text-white">Mobile-Friendly :</strong> Saisissez vos stats où que vous soyez, depuis votre téléphone.</span></li>
+                         <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span><strong class="text-white">Intelligent :</strong> Options "partie similaire" pour accélérer la saisie (fonctionnalité future).</span></li>
+                         <li class="flex items-start"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span><strong class="text-white">Feedback Visuel :</strong> Confirmation claire après chaque soumission.</span></li>
+                     </ul>
+                 </div>
+                 <div class="bg-card-bg p-6 rounded-lg shadow-lg">
+                     <p class="text-center text-gray-400">[Image/Mockup du formulaire de saisie Auduj, montrant les menus déroulants et la clarté de l'interface]</p>
+                     <img src="https://placehold.co/600x400/2d3748/e2e8f0?text=Mockup+Formulaire+Saisie" alt="Mockup du formulaire de saisie Auduj" class="mt-4 rounded shadow-md mx-auto" onerror="this.src='https://placehold.co/600x400/2d3748/e2e8f0?text=Erreur+Image';">
+                 </div>
+             </div>
+        </section>
+
+        <div class="text-center space-y-4 md:space-y-0 md:space-x-4 mt-16">
+            <a href="dashboard.html" class="btn-marvel btn-red text-lg">
+                <i class="fas fa-user-plus mr-2"></i>Créer Votre Compte Gratuitement
+            </a>
+            <a href="features.html" class="btn-marvel btn-blue text-lg">
+                Voir les Fonctionnalités en Détail <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            <div class="space-x-4 mb-4">
+                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
+                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
+                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
+            </div>
+            <div class="space-x-4">
+                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
+                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
+            </div>
+             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

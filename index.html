@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Auduj : La plateforme de suivi manuel pour analyser vos stats et améliorer votre niveau sur Marvel Rivals. Prenez le contrôle de votre progression !">
+    <title>Auduj - Suivi Performance et Stats Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée (optionnel, pour les polices et couleurs)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429', // Rouge Marvel typique
+                        'marvel-blue': '#007bff', // Bleu vif
+                        'marvel-yellow': '#ffc107', // Jaune doré
+                        'dark-bg': '#1a202c',    // Fond sombre
+                        'light-text': '#e2e8f0', // Texte clair
+                        'card-bg': '#2d3748',    // Fond pour cartes/sections
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Style pour la police Bangers */
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        /* Style pour la police Inter */
+        body { font-family: 'Inter', sans-serif; }
+        /* Style pour les boutons avec effet BD */
+        .btn-marvel {
+            @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1;
+        }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
+                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+            <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
+            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
+            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="bg-gradient-to-r from-marvel-red via-red-800 to-dark-bg text-white py-20 md:py-32">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-5xl md:text-7xl font-heading mb-4 drop-shadow-lg">Suivez Votre Progression sur Marvel Rivals avec Auduj</h1>
+                <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto">La plateforme N°1 pour la saisie manuelle et l'analyse de vos statistiques. Prenez enfin le contrôle de votre montée en niveau !</p>
+                <div class="space-x-4">
+                    <a href="dashboard.html" class="btn-marvel btn-blue text-lg">
+                        <i class="fas fa-chart-line mr-2"></i>Commencez à Suivre Vos Parties
+                    </a>
+                    <a href="how-it-works.html" class="btn-marvel bg-marvel-yellow hover:bg-yellow-600 text-gray-900 text-lg">
+                        Découvrir Comment Ça Marche <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                 <div class="mt-12 text-center opacity-70">[Illustration dynamique style comics de héros Marvel Rivals en action]</div>
+            </div>
+        </section>
+
+        <section class="py-16 md:py-24 bg-dark-bg">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-heading text-center mb-12 text-marvel-yellow">Pourquoi Choisir le Suivi Manuel avec Auduj ?</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-card-bg p-6 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+                        <i class="fas fa-pencil-alt fa-3x text-marvel-red mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Précision Inégalée</h3>
+                        <p class="text-gray-400">Saisissez vous-même les détails de chaque partie pour une analyse basée sur des données fiables que vous contrôlez.</p>
+                    </div>
+                    <div class="bg-card-bg p-6 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+                        <i class="fas fa-brain fa-3x text-marvel-blue mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Compréhension Approfondie</h3>
+                        <p class="text-gray-400">Le suivi manuel vous force à réfléchir à vos parties, identifiant forces et faiblesses plus efficacement.</p>
+                    </div>
+                    <div class="bg-card-bg p-6 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+                        <i class="fas fa-chart-pie fa-3x text-marvel-yellow mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Analyses Personnalisées</h3>
+                        <p class="text-gray-400">Visualisez votre KDA, taux de victoire, performance par héros et bien plus, adapté à VOS données.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 md:py-24 bg-gray-800">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-heading mb-12 text-marvel-red">Simple. Rapide. Efficace.</h2>
+                <p class="text-lg mb-10 max-w-2xl mx-auto">Commencez à suivre vos performances en quelques minutes seulement.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8 mb-10">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user-plus fa-2x text-marvel-blue"></i>
+                        <span>1. Créez votre compte</span>
+                    </div>
+                    <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i>
+                    <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-keyboard fa-2x text-marvel-blue"></i>
+                        <span>2. Saisissez vos parties</span>
+                    </div>
+                     <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i>
+                     <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-chart-bar fa-2x text-marvel-blue"></i>
+                        <span>3. Analysez & Progressez !</span>
+                    </div>
+                </div>
+                <a href="how-it-works.html" class="btn-marvel btn-red">
+                    Voir le Guide Détaillé <i class="fas fa-book-open ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+         <section class="py-16 bg-marvel-blue text-center">
+             <div class="container mx-auto px-6">
+                <h2 class="text-3xl font-semibold mb-4 text-white">Prêt à Dominer sur Marvel Rivals ?</h2>
+                <p class="text-lg text-gray-200 mb-8">Rejoignez Auduj aujourd'hui et transformez vos données en victoires.</p>
+                <a href="dashboard.html" class="btn-marvel bg-marvel-yellow hover:bg-yellow-600 text-gray-900 text-lg">
+                    <i class="fas fa-rocket mr-2"></i> Créer Mon Compte Gratuitement
+                </a>
+             </div>
+         </section>
+
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            <div class="space-x-4 mb-4">
+                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
+                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
+                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
+            </div>
+            <div class="space-x-4">
+                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
+                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
+            </div>
+            <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

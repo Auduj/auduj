@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Connectez-vous à votre compte Auduj pour accéder à votre tableau de bord et suivre vos statistiques Marvel Rivals.">
+    <title>Connexion - Auduj | Suivi Stats Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée (Copier depuis index.html)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                        'input-bg': '#4a5568',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        .form-input { @apply w-full px-4 py-2 rounded-md bg-input-bg border border-gray-600 text-light-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-transparent; }
+        .form-label { @apply block mb-2 text-sm font-medium text-gray-300; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text flex flex-col min-h-screen">
+
+    <header class="bg-card-bg shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-center items-center">
+            <a href="index.html" class="text-4xl font-heading text-marvel-red">Auduj</a>
+        </nav>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-12 md:py-20 flex items-center justify-center">
+        <div class="max-w-md w-full bg-card-bg p-8 rounded-lg shadow-lg">
+            <h1 class="text-3xl font-heading text-center mb-6 text-marvel-yellow">Connexion</h1>
+
+            <form id="login-form" action="#" method="POST">
+                 <div id="form-feedback-login" class="mb-4 text-center text-red-500 text-sm hidden"></div> <div class="mb-4">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="votre.email@example.com" required autocomplete="email">
+                </div>
+
+                <div class="mb-6">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="********" required autocomplete="current-password">
+                    {/* */}
+                    {/* <a href="#" class="text-xs text-marvel-blue hover:underline mt-1 block text-right">Mot de passe oublié ?</a> */}
+                </div>
+
+                <div class="text-center mb-4">
+                    <button type="submit" class="btn-marvel btn-red w-full">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center text-sm text-gray-400">
+                Pas encore de compte ?
+                <a href="signup.html" class="font-medium text-marvel-blue hover:underline">Inscrivez-vous ici</a>
+            </p>
+        </div>
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-4 mt-8">
+        <div class="container mx-auto px-6 text-center text-sm">
+            &copy; 2025 Auduj - Tous droits réservés.
+             <a href="index.html" class="ml-4 hover:text-marvel-yellow">Retour à l'accueil</a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-integration.js"></script>
+    <script>
+        // Petit script pour afficher les erreurs de connexion dans le div dédié
+        const loginFormElem = document.getElementById('login-form');
+        const feedbackDivLogin = document.getElementById('form-feedback-login');
+
+        if (loginFormElem && feedbackDivLogin) {
+            // Remplacer la fonction alert dans handleLogin (si elle existe dans supabase-integration.js)
+            // ou ajouter un mécanisme pour afficher les erreurs ici.
+            // Pour l'instant, on suppose que supabase-integration.js utilise alert.
+            // On pourrait modifier supabase-integration.js pour qu'il cible ce div.
+            // Exemple de modification (à faire dans supabase-integration.js):
+            /*
+            async function handleLogin(email, password) {
+                const feedbackDiv = document.getElementById('form-feedback-login');
+                if(feedbackDiv) feedbackDiv.classList.add('hidden'); // Cacher ancien message
+                try { ... } catch (error) {
+                     console.error('Erreur lors de la connexion:', error.message);
+                     if(feedbackDiv) {
+                         feedbackDiv.textContent = `Erreur: ${error.message}`;
+                         feedbackDiv.classList.remove('hidden');
+                     } else {
+                         alert(`Erreur de connexion: ${error.message}`);
+                     }
+                }
+            }
+            */
+        }
+    </script>
+</body>
+</html>

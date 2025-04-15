@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explorez les outils d'analyse, les métriques suivies et la visualisation des statistiques offerts par Auduj pour optimiser votre jeu sur Marvel Rivals.">
+    <title>Fonctionnalités d'Auduj - Tracker Stats Marvel Rivals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        .feature-icon { @apply text-marvel-red text-4xl mb-4; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="text-marvel-yellow font-semibold transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
+                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
+            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
+            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        <h1 class="text-4xl md:text-6xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Fonctionnalités Clés d'Auduj pour Booster Votre Niveau sur Marvel Rivals</h1>
+        <p class="text-lg text-center mb-16 max-w-3xl mx-auto text-gray-300">Découvrez les outils conçus spécifiquement pour vous aider à analyser vos performances et à progresser efficacement.</p>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-tachometer-alt feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Tableau de Bord Centralisé</h2>
+                <p class="text-gray-400 flex-grow">Votre hub personnel pour visualiser rapidement vos statistiques clés, accéder à la saisie de parties et naviguer vers vos analyses détaillées.</p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Dashboard" alt="Mockup Tableau de Bord" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-keyboard feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Saisie Manuelle Ergonomique</h2>
+                <p class="text-gray-400 flex-grow">Un formulaire optimisé pour une saisie rapide et sans erreur : menus déroulants (héros, maps), champs numériques clairs, responsive design pour mobile.</p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Formulaire" alt="Mockup Formulaire Saisie" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-calculator feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Suivi des Métriques Clés</h2>
+                <p class="text-gray-400 flex-grow">Enregistrez et analysez les statistiques essentielles : KDA (Kills/Deaths/Assists), Taux de Victoire (Win Rate), Score d'Objectif, Héros joué, Map, etc.</p>
+                 <div class="mt-4 text-center text-gray-500">[Icônes représentant KDA, WinRate, etc.]</div>
+            </div>
+
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-chart-pie feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Visualisation des Données</h2>
+                <p class="text-gray-400 flex-grow">Des graphiques clairs et interactifs (courbes de progression, diagrammes circulaires, histogrammes) pour comprendre vos performances en un coup d'œil. <em class="text-sm text-gray-500">(Nécessite une implémentation backend/JS)</em></p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Graphiques" alt="Mockup Graphiques Stats" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-chart-line feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Analyse de Progression</h2>
+                <p class="text-gray-400 flex-grow">Suivez l'évolution de vos statistiques clés (KDA global, Win Rate) sur différentes périodes (jour, semaine, mois) pour mesurer concrètement votre amélioration.</p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Courbe+Progression" alt="Mockup Courbe Progression" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+            <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-filter feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Filtres & Analyses Détaillées</h2>
+                <p class="text-gray-400 flex-grow">Affinez vos analyses en filtrant par héros, par map, ou par période. Découvrez vos meilleurs héros, vos maps les plus difficiles, etc.</p>
+                 <div class="mt-4 text-center text-gray-500">[Icônes représentant filtres, héros, maps]</div>
+            </div>
+
+             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-book-open feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Section Guides & Astuces</h2>
+                <p class="text-gray-400 flex-grow">Accédez à des articles et guides pour mieux interpréter vos statistiques, découvrir des stratégies et progresser plus vite sur Marvel Rivals.</p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Blog" alt="Mockup Section Guides" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-mobile-alt feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Optimisé Mobile</h2>
+                <p class="text-gray-400 flex-grow">Consultez vos stats et saisissez vos parties facilement depuis votre smartphone ou tablette, où que vous soyez.</p>
+                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mobile+Friendly" alt="Mockup Mobile" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+            </div>
+
+             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-check-circle feature-icon text-green-500"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Feedback Visuel Instantané</h2>
+                <p class="text-gray-400 flex-grow">Recevez une confirmation claire et immédiate après chaque saisie de partie réussie, pour une expérience utilisateur fluide.</p>
+                 <div class="mt-4 text-center text-gray-500">[Animation/Icone de succès]</div>
+            </div>
+
+        </div>
+
+        <div class="text-center space-y-4 md:space-y-0 md:space-x-4 mt-16">
+            <a href="dashboard.html" class="btn-marvel btn-red text-lg">
+                <i class="fas fa-columns mr-2"></i>Accéder à Votre Tableau de Bord
+            </a>
+            <a href="dashboard.html#saisie-partie" class="btn-marvel btn-blue text-lg"> <i class="fas fa-pencil-alt mr-2"></i>Commencer la Saisie Manuelle
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            <div class="space-x-4 mb-4">
+                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
+                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
+                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
+                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
+            </div>
+            <div class="space-x-4">
+                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
+                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
+            </div>
+             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
