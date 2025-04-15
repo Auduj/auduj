@@ -225,11 +225,12 @@
                                         <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th>
                                         <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Dégâts Moy.</th>
                                         <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Soins Moy.</th>
+                                        <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Bloc. Moy.</th>
+                                        <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Précision Moy.</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-card-bg divide-y divide-gray-700">
-                                    <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement...</td></tr>
-                                </tbody>
+                                    <tr><td colspan="8" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody>
                             </table>
                          </div>
                      </div>
@@ -302,9 +303,20 @@
     <script>
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
+        const gameDetailModalForTabs = document.getElementById('gameDetailModal'); // Renommer variable locale
+
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabName = button.getAttribute('data-tab');
+
+                // Fermer la modale si elle est active quand on change d'onglet
+                if (gameDetailModalForTabs && gameDetailModalForTabs.classList.contains('active')) {
+                    gameDetailModalForTabs.classList.add('opacity-0', 'pointer-events-none');
+                    gameDetailModalForTabs.classList.remove('active');
+                    console.log('Modal closed due to tab switch');
+                }
+
+                // Logique existante pour changer d'onglet
                 tabButtons.forEach(btn => btn.classList.remove('active', 'bg-card-bg', 'text-marvel-yellow'));
                 button.classList.add('active', 'bg-card-bg', 'text-marvel-yellow');
                 tabContents.forEach(content => {
@@ -319,4 +331,3 @@
     </script>
 </body>
 </html>
-

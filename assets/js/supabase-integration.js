@@ -385,12 +385,14 @@ function renderAccuracyChart(gamesData) {
     if (!ctx) { console.error("Ctx Précision non trouvé."); return; }
 
     const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
+    // Récupérer les données de précision, s'assurer que c'est un nombre
     const accuracyData = gamesData.map(game => parseFloat(game.accuracy) || 0);
 
     if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
 
     const gridColor = 'rgba(255, 255, 255, 0.1)'; const labelColor = '#e2e8f0';
-    const pointColor = '#007bff'; const lineColor = 'rgba(0, 123, 255, 0.7)';
+    const pointColor = '#007bff'; // marvel-blue
+    const lineColor = 'rgba(0, 123, 255, 0.7)'; // marvel-blue avec transparence
 
     try {
         accuracyChartInstance = new Chart(ctx, {
@@ -398,7 +400,8 @@ function renderAccuracyChart(gamesData) {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Précision (%) par Partie', data: accuracyData,
+                    label: 'Précision (%) par Partie',
+                    data: accuracyData,
                     borderColor: lineColor, backgroundColor: pointColor,
                     pointBackgroundColor: pointColor, pointBorderColor: pointColor,
                     pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
@@ -409,9 +412,9 @@ function renderAccuracyChart(gamesData) {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
                     legend: { display: true, labels: { color: labelColor } },
-                    tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y}%`; } } } },
+                    tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y}%`; } } } }, // Ajout % au tooltip
                 scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { color: labelColor, callback: function(value) { return value + '%'; } }, grid: { color: gridColor } },
+                    y: { beginAtZero: true, max: 100, ticks: { color: labelColor, callback: function(value) { return value + '%'; } }, grid: { color: gridColor } }, // Axe Y de 0 à 100%
                     x: { ticks: { color: labelColor }, grid: { color: gridColor } }
                 }
             }
@@ -452,7 +455,7 @@ function updateCharts() {
 // --- Fonctions pour les Tableaux d'Analyse Détaillée ---
 
 /**
- * Calcule et affiche les statistiques agrégées par héros, incluant dégâts/soins moyens.
+ * Calcule et affiche les statistiques agrégées par héros, incluant toutes les moyennes demandées.
  * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderHeroStatsTable(gamesData) {
@@ -465,7 +468,8 @@ function renderHeroStatsTable(gamesData) {
         const heroName = game.heroes?.name;
         if (!heroName) return;
         if (!heroStats[heroName]) {
-            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0, totalDamage: 0, totalHealing: 0 };
+            // Initialiser avec toutes les stats nécessaires aux moyennes
+            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0, totalDamage: 0, totalHealing: 0, totalBlocked: 0, totalAccuracy: 0.0 };
         }
         heroStats[heroName].played++;
         if (game.result === 'win') heroStats[heroName].wins++;
@@ -474,6 +478,8 @@ function renderHeroStatsTable(gamesData) {
         heroStats[heroName].assists += game.assists || 0;
         heroStats[heroName].totalDamage += game.damage_dealt || 0;
         heroStats[heroName].totalHealing += game.healing_done || 0;
+        heroStats[heroName].totalBlocked += game.damage_blocked || 0; // Agréger dégâts bloqués
+        heroStats[heroName].totalAccuracy += parseFloat(game.accuracy) || 0.0; // Agréger précision (convertir en nombre)
     });
 
     // 2. Préparer pour affichage
@@ -483,17 +489,22 @@ function renderHeroStatsTable(gamesData) {
         const kda = ((stats.kills + stats.assists) / deathsForKda).toFixed(2);
         const avgDamage = stats.played > 0 ? Math.round(stats.totalDamage / stats.played) : 0;
         const avgHealing = stats.played > 0 ? Math.round(stats.totalHealing / stats.played) : 0;
-        return { name, played: stats.played, winRate, kda, avgDamage, avgHealing };
+        // Calculer les nouvelles moyennes
+        const avgBlocked = stats.played > 0 ? Math.round(stats.totalBlocked / stats.played) : 0;
+        const avgAccuracy = stats.played > 0 ? parseFloat((stats.totalAccuracy / stats.played).toFixed(1)) : 0.0; // 1 décimale pour précision
+
+        return { name, played: stats.played, winRate, kda, avgDamage, avgHealing, avgBlocked, avgAccuracy }; // Ajouter nouvelles moyennes
     });
-    displayData.sort((a, b) => b.played - a.played);
+    displayData.sort((a, b) => b.played - a.played); // Trier
 
     // 3. Afficher
     tableBody.innerHTML = '';
     if (displayData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>'; // Colspan à 8
     } else {
         displayData.forEach(hero => {
             const winRateClass = hero.winRate >= 50 ? 'text-win' : 'text-loss';
+            // Ajouter les nouvelles cellules
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${hero.name}</td>
@@ -502,7 +513,8 @@ function renderHeroStatsTable(gamesData) {
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${hero.kda}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgDamage.toLocaleString('fr-FR')}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgHealing.toLocaleString('fr-FR')}</td>
-                </tr>`;
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgBlocked.toLocaleString('fr-FR')}</td> <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgAccuracy.toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1})}%</td> </tr>
+            `;
             tableBody.innerHTML += row;
         });
     }
@@ -561,7 +573,8 @@ function showGameDetails(game) {
 
     const formatStat = (value, decimals = 0, suffix = '') => {
         const num = Number(value);
-        return !isNaN(num) ? num.toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix : '--';
+        // Vérifie si la valeur est un nombre valide avant de formater
+        return !isNaN(num) && value !== null ? num.toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix : '--';
     };
 
     // Remplir les champs de la modale
@@ -604,9 +617,10 @@ async function fetchAndDisplayUserStats() {
     if (!dashboardContent || dashboardContent.classList.contains('hidden')) { return; }
 
     try {
+        // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
-            .select(`*, heroes ( id, name ), maps ( id, name )`) // Inclure ID héros/map
+            .select(`*, heroes ( id, name ), maps ( id, name )`) // Jointures essentielles
             .eq('user_id', userId)
             .order('played_at', { ascending: false });
 
@@ -615,16 +629,37 @@ async function fetchAndDisplayUserStats() {
         allUserGames = games; // Stocker globalement
 
         // --- Calculs et Affichage Stats Globales ---
-        const totalGames = allUserGames.length; /* ... autres calculs ... */
-        // ... (mise à jour des éléments #stat-kda, #stat-winrate, etc.) ...
+        const totalGames = allUserGames.length;
+        let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
+        const heroCounts = {};
+        allUserGames.forEach(game => {
+            totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
+            if (game.result === 'win') wins++;
+            if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
+        });
+        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+        const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
+        let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
+        for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
+
+        const kdaElement = document.getElementById('stat-kda');
+        const winRateElement = document.getElementById('stat-winrate');
+        const totalGamesElement = document.getElementById('stat-total-games');
+        const mainHeroElement = document.getElementById('stat-main-hero');
+        if (kdaElement) kdaElement.textContent = kda;
+        if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
+        if (totalGamesElement) totalGamesElement.textContent = totalGames;
+        if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
+
 
         // --- Affichage Historique (Ajout data-game-id) ---
         if (historyTableBody) {
             historyTableBody.innerHTML = '';
-            const gamesToShow = allUserGames.slice(0, 15);
+            const gamesToShow = allUserGames.slice(0, 15); // Utiliser allUserGames
             if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
             else { gamesToShow.forEach(game => {
                 const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
+                // Ajout de data-game-id="${game.id}" à la ligne <tr>
                 const row = `
                     <tr data-game-id="${game.id}">
                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
@@ -643,9 +678,15 @@ async function fetchAndDisplayUserStats() {
 
         // --- Calcul et Affichage Stats Détaillées ---
         if (allUserGames.length > 0) {
-            renderHeroStatsTable(allUserGames);
+            renderHeroStatsTable(allUserGames); // Appelle la version mise à jour
             renderMapStatsTable(allUserGames);
-        } else { /* ... vider tableaux ... */ }
+        } else {
+            // Vider les tableaux si aucune partie
+             const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
+             const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
+             if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>'; // Colspan 8
+             if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+        }
 
     } catch (error) {
         console.error("Erreur fetch/display stats:", error.message);
@@ -679,15 +720,21 @@ async function updateUserUI(user) {
 
         let displayName = user.email;
         if (_supabase) {
-            try { /* ... récupération profil ... */ } catch (profileError) { /* ... */ }
+            try {
+                const { data: profile, error } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
+                if (error && error.code !== 'PGRST116') throw error; // Ignorer '0 rows'
+                if (profile && profile.username) displayName = profile.username;
+            } catch (profileError) { console.error("Erreur récupération profil:", profileError.message); }
         }
         if (userGreetingSpan) userGreetingSpan.textContent = `Salut, ${displayName}!`;
         if (mobileGreeting) mobileGreeting.textContent = displayName;
 
+        // Afficher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.remove('hidden');
 
-        if (document.getElementById('dashboard-content')) {
-             populateDropdowns(); // Remplir dropdowns (y compris filtre)
+        // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
+         if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
+             populateDropdowns();
              // fetchAndDisplayUserStats sera appelé par checkAuthStateAndRedirect ou onAuthStateChange
              // On peut forcer un re-fetch ici si nécessaire, mais attention aux appels multiples
              // fetchAndDisplayUserStats(); // Déjà appelé par checkAuthState ou onAuthStateChange normalement
@@ -702,6 +749,7 @@ async function updateUserUI(user) {
         if (mobileLogout) mobileLogout.style.display = 'none';
         if (mobileGreeting) mobileGreeting.textContent = '';
 
+        // Cacher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.add('hidden');
 
          // Effacer les graphiques et vider données globales
@@ -709,7 +757,10 @@ async function updateUserUI(user) {
          if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
          allUserGames = []; // Vider les données stockées
          // Optionnel: Effacer le contenu des canvas
-         // ...
+         const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
+         const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
+         if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
+         if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
     }
 }
 
@@ -721,15 +772,15 @@ async function updateUserUI(user) {
 async function checkAuthStateAndRedirect() {
     if (!_supabase) { console.log("Supabase client not ready."); return; }
     const { data: { session }, error } = await _supabase.auth.getSession();
-    if (error) { console.error("Erreur getSession:", error); return; }
+    if (error) { console.error("Erreur getSession:", error); return; } // Ne pas rediriger en cas d'erreur
     const user = session?.user ?? null;
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html'; // Default to index
     console.log(`Checking auth state on page: ${currentPage}, user: ${user ? user.email : 'null'}`);
     const protectedPages = ['dashboard.html'];
     const publicOnlyPages = ['login.html', 'signup.html'];
     if (!user && protectedPages.includes(currentPage)) { window.location.replace('login.html'); }
     else if (user && publicOnlyPages.includes(currentPage)) { window.location.replace('dashboard.html'); }
-    else { updateUserUI(user); } // Met à jour l'UI si pas de redirection
+    else { updateUserUI(user); } // Mettre à jour l'UI si pas de redirection
 }
 
 
@@ -742,6 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Écouter les changements d'état futurs
     _supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth State Change Event:', event, session);
+        // Mettre à jour l'UI pour refléter le nouvel état
         updateUserUI(session?.user ?? null);
     });
 
@@ -749,9 +801,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Formulaires Auth
     const signupForm = document.getElementById('signup-form');
-    if (signupForm) { signupForm.addEventListener('submit', (e) => { /* ... signup logic ... */ }); }
+    if (signupForm) {
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = signupForm.email.value;
+            const password = signupForm.password.value;
+            const username = signupForm.username.value;
+            if (!username || username.length < 3) {
+                 const feedbackDiv = document.getElementById('form-feedback-signup');
+                 if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');}
+                 else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); }
+                 return;
+            }
+            handleSignUp(email, password, username);
+        });
+    }
     const loginForm = document.getElementById('login-form');
-    if (loginForm) { loginForm.addEventListener('submit', (e) => { /* ... login logic ... */ }); }
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = loginForm.email.value;
+            const password = loginForm.password.value;
+            handleLogin(email, password);
+        });
+    }
 
     // Boutons Logout
     if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
@@ -759,13 +832,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Formulaire Saisie Partie
     const gameEntryForm = document.getElementById('game-entry-form');
-    if (gameEntryForm) { gameEntryForm.addEventListener('submit', (e) => { e.preventDefault(); const formData = new FormData(gameEntryForm); const gameData = Object.fromEntries(formData.entries()); saveGameEntry(gameData); }); }
+    if (gameEntryForm) {
+        gameEntryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(gameEntryForm);
+            const gameData = Object.fromEntries(formData.entries());
+            saveGameEntry(gameData); // Appelle la fonction mise à jour
+        });
+    }
 
     // Filtre des graphiques
     if (chartHeroFilter) {
         chartHeroFilter.addEventListener('change', (e) => {
-            selectedChartHeroId = e.target.value;
-            updateCharts(); // Redessine les graphiques
+            selectedChartHeroId = e.target.value; // Met à jour la variable globale
+            updateCharts(); // Redessine les graphiques avec le filtre
         });
     }
 
@@ -775,9 +855,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = e.target.closest('tr[data-game-id]'); // Cherche la ligne parente avec l'attribut
             if (row) {
                 const gameId = parseInt(row.dataset.gameId, 10);
+                // Trouve les données complètes de la partie dans notre tableau global
                 const gameDetails = allUserGames.find(g => g.id === gameId);
-                if (gameDetails) { showGameDetails(gameDetails); }
-                else { console.error("Données partie non trouvées pour ID:", gameId); }
+                if (gameDetails) {
+                    showGameDetails(gameDetails); // Affiche la modale
+                } else {
+                    console.error("Données de la partie non trouvées pour l'ID:", gameId);
+                }
             }
         });
     }
@@ -788,10 +872,11 @@ document.addEventListener('DOMContentLoaded', () => {
             gameDetailModal.classList.add('opacity-0', 'pointer-events-none'); // Cache avec transition
             gameDetailModal.classList.remove('active');
         });
-        gameDetailModal.addEventListener('click', (e) => { // Clic sur le fond
-            if (e.target === gameDetailModal) {
-                gameDetailModal.classList.add('opacity-0', 'pointer-events-none');
-                gameDetailModal.classList.remove('active');
+        // Fermer aussi si on clique en dehors du contenu de la modale
+        gameDetailModal.addEventListener('click', (e) => {
+            if (e.target === gameDetailModal) { // Si le clic est sur le fond semi-transparent
+                 gameDetailModal.classList.add('opacity-0', 'pointer-events-none');
+                 gameDetailModal.classList.remove('active');
             }
         });
     }
