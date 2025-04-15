@@ -4,8 +4,8 @@
  * - Initialisation du client Supabase
  * - Authentification (Inscription, Connexion, Déconnexion) + Redirections
  * - Gestion des données du tableau de bord (Sauvegarde, Lecture)
- * - Affichage du graphique de progression avec Chart.js
- * - Calcul et affichage des stats par héros et par map
+ * - Affichage des graphiques de progression (KDA, Précision)
+ * - Calcul et affichage des stats étendues par héros et par map
  */
 
 // --- Configuration ---
@@ -14,7 +14,8 @@ const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co'; // Vos clés r�
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE'; // Vos clés réelles
 
 let _supabase; // Variable pour le client Supabase
-let progressionChartInstance = null; // Pour stocker l'instance du graphique
+let progressionChartInstance = null; // Instance pour le graphique KDA
+let accuracyChartInstance = null;    // Instance pour le graphique Précision
 
 // --- Initialisation et Vérification des Clés ---
 // Vérification simple que les clés sont définies (CORRIGÉ)
@@ -312,144 +313,133 @@ async function saveGameEntry(gameData) {
 
 /**
  * Crée ou met à jour le graphique de progression du KDA avec Chart.js.
- * @param {Array} gamesData - Tableau des parties récupérées depuis Supabase.
+ * @param {Array} gamesData - Tableau des parties (trié du plus ancien au plus récent).
  */
 function renderProgressionChart(gamesData) {
     const canvasElement = document.getElementById('progressionChart');
-    if (!canvasElement) {
-         console.log("Canvas 'progressionChart' non trouvé sur cette page.");
-         return; // Ne rien faire si le canvas n'est pas là
-    }
-    // Vérifier si Chart.js est chargé
-    if (typeof Chart === 'undefined') {
-        console.error("Chart.js n'est pas chargé. Assurez-vous d'inclure le script dans le HTML.");
-        return;
-    }
+    if (!canvasElement) { console.log("Canvas 'progressionChart' non trouvé."); return; }
+    if (typeof Chart === 'undefined') { console.error("Chart.js non chargé."); return; }
     const ctx = canvasElement.getContext('2d');
-    if (!ctx) {
-        console.error("Impossible d'obtenir le contexte 2D du canvas.");
-        return;
-    }
+    if (!ctx) { console.error("Impossible d'obtenir le contexte 2D du canvas KDA."); return; }
 
-    // Trier les parties par date (du plus ancien au plus récent) pour le graphique
-    const sortedGames = [...gamesData].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
-
-    // Préparer les données pour Chart.js
-    const labels = sortedGames.map((_, index) => `Partie ${index + 1}`);
-    const kdaData = sortedGames.map(game => {
-        const kills = game.kills || 0;
-        const assists = game.assists || 0;
-        const deaths = Math.max(1, game.deaths || 1); // Évite division par zéro
-        return parseFloat(((kills + assists) / deaths).toFixed(2)); // Assure que c'est un nombre
+    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
+    const kdaData = gamesData.map(game => {
+        const kills = game.kills || 0; const assists = game.assists || 0;
+        const deaths = Math.max(1, game.deaths || 1);
+        return parseFloat(((kills + assists) / deaths).toFixed(2));
     });
 
-    // Détruire l'ancien graphique s'il existe
-    if (progressionChartInstance) {
-        progressionChartInstance.destroy();
-        progressionChartInstance = null; // Réinitialiser la variable
-    }
+    if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
 
-    // Couleurs pour le thème sombre
-    const gridColor = 'rgba(255, 255, 255, 0.1)';
-    const labelColor = '#e2e8f0'; // light-text
-    const pointColor = '#e62429'; // marvel-red
-    const lineColor = 'rgba(229, 36, 41, 0.7)'; // marvel-red avec transparence
+    const gridColor = 'rgba(255, 255, 255, 0.1)'; const labelColor = '#e2e8f0';
+    const pointColor = '#e62429'; const lineColor = 'rgba(229, 36, 41, 0.7)';
 
-    // Créer le nouveau graphique
     try {
         progressionChartInstance = new Chart(ctx, {
+            type: 'line', data: { labels: labels, datasets: [{ label: 'KDA par Partie', data: kdaData, borderColor: lineColor, backgroundColor: pointColor, pointBackgroundColor: pointColor, pointBorderColor: pointColor, pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor, tension: 0.1 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: labelColor } }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1 } }, scales: { y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } } }
+        });
+    } catch (chartError) { console.error("Erreur création graphique KDA:", chartError); }
+}
+
+/**
+ * NOUVEAU: Crée ou met à jour le graphique de progression de la Précision.
+ * @param {Array} gamesData - Tableau des parties (trié du plus ancien au plus récent).
+ */
+function renderAccuracyChart(gamesData) {
+    const canvasElement = document.getElementById('accuracyChart'); // Nouvel ID
+    if (!canvasElement) { console.log("Canvas 'accuracyChart' non trouvé."); return; }
+    if (typeof Chart === 'undefined') { console.error("Chart.js non chargé."); return; }
+    const ctx = canvasElement.getContext('2d');
+    if (!ctx) { console.error("Impossible d'obtenir le contexte 2D du canvas Précision."); return; }
+
+    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
+    // Récupérer les données de précision, s'assurer que c'est un nombre
+    const accuracyData = gamesData.map(game => parseFloat(game.accuracy) || 0);
+
+    if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+
+    const gridColor = 'rgba(255, 255, 255, 0.1)'; const labelColor = '#e2e8f0';
+    const pointColor = '#007bff'; // marvel-blue
+    const lineColor = 'rgba(0, 123, 255, 0.7)'; // marvel-blue avec transparence
+
+    try {
+        accuracyChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'KDA par Partie',
-                    data: kdaData,
-                    borderColor: lineColor,
-                    backgroundColor: pointColor,
-                    pointBackgroundColor: pointColor,
-                    pointBorderColor: pointColor,
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: pointColor,
+                    label: 'Précision (%) par Partie',
+                    data: accuracyData,
+                    borderColor: lineColor, backgroundColor: pointColor,
+                    pointBackgroundColor: pointColor, pointBorderColor: pointColor,
+                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
                     tension: 0.1
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true, labels: { color: labelColor } },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff', bodyColor: '#fff',
-                        borderColor: gridColor, borderWidth: 1
-                    }
-                },
-                scales: {
-                    y: { beginAtZero: true, ticks: { color: labelColor }, grid: { color: gridColor } },
-                    x: { ticks: { color: labelColor }, grid: { color: gridColor } }
-                }
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: true, labels: { color: labelColor } }, tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: gridColor, borderWidth: 1, callbacks: { label: function(context) { return `${context.dataset.label}: ${context.parsed.y}%`; } } } }, // Ajout % au tooltip
+                scales: { y: { beginAtZero: true, max: 100, ticks: { color: labelColor, callback: function(value) { return value + '%'; } }, grid: { color: gridColor } }, x: { ticks: { color: labelColor }, grid: { color: gridColor } } } // Axe Y de 0 à 100%
             }
         });
-    } catch (chartError) {
-        console.error("Erreur lors de la création du graphique:", chartError);
-    }
+    } catch (chartError) { console.error("Erreur création graphique Précision:", chartError); }
 }
+
 
 // --- Fonctions pour les Tableaux d'Analyse Détaillée ---
 
 /**
- * Calcule et affiche les statistiques agrégées par héros dans le tableau HTML.
+ * Calcule et affiche les statistiques agrégées par héros, incluant dégâts/soins moyens.
  * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderHeroStatsTable(gamesData) {
-    const heroStats = {}; // { heroName: { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 }, ... }
+    const heroStats = {};
     const tableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-    if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
+    if (!tableBody) return;
 
-    // 1. Agréger les données par héros
+    // 1. Agréger les données
     gamesData.forEach(game => {
         const heroName = game.heroes?.name;
-        if (!heroName) return; // Ignorer si pas de nom de héros
-
+        if (!heroName) return;
         if (!heroStats[heroName]) {
-            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
+            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0, totalDamage: 0, totalHealing: 0 };
         }
-
         heroStats[heroName].played++;
-        if (game.result === 'win') {
-            heroStats[heroName].wins++;
-        }
+        if (game.result === 'win') heroStats[heroName].wins++;
         heroStats[heroName].kills += game.kills || 0;
         heroStats[heroName].deaths += game.deaths || 0;
         heroStats[heroName].assists += game.assists || 0;
+        heroStats[heroName].totalDamage += game.damage_dealt || 0; // Agréger dégâts
+        heroStats[heroName].totalHealing += game.healing_done || 0; // Agréger soins
     });
 
-    // 2. Préparer les données pour l'affichage (calculer WR et KDA)
+    // 2. Préparer pour affichage
     const displayData = Object.entries(heroStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
-        const deathsForKda = Math.max(1, stats.deaths); // Évite division par zéro
+        const deathsForKda = Math.max(1, stats.deaths);
         const kda = ((stats.kills + stats.assists) / deathsForKda).toFixed(2);
-        return { name, played: stats.played, winRate, kda };
+        const avgDamage = stats.played > 0 ? Math.round(stats.totalDamage / stats.played) : 0;
+        const avgHealing = stats.played > 0 ? Math.round(stats.totalHealing / stats.played) : 0;
+        return { name, played: stats.played, winRate, kda, avgDamage, avgHealing }; // Ajouter moyennes
     });
+    displayData.sort((a, b) => b.played - a.played); // Trier
 
-    // Optionnel: Trier les données (par ex: par nombre de parties jouées)
-    displayData.sort((a, b) => b.played - a.played);
-
-    // 3. Afficher dans le tableau HTML
-    tableBody.innerHTML = ''; // Vider le contenu précédent
-
+    // 3. Afficher
+    tableBody.innerHTML = '';
     if (displayData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>'; // Colspan à 6
     } else {
         displayData.forEach(hero => {
             const winRateClass = hero.winRate >= 50 ? 'text-win' : 'text-loss';
+            // Ajouter les nouvelles cellules pour Dégâts et Soins Moyens
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${hero.name}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.played}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass}">${hero.winRate}%</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.kda}</td>
-                </tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${hero.played}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass} text-center">${hero.winRate}%</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${hero.kda}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgDamage.toLocaleString('fr-FR')}</td> <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgHealing.toLocaleString('fr-FR')}</td> </tr>
             `;
             tableBody.innerHTML += row;
         });
@@ -457,40 +447,32 @@ function renderHeroStatsTable(gamesData) {
 }
 
 /**
- * Calcule et affiche les statistiques agrégées par map dans le tableau HTML.
+ * Calcule et affiche les statistiques agrégées par map.
  * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderMapStatsTable(gamesData) {
-    const mapStats = {}; // { mapName: { played: 0, wins: 0 }, ... }
+    const mapStats = {};
     const tableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-     if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
+     if (!tableBody) return;
 
-    // 1. Agréger les données par map
+    // 1. Agréger
     gamesData.forEach(game => {
         const mapName = game.maps?.name;
-        if (!mapName) return; // Ignorer si pas de nom de map
-
-        if (!mapStats[mapName]) {
-            mapStats[mapName] = { played: 0, wins: 0 };
-        }
-
+        if (!mapName) return;
+        if (!mapStats[mapName]) mapStats[mapName] = { played: 0, wins: 0 };
         mapStats[mapName].played++;
-        if (game.result === 'win') {
-            mapStats[mapName].wins++;
-        }
+        if (game.result === 'win') mapStats[mapName].wins++;
     });
 
-    // 2. Préparer les données pour l'affichage (calculer WR)
+    // 2. Préparer
     const displayData = Object.entries(mapStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
         return { name, played: stats.played, winRate };
     });
+    displayData.sort((a, b) => b.played - a.played);
 
-    // Optionnel: Trier les données
-    displayData.sort((a, b) => b.played - a.played); // Trier par parties jouées
-
-    // 3. Afficher dans le tableau HTML
-    tableBody.innerHTML = ''; // Vider le contenu précédent
+    // 3. Afficher
+    tableBody.innerHTML = '';
     if (displayData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée par map disponible.</td></tr>';
     } else {
@@ -499,8 +481,8 @@ function renderMapStatsTable(gamesData) {
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${map.name}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${map.played}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass}">${map.winRate}%</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${map.played}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass} text-center">${map.winRate}%</td>
                 </tr>`;
             tableBody.innerHTML += row;
         });
@@ -525,7 +507,6 @@ async function fetchAndDisplayUserStats() {
         // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
-            // La sélection '*' inclut automatiquement les nouvelles colonnes
             .select(`*, heroes ( name ), maps ( name )`) // Jointures essentielles
             .eq('user_id', userId)
             .order('played_at', { ascending: false });
@@ -533,7 +514,7 @@ async function fetchAndDisplayUserStats() {
         if (error) throw error;
         console.log('Parties récupérées pour toutes les stats:', games);
 
-        // --- Calculs et Affichage Stats Globales (Basé sur KDA/WR classiques) ---
+        // --- Calculs et Affichage Stats Globales ---
         const totalGames = games.length;
         let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
         const heroCounts = {};
@@ -557,11 +538,11 @@ async function fetchAndDisplayUserStats() {
         if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
 
-        // --- Affichage Historique (N'affiche pas les nouvelles stats spécifiques) ---
+        // --- Affichage Historique (15 dernières parties) ---
         const historyTableBody = document.querySelector('#history-table tbody');
         if (historyTableBody) {
             historyTableBody.innerHTML = '';
-            const gamesToShow = games.slice(0, 15); // Afficher les 15 dernières
+            const gamesToShow = games.slice(0, 15); // Déjà trié DESC par la requête
             if (gamesToShow.length === 0) {
                  historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
             } else {
@@ -581,33 +562,32 @@ async function fetchAndDisplayUserStats() {
             }
         }
 
-        // --- Génération du Graphique (Basé sur KDA classique) ---
+        // --- Génération des Graphiques ---
         if (games.length > 0) {
-             // Note: renderProgressionChart a besoin des données triées ASC (plus ancien d'abord)
-            renderProgressionChart(games); // La fonction inverse elle-même l'ordre maintenant
-        }
-        else {
-             // Effacer le graphique si pas/plus de données
-             const chartCanvas = document.getElementById('progressionChart');
-             if (chartCanvas) {
-                 const ctx = chartCanvas.getContext('2d');
-                 ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-             }
-             if (progressionChartInstance) {
-                progressionChartInstance.destroy();
-                progressionChartInstance = null;
-             }
+            // Trier ASC pour les graphiques
+            const sortedGamesAsc = [...games].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
+            renderProgressionChart(sortedGamesAsc); // KDA
+            renderAccuracyChart(sortedGamesAsc);  // Précision
+        } else {
+             // Effacer les graphiques si pas de données
+             if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
+             if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+             // Optionnel: Effacer le contenu des canvas
+             const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
+             const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
+             if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
+             if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
         }
 
-        // --- Calcul et Affichage Stats Détaillées (Basé sur KDA/WR classiques) ---
+        // --- Calcul et Affichage Stats Détaillées ---
         if (games.length > 0) {
-            renderHeroStatsTable(games);
-            renderMapStatsTable(games);
+            renderHeroStatsTable(games); // Appelle la version mise à jour
+            renderMapStatsTable(games);  // Appelle la version inchangée
         } else {
             // Vider les tableaux si aucune partie
              const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
              const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-             if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+             if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>'; // Colspan 6
              if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
         }
 
@@ -660,7 +640,7 @@ async function updateUserUI(user) {
         // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
          if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
              populateDropdowns();
-             fetchAndDisplayUserStats(); // Charger stats ET graphique ET tables
+             fetchAndDisplayUserStats(); // Charge TOUTES les données
         }
 
     } else {
@@ -675,11 +655,20 @@ async function updateUserUI(user) {
         // Cacher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.add('hidden');
 
-         // Effacer le graphique lors de la déconnexion ou si dashboard caché
+         // Effacer les graphiques lors de la déconnexion ou si dashboard caché
          if (progressionChartInstance) {
             progressionChartInstance.destroy();
             progressionChartInstance = null;
          }
+         if (accuracyChartInstance) {
+            accuracyChartInstance.destroy();
+            accuracyChartInstance = null;
+         }
+         // Optionnel: Effacer le contenu des canvas
+         const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
+         const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
+         if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
+         if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
     }
 }
 

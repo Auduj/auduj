@@ -30,7 +30,7 @@
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard (fond sombre, texte clair) */
+        /* Style des inputs du dashboard (texte gris clair) */
         .form-input-dash {
             @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm;
         }
@@ -50,6 +50,10 @@
              -webkit-appearance: none; margin: 0;
         }
         input[type=number] { -moz-appearance: textfield; /* Firefox */ }
+        /* Hauteur fixe pour les conteneurs de graphiques */
+        .chart-container {
+            @apply relative h-64 md:h-80; /* Ajustez la hauteur si nécessaire */
+        }
     </style>
 </head>
 <body class="bg-dark-bg text-light-text">
@@ -65,84 +69,13 @@
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
                  <h2 class="text-3xl font-heading mb-8 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
-                <form id="game-entry-form" action="#" method="POST" class="space-y-5"> <div id="entry-feedback" class="mb-4 text-center hidden"></div>
-
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                        <div>
-                            <label for="hero" class="form-label-dash">Héros Joué</label>
-                            <select id="hero" name="hero" class="form-input-dash" required><option value="">Choisir Héros...</option></select>
-                        </div>
-                        <div>
-                            <label for="map" class="form-label-dash">Map</label>
-                             <select id="map" name="map" class="form-input-dash" required><option value="">Choisir Map...</option></select>
-                        </div>
-                      </div>
-
-                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
-                        <div>
-                            <label for="kills" class="form-label-dash">Kills</label>
-                            <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required>
-                        </div>
-                        <div>
-                            <label for="deaths" class="form-label-dash">Deaths</label>
-                             <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required>
-                        </div>
-                        <div>
-                             <label for="assists" class="form-label-dash">Assists</label>
-                             <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required>
-                        </div>
-                         <div>
-                            <label for="solo_kills" class="form-label-dash">Élim. Solo</label>
-                            <input type="number" id="solo_kills" name="solo_kills" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                         <div>
-                            <label for="head_kills" class="form-label-dash">Tirs Tête</label>
-                            <input type="number" id="head_kills" name="head_kills" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                      </div>
-
-                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
-                         <div>
-                            <label for="last_kills" class="form-label-dash">Last Kills</label>
-                            <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                         <div>
-                            <label for="damage_dealt" class="form-label-dash">Dégâts</label>
-                            <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                        <div>
-                             <label for="healing_done" class="form-label-dash">Soins</label>
-                            <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                         <div>
-                            <label for="damage_blocked" class="form-label-dash">Bloqués</label>
-                            <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0">
-                        </div>
-                         <div>
-                            <label for="accuracy" class="form-label-dash">Précision (%)</label>
-                            <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5">
-                        </div>
-                     </div>
-
-                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                         <div>
-                            <label for="result" class="form-label-dash">Résultat</label>
-                            <select id="result" name="result" class="form-input-dash" required>
-                                <option value="">Choisir...</option>
-                                <option value="win" class="text-win">Victoire</option>
-                                <option value="loss" class="text-loss">Défaite</option>
-                                <option value="draw">Égalité</option>
-                            </select>
-                        </div>
-                         <div class="md:col-span-2">
-                            <label for="notes" class="form-label-dash">Notes (Optionnel)</label>
-                            <textarea id="notes" name="notes" rows="3" class="form-input-dash" placeholder="Stratégie utilisée, points à améliorer..."></textarea>
-                         </div>
-                     </div>
-
-                     <div class="pt-4 text-center"> <button type="submit" class="btn-marvel btn-red w-full sm:w-auto sm:px-10"> <i class="fas fa-save mr-2"></i> SAUVEGARDER LA PARTIE
-                        </button>
-                     </div>
+                <form id="game-entry-form" action="#" method="POST" class="space-y-5">
+                    <div id="entry-feedback" class="mb-4 text-center hidden"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4"> <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required><option value="">Choisir Héros...</option></select> </div> <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required><option value="">Choisir Map...</option></select> </div> </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4"> <div> <label for="kills" class="form-label-dash">Kills</label> <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required> </div> <div> <label for="deaths" class="form-label-dash">Deaths</label> <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required> </div> <div> <label for="assists" class="form-label-dash">Assists</label> <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required> </div> <div> <label for="solo_kills" class="form-label-dash">Élim. Solo</label> <input type="number" id="solo_kills" name="solo_kills" min="0" class="form-input-dash" placeholder="0"> </div> <div> <label for="head_kills" class="form-label-dash">Tirs Tête</label> <input type="number" id="head_kills" name="head_kills" min="0" class="form-input-dash" placeholder="0"> </div> </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4"> <div> <label for="last_kills" class="form-label-dash">Last Kills</label> <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0"> </div> <div> <label for="damage_dealt" class="form-label-dash">Dégâts</label> <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0"> </div> <div> <label for="healing_done" class="form-label-dash">Soins</label> <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0"> </div> <div> <label for="damage_blocked" class="form-label-dash">Bloqués</label> <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0"> </div> <div> <label for="accuracy" class="form-label-dash">Précision (%)</label> <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5"> </div> </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> <div> <label for="result" class="form-label-dash">Résultat</label> <select id="result" name="result" class="form-input-dash" required> <option value="">Choisir...</option> <option value="win" class="text-win">Victoire</option> <option value="loss" class="text-loss">Défaite</option> <option value="draw">Égalité</option> </select> </div> <div class="md:col-span-2"> <label for="notes" class="form-label-dash">Notes (Optionnel)</label> <textarea id="notes" name="notes" rows="3" class="form-input-dash" placeholder="Stratégie utilisée, points à améliorer..."></textarea> </div> </div>
+                    <div class="pt-4 text-center"> <button type="submit" class="btn-marvel btn-red w-full sm:w-auto sm:px-10"> <i class="fas fa-save mr-2"></i> SAUVEGARDER LA PARTIE </button> </div>
                 </form>
             </section>
 
@@ -151,7 +84,68 @@
             </section>
 
             <section>
-                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-search-plus mr-2"></i>Analyses Détaillées</h2> <div class="mb-4 border-b border-gray-700"> <nav class="-mb-px flex space-x-1" aria-label="Tabs"> <button class="tab-button active" data-tab="progression">Progression</button> <button class="tab-button" data-tab="par-heros">Par Héros</button> <button class="tab-button" data-tab="par-map">Par Map</button> <button class="tab-button" data-tab="historique">Historique Parties</button> </nav> </div> <div> <div class="tab-content" data-tab-content="progression"> <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA par Partie)</h3> <div class="bg-card-bg p-4 rounded"> <canvas id="progressionChart"></canvas> </div> <p class="text-sm text-gray-500 mt-2">Affiche l'évolution de votre KDA calculé pour chaque partie enregistrée.</p> </div> <div class="tab-content hidden" data-tab-content="par-heros"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="4" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div> <div class="tab-content hidden" data-tab-content="par-map"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Map</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="3" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div> <div class="tab-content hidden" data-tab-content="historique"> <h3 class="text-xl font-semibold mb-4 text-light-text">Historique des Parties</h3> <div class="overflow-x-auto"> <table id="history-table" class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr> </tbody> </table> </div> </div>
+                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-search-plus mr-2"></i>Analyses Détaillées</h2>
+                <div class="mb-4 border-b border-gray-700">
+                    <nav class="-mb-px flex space-x-1" aria-label="Tabs">
+                        <button class="tab-button active" data-tab="progression">Progression</button>
+                        <button class="tab-button" data-tab="par-heros">Par Héros</button>
+                        <button class="tab-button" data-tab="par-map">Par Map</button>
+                        <button class="tab-button" data-tab="historique">Historique Parties</button>
+                    </nav>
+                </div>
+                <div>
+                    <div class="tab-content space-y-8" data-tab-content="progression"> <div>
+                            <h3 class="text-xl font-semibold mb-4 text-light-text">Progression KDA</h3>
+                            <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="progressionChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-2">Évolution de votre KDA calculé pour chaque partie.</p>
+                         </div>
+                         <div> <h3 class="text-xl font-semibold mb-4 text-light-text">Progression Précision (%)</h3>
+                             <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="accuracyChart"></canvas> </div>
+                            <p class="text-sm text-gray-500 mt-2">Évolution de votre précision enregistrée pour chaque partie.</p>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="par-heros">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3>
+                         <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Dégâts Moy.</th>
+                                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Soins Moy.</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody>
+                            </table>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="par-map">
+                        <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Map</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th></tr></thead>
+                                <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    <tr><td colspan="3" class="text-center text-gray-500 py-4">Chargement...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="historique">
+                        <h3 class="text-xl font-semibold mb-4 text-light-text">Historique des Parties</h3>
+                        <div class="overflow-x-auto">
+                            <table id="history-table" class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-800"><tr><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th></tr></thead>
+                                <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
                  </div>
             </section>
 
