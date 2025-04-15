@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script>
-        // Configuration Tailwind personnalisée (optionnel, pour les polices et couleurs)
+        // Configuration Tailwind personnalisée
         tailwind.config = {
             theme: {
                 extend: {
@@ -54,9 +54,13 @@
                 <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
                 <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
                 <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
-                <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
-                <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
-                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+                <div id="user-info" class="items-center space-x-4 hidden">
+                    <span id="user-greeting" class="text-sm text-gray-300"></span>
+                    <button id="logout-button" class="btn-logout">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                    </button>
+                </div>
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue">Connexion / Tableau de Bord</a>
             </div>
             <div class="md:hidden">
                 <button id="mobile-menu-button" class="text-light-text focus:outline-none">
@@ -69,9 +73,9 @@
             <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
             <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
             <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
-            <a href="about.html" class="block px-4 py-2 text-sm hover:bg-gray-700">À Propos</a>
-            <a href="contact.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Contact</a>
-            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion / Tableau de Bord</a>
+            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
+            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
         </div>
     </header>
 
@@ -88,6 +92,7 @@
                         Découvrir Comment Ça Marche <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
+                 <div class="mt-12 text-center opacity-70"></div>
             </div>
         </section>
 
@@ -119,22 +124,11 @@
                 <h2 class="text-3xl md:text-4xl font-heading mb-12 text-marvel-red">Simple. Rapide. Efficace.</h2>
                 <p class="text-lg mb-10 max-w-2xl mx-auto">Commencez à suivre vos performances en quelques minutes seulement.</p>
                 <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8 mb-10">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-user-plus fa-2x text-marvel-blue"></i>
-                        <span>1. Créez votre compte</span>
-                    </div>
-                    <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i>
-                    <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-keyboard fa-2x text-marvel-blue"></i>
-                        <span>2. Saisissez vos parties</span>
-                    </div>
-                     <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i>
-                     <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-chart-bar fa-2x text-marvel-blue"></i>
-                        <span>3. Analysez & Progressez !</span>
-                    </div>
+                    <div class="flex items-center space-x-2"> <i class="fas fa-user-plus fa-2x text-marvel-blue"></i> <span>1. Créez votre compte</span> </div>
+                    <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i> <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
+                    <div class="flex items-center space-x-2"> <i class="fas fa-keyboard fa-2x text-marvel-blue"></i> <span>2. Saisissez vos parties</span> </div>
+                     <i class="fas fa-arrow-right text-marvel-yellow hidden md:block"></i> <i class="fas fa-arrow-down text-marvel-yellow md:hidden"></i>
+                    <div class="flex items-center space-x-2"> <i class="fas fa-chart-bar fa-2x text-marvel-blue"></i> <span>3. Analysez & Progressez !</span> </div>
                 </div>
                 <a href="how-it-works.html" class="btn-marvel btn-red">
                     Voir le Guide Détaillé <i class="fas fa-book-open ml-2"></i>
@@ -147,7 +141,7 @@
                 <h2 class="text-3xl font-semibold mb-4 text-white">Prêt à Dominer sur Marvel Rivals ?</h2>
                 <p class="text-lg text-gray-200 mb-8">Rejoignez Auduj aujourd'hui et transformez vos données en victoires.</p>
                 <a href="dashboard.html" class="btn-marvel bg-marvel-yellow hover:bg-yellow-600 text-gray-900 text-lg">
-                    <i class="fas fa-rocket mr-2"></i> Créer Mon Compte Gratuitement
+                    <i class="fas fa-rocket mr-2"></i> Créer Mon Compte / Accéder au Dashboard
                 </a>
              </div>
          </section>
@@ -157,21 +151,12 @@
     <footer class="bg-card-bg text-gray-400 py-8">
         <div class="container mx-auto px-6 text-center">
             <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
-            <div class="space-x-4 mb-4">
-                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
-                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
-                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
-                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
-            </div>
-            <div class="space-x-4">
-                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
-                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
-                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
-            </div>
             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
         </div>
     </footer>
 
     <script src="assets/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-integration.js"></script>
 </body>
 </html>
