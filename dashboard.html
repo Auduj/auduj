@@ -165,8 +165,22 @@
     <script src="assets/js/supabase-integration.js"></script>
 
     <script>
-        // ... code des onglets ...
-         const tabButtons = document.querySelectorAll('.tab-button'); /* ... etc ... */
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                tabButtons.forEach(btn => btn.classList.remove('active', 'bg-card-bg', 'text-marvel-yellow'));
+                button.classList.add('active', 'bg-card-bg', 'text-marvel-yellow');
+                tabContents.forEach(content => {
+                    if (content.getAttribute('data-tab-content') === tabName) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
