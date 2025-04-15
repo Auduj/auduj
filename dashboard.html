@@ -30,12 +30,14 @@
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard (texte gris clair) */
+        /* Style des inputs du dashboard (fond sombre, texte clair) */
         .form-input-dash {
             @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm;
         }
-        .form-label-dash { @apply block mb-1 text-xs font-medium text-gray-300 flex items-center; }
-        .form-label-dash i { @apply mr-1.5 text-marvel-yellow text-xs; } /* Style pour les icônes des labels */
+        /* Style des labels (au-dessus de l'input) */
+        .form-label-dash {
+            @apply block mb-1.5 text-xs font-medium text-gray-300; /* Suppression de flex et de l'icône */
+        }
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
         .stat-label { @apply text-sm text-gray-400; }
@@ -62,67 +64,69 @@
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
-                 <h2 class="text-3xl font-heading mb-6 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
-                <form id="game-entry-form" action="#" method="POST" class="space-y-6">
-                     <div id="entry-feedback" class="mb-4 text-center hidden"></div>
+                 <h2 class="text-3xl font-heading mb-8 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
+                <form id="game-entry-form" action="#" method="POST" class="space-y-5"> <div id="entry-feedback" class="mb-4 text-center hidden"></div>
 
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                         <div>
-                            <label for="hero" class="form-label-dash"><i class="fas fa-user-shield"></i>Héros Joué</label>
+                            <label for="hero" class="form-label-dash">Héros Joué</label>
                             <select id="hero" name="hero" class="form-input-dash" required><option value="">Choisir Héros...</option></select>
                         </div>
                         <div>
-                            <label for="map" class="form-label-dash"><i class="fas fa-map"></i>Map</label>
+                            <label for="map" class="form-label-dash">Map</label>
                              <select id="map" name="map" class="form-input-dash" required><option value="">Choisir Map...</option></select>
                         </div>
                       </div>
 
-                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
                         <div>
-                            <label for="kills" class="form-label-dash"><i class="fas fa-crosshairs"></i>Kills</label>
+                            <label for="kills" class="form-label-dash">Kills</label>
                             <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required>
                         </div>
                         <div>
-                            <label for="deaths" class="form-label-dash"><i class="fas fa-skull"></i>Deaths</label>
+                            <label for="deaths" class="form-label-dash">Deaths</label>
                              <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required>
                         </div>
                         <div>
-                             <label for="assists" class="form-label-dash"><i class="fas fa-hands-helping"></i>Assists</label>
+                             <label for="assists" class="form-label-dash">Assists</label>
                              <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required>
                         </div>
                          <div>
-                            <label for="solo_kills" class="form-label-dash"><i class="fas fa-user"></i>Éliminations Solo</label>
+                            <label for="solo_kills" class="form-label-dash">Élim. Solo</label>
                             <input type="number" id="solo_kills" name="solo_kills" min="0" class="form-input-dash" placeholder="0">
                         </div>
                          <div>
-                            <label for="head_kills" class="form-label-dash"><i class="fas fa-bullseye"></i>Tirs Tête (Kills)</label>
+                            <label for="head_kills" class="form-label-dash">Tirs Tête</label>
                             <input type="number" id="head_kills" name="head_kills" min="0" class="form-input-dash" placeholder="0">
                         </div>
                       </div>
 
-                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-x-4 gap-y-4">
                          <div>
-                            <label for="last_kills" class="form-label-dash"><i class="fas fa-flag-checkered"></i>Last Kills</label> <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0">
+                            <label for="last_kills" class="form-label-dash">Last Kills</label>
+                            <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0">
                         </div>
                          <div>
-                            <label for="damage_dealt" class="form-label-dash"><i class="fas fa-bomb"></i>Dégâts Infligés</label> <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0">
+                            <label for="damage_dealt" class="form-label-dash">Dégâts</label>
+                            <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0">
                         </div>
                         <div>
-                             <label for="healing_done" class="form-label-dash"><i class="fas fa-heartbeat"></i>Soins Effectués</label>
+                             <label for="healing_done" class="form-label-dash">Soins</label>
                             <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0">
                         </div>
                          <div>
-                            <label for="damage_blocked" class="form-label-dash"><i class="fas fa-shield-alt"></i>Dégâts Bloqués</label> <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0">
+                            <label for="damage_blocked" class="form-label-dash">Bloqués</label>
+                            <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0">
                         </div>
                          <div>
-                            <label for="accuracy" class="form-label-dash"><i class="fas fa-percentage"></i>Précision (%)</label>
+                            <label for="accuracy" class="form-label-dash">Précision (%)</label>
                             <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5">
                         </div>
                      </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
-                            <label for="result" class="form-label-dash"><i class="fas fa-trophy"></i>Résultat</label>
+                            <label for="result" class="form-label-dash">Résultat</label>
                             <select id="result" name="result" class="form-input-dash" required>
                                 <option value="">Choisir...</option>
                                 <option value="win" class="text-win">Victoire</option>
@@ -130,17 +134,14 @@
                                 <option value="draw">Égalité</option>
                             </select>
                         </div>
-                         <div class="md:col-span-2 flex flex-col justify-between">
-                            <div>
-                                <label for="notes" class="form-label-dash"><i class="fas fa-pencil-alt"></i>Notes (Optionnel)</label>
-                                <textarea id="notes" name="notes" rows="3" class="form-input-dash" placeholder="Stratégie utilisée, points à améliorer..."></textarea>
-                            </div>
-                            <div class="mt-4 text-right">
-                                 <button type="submit" class="btn-marvel btn-red w-full md:w-auto">
-                                    <i class="fas fa-save mr-2"></i> Enregistrer la Partie
-                                </button>
-                            </div>
+                         <div class="md:col-span-2">
+                            <label for="notes" class="form-label-dash">Notes (Optionnel)</label>
+                            <textarea id="notes" name="notes" rows="3" class="form-input-dash" placeholder="Stratégie utilisée, points à améliorer..."></textarea>
                          </div>
+                     </div>
+
+                     <div class="pt-4 text-center"> <button type="submit" class="btn-marvel btn-red w-full sm:w-auto sm:px-10"> <i class="fas fa-save mr-2"></i> SAUVEGARDER LA PARTIE
+                        </button>
                      </div>
                 </form>
             </section>
@@ -169,4 +170,3 @@
     </script>
 </body>
 </html>
-
