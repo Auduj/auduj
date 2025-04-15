@@ -2,87 +2,83 @@
  * supabase-integration.js
  * Gère l'interaction entre le frontend Auduj et le backend Supabase.
  * - Initialisation du client Supabase
- * - Authentification (Inscription, Connexion, Déconnexion)
+ * - Authentification (Inscription, Connexion, Déconnexion) + Redirections
  * - Gestion des données du tableau de bord (Sauvegarde, Lecture)
- *
- * À inclure dans les pages HTML qui nécessitent une interaction avec Supabase
- * (principalement dashboard.html, et potentiellement une page login/signup).
- * Assurez-vous d'inclure aussi le SDK Supabase via CDN avant ce script.
- * <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  */
 
 // --- Configuration ---
-// REMPLACEZ par vos propres URL et Clé Anon Supabase !
-// Disponibles dans les paramètres de votre projet Supabase > API
-const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE';
+const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co'; // Gardez vos clés réelles ici
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE'; // Gardez vos clés réelles ici
 
+let _supabase; // Variable pour le client Supabase
+
+// Vérification simple que les clés sont définies (CORRIGÉ)
 if (!SUPABASE_URL || SUPABASE_URL === 'https://mbkiwpsbprcqhyafyifl.supabase.co' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE') {
     console.error("Erreur: Veuillez définir SUPABASE_URL et SUPABASE_ANON_KEY dans supabase-integration.js");
-    // Pourrait afficher un message à l'utilisateur ici
-    // Peut-être arrêter l'exécution ou désactiver les fonctionnalités ?
+    // Pourrait afficher un message à l'utilisateur ici ou désactiver les fonctionnalités
 } else {
-    // Initialisation du client Supabase (peut être déplacé ici ou laissé après)
-    const { createClient } = supabase;
-    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Initialisation du client Supabase
+    const { createClient } = supabase; // Accède à la fonction depuis le SDK global
+    _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('Supabase Client Initialized');
 }
-// Initialisation du client Supabase
-const { createClient } = supabase; // Accède à la fonction depuis le SDK global
-const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-console.log('Supabase Client Initialized'); // Pour vérifier dans la console
-
-// --- Éléments du DOM (Exemples - Adaptez selon votre HTML) ---
-// (Ces éléments devront être présents dans votre HTML, par exemple dans dashboard.html ou une page de connexion dédiée)
-const loginForm = document.getElementById('login-form'); // Supposons un formulaire de connexion
-const signupForm = document.getElementById('signup-form'); // Supposons un formulaire d'inscription
-const logoutButton = document.getElementById('logout-button'); // Un bouton de déconnexion
-const gameEntryForm = document.getElementById('game-entry-form'); // Le formulaire de saisie de partie
-const entryFeedback = document.getElementById('entry-feedback'); // Zone de feedback pour la saisie
-const userGreeting = document.getElementById('user-greeting'); // Pour afficher "Bonjour [username]"
-const dashboardContent = document.getElementById('dashboard-content'); // Conteneur principal du dashboard
-const authSection = document.getElementById('auth-section'); // Section contenant login/signup
+// --- Éléments du DOM (Commun) ---
+const userGreeting = document.getElementById('user-greeting');
+const userInfo = document.getElementById('user-info'); // Conteneur pour greeting + logout button
+const logoutButton = document.getElementById('logout-button');
+const loginButtonHeader = document.getElementById('login-button-header');
+// Éléments mobiles
+const mobileLoginLink = document.getElementById('mobile-login-link');
+const mobileLogoutButton = document.getElementById('mobile-logout-button');
+const mobileUserGreeting = document.getElementById('mobile-user-greeting');
 
 // --- Fonctions d'Authentification ---
 
-/**
- * Gère l'inscription d'un nouvel utilisateur.
- * @param {string} email
- * @param {string} password
- * @param {string} username
- */
 async function handleSignUp(email, password, username) {
+    const feedbackDiv = document.getElementById('form-feedback-signup'); // Cible le div de feedback
+    if(feedbackDiv) feedbackDiv.classList.add('hidden');
+
+    if (!_supabase) {
+        console.error("Supabase client non initialisé.");
+        if(feedbackDiv) { feedbackDiv.textContent = "Erreur: Client Supabase non initialisé."; feedbackDiv.classList.remove('hidden'); }
+        return;
+    }
+
     try {
         const { data, error } = await _supabase.auth.signUp({
             email: email,
             password: password,
-            options: {
-                // Passer des métadonnées pour le trigger handle_new_user
-                data: {
-                    username: username
-                }
-            }
+            options: { data: { username: username } }
         });
         if (error) throw error;
         console.log('Inscription réussie:', data);
-        alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte.');
-        // Rediriger vers la page de connexion ou afficher un message
-        // Peut-être vider le formulaire
-        if (signupForm) signupForm.reset();
+        alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte (si activé).');
+        // Optionnel: rediriger vers une page de succès ou de connexion
+        window.location.href = 'login.html'; // Redirige vers la connexion après inscription
 
     } catch (error) {
         console.error('Erreur lors de l\'inscription:', error.message);
-        alert(`Erreur d'inscription: ${error.message}`);
+         if(feedbackDiv) {
+             feedbackDiv.textContent = `Erreur: ${error.message}`;
+             feedbackDiv.classList.remove('hidden');
+             feedbackDiv.classList.add('text-red-500'); // Assurez-vous que le style d'erreur est appliqué
+         } else {
+             alert(`Erreur d'inscription: ${error.message}`);
+         }
     }
 }
 
-/**
- * Gère la connexion d'un utilisateur existant.
- * @param {string} email
- * @param {string} password
- */
 async function handleLogin(email, password) {
+    const feedbackDiv = document.getElementById('form-feedback-login'); // Cible le div de feedback
+    if(feedbackDiv) feedbackDiv.classList.add('hidden');
+
+     if (!_supabase) {
+        console.error("Supabase client non initialisé.");
+        if(feedbackDiv) { feedbackDiv.textContent = "Erreur: Client Supabase non initialisé."; feedbackDiv.classList.remove('hidden'); }
+        return;
+    }
+
     try {
         const { data, error } = await _supabase.auth.signInWithPassword({
             email: email,
@@ -90,25 +86,32 @@ async function handleLogin(email, password) {
         });
         if (error) throw error;
         console.log('Connexion réussie:', data);
-        // Pas besoin d'alerte ici, on va rafraîchir l'état de l'interface
-        // Le listener onAuthStateChange s'en chargera
-        if (loginForm) loginForm.reset();
+        // La redirection sera gérée par onAuthStateChange ou le check initial
+        window.location.href = 'dashboard.html'; // Redirige explicitement vers le dashboard après connexion réussie
 
     } catch (error) {
         console.error('Erreur lors de la connexion:', error.message);
-        alert(`Erreur de connexion: ${error.message}`);
+        if(feedbackDiv) {
+             feedbackDiv.textContent = `Erreur: ${error.message}`;
+             feedbackDiv.classList.remove('hidden');
+             feedbackDiv.classList.add('text-red-500');
+         } else {
+             alert(`Erreur de connexion: ${error.message}`);
+         }
     }
 }
 
-/**
- * Gère la déconnexion de l'utilisateur.
- */
 async function handleLogout() {
+     if (!_supabase) {
+        console.error("Supabase client non initialisé.");
+        return;
+    }
     try {
         const { error } = await _supabase.auth.signOut();
         if (error) throw error;
         console.log('Déconnexion réussie');
-        // L'interface sera mise à jour par onAuthStateChange
+        // Rediriger vers la page d'accueil ou de connexion après déconnexion
+        window.location.href = 'index.html';
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error.message);
         alert(`Erreur de déconnexion: ${error.message}`);
@@ -117,335 +120,343 @@ async function handleLogout() {
 
 // --- Fonctions de Gestion des Données (Dashboard) ---
 
-/**
- * Récupère l'ID du profil de l'utilisateur connecté.
- * @returns {Promise<string|null>} L'UUID du profil ou null.
- */
 async function getUserProfileId() {
-    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
-    if (sessionError || !session) {
-        console.error('Erreur session ou session non trouvée:', sessionError);
-        return null;
-    }
-    return session.user.id; // L'ID dans 'profiles' est le même que l'ID dans 'auth.users'
+    if (!_supabase) return null;
+    // Utilise la session actuelle gérée par Supabase JS
+    const { data: { user } } = await _supabase.auth.getUser();
+    return user?.id ?? null;
 }
 
-/**
- * Remplit les menus déroulants des héros et des maps.
- */
 async function populateDropdowns() {
     const heroSelect = document.getElementById('hero');
     const mapSelect = document.getElementById('map');
-
-    if (!heroSelect || !mapSelect) return;
+    if (!heroSelect || !mapSelect || !_supabase) return;
 
     try {
-        // Récupérer les héros
-        const { data: heroes, error: heroesError } = await _supabase
-            .from('heroes')
-            .select('id, name')
-            .order('name');
-        if (heroesError) throw heroesError;
+        const [{ data: heroes, error: heroesError }, { data: maps, error: mapsError }] = await Promise.all([
+            _supabase.from('heroes').select('id, name').order('name'),
+            _supabase.from('maps').select('id, name').order('name')
+        ]);
 
-        // Récupérer les maps
-        const { data: maps, error: mapsError } = await _supabase
-            .from('maps')
-            .select('id, name')
-            .order('name');
+        if (heroesError) throw heroesError;
         if (mapsError) throw mapsError;
 
-        // Vider les options existantes (sauf la première "Choisir...")
-        heroSelect.length = 1;
+        heroSelect.length = 1; // Garde "Choisir..."
         mapSelect.length = 1;
 
-        // Ajouter les nouvelles options
-        heroes.forEach(hero => {
-            const option = new Option(hero.name, hero.id);
-            heroSelect.add(option);
-        });
-
-        maps.forEach(map => {
-            const option = new Option(map.name, map.id);
-            mapSelect.add(option);
-        });
+        heroes.forEach(hero => heroSelect.add(new Option(hero.name, hero.id)));
+        maps.forEach(map => mapSelect.add(new Option(map.name, map.id)));
 
     } catch (error) {
         console.error("Erreur lors du chargement des héros/maps:", error.message);
-        // Informer l'utilisateur ?
     }
 }
 
-
-/**
- * Enregistre une nouvelle partie dans la base de données.
- * @param {object} gameData Données du formulaire.
- */
 async function saveGameEntry(gameData) {
     const userId = await getUserProfileId();
-    if (!userId) {
-        alert("Erreur: Utilisateur non connecté.");
-        return;
-    }
+    const feedbackDiv = document.getElementById('entry-feedback');
 
-    if (entryFeedback) { // Reset feedback
-        entryFeedback.classList.add('hidden');
-        entryFeedback.textContent = '';
-        entryFeedback.classList.remove('text-green-500', 'text-red-500', 'border', 'border-green-500', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
+    if (!userId) { alert("Erreur: Utilisateur non connecté."); return; }
+    if (!_supabase) { alert("Erreur: Client Supabase non initialisé."); return; }
+
+    if (feedbackDiv) { // Reset feedback
+        feedbackDiv.classList.add('hidden');
+        feedbackDiv.textContent = '';
+        feedbackDiv.classList.remove('text-green-500', 'text-red-500', 'border', 'border-green-500', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
     }
 
     try {
         const { data, error } = await _supabase
             .from('games')
-            .insert([
-                {
-                    user_id: userId,
-                    hero_id: parseInt(gameData.hero, 10), // Assurez-vous que les IDs sont des nombres
-                    map_id: parseInt(gameData.map, 10),
-                    kills: parseInt(gameData.kills, 10),
-                    deaths: parseInt(gameData.deaths, 10),
-                    assists: parseInt(gameData.assists, 10),
-                    objective_score: gameData.objective_score ? parseInt(gameData.objective_score, 10) : 0,
-                    result: gameData.result,
-                    notes: gameData.notes
-                    // played_at est défini par défaut dans la DB
-                }
-            ])
-            .select(); // Pour obtenir les données insérées en retour (optionnel)
+            .insert([{
+                user_id: userId,
+                hero_id: parseInt(gameData.hero, 10),
+                map_id: parseInt(gameData.map, 10),
+                kills: parseInt(gameData.kills, 10),
+                deaths: parseInt(gameData.deaths, 10),
+                assists: parseInt(gameData.assists, 10),
+                objective_score: gameData.objective_score ? parseInt(gameData.objective_score, 10) : 0,
+                result: gameData.result,
+                notes: gameData.notes
+            }]).select();
 
         if (error) throw error;
 
         console.log('Partie enregistrée:', data);
-        if (entryFeedback) {
-            entryFeedback.classList.remove('hidden');
-            entryFeedback.classList.add('text-green-500', 'border', 'border-green-500', 'p-2', 'rounded-md', 'text-sm');
-            entryFeedback.textContent = 'Partie enregistrée avec succès !';
+        if (feedbackDiv) {
+            feedbackDiv.classList.remove('hidden');
+            feedbackDiv.classList.add('text-green-500', 'border', 'border-green-500', 'p-2', 'rounded-md', 'text-sm');
+            feedbackDiv.textContent = 'Partie enregistrée avec succès !';
         }
-        if (gameEntryForm) {
-             // Vider seulement les champs variables
-             document.getElementById('kills').value = '';
-             document.getElementById('deaths').value = '';
-             document.getElementById('assists').value = '';
-             document.getElementById('objective_score').value = '';
-             document.getElementById('result').value = '';
-             document.getElementById('notes').value = '';
+        // Vider seulement les champs variables du formulaire
+        const form = document.getElementById('game-entry-form');
+        if(form) {
+            form.kills.value = '';
+            form.deaths.value = '';
+            form.assists.value = '';
+            form.objective_score.value = '';
+            form.result.value = '';
+            form.notes.value = '';
         }
-        // Rafraîchir les statistiques affichées
-        fetchAndDisplayUserStats();
+        fetchAndDisplayUserStats(); // Rafraîchir les stats
 
     } catch (error) {
         console.error('Erreur lors de l\'enregistrement de la partie:', error.message);
-         if (entryFeedback) {
-            entryFeedback.classList.remove('hidden');
-            entryFeedback.classList.add('text-red-500', 'border', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
-            entryFeedback.textContent = `Erreur: ${error.message}`;
+        if (feedbackDiv) {
+            feedbackDiv.classList.remove('hidden');
+            feedbackDiv.classList.add('text-red-500', 'border', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
+            feedbackDiv.textContent = `Erreur: ${error.message}`;
         }
     } finally {
-        // Cacher le message après quelques secondes
-        setTimeout(() => {
-            if (entryFeedback) entryFeedback.classList.add('hidden');
-        }, 5000);
+        setTimeout(() => { if (feedbackDiv) feedbackDiv.classList.add('hidden'); }, 5000);
     }
 }
 
-/**
- * Récupère et affiche les statistiques de l'utilisateur connecté.
- */
 async function fetchAndDisplayUserStats() {
     const userId = await getUserProfileId();
-    if (!userId) return; // Pas connecté
+    if (!userId || !_supabase) return;
+
+    const dashboardContent = document.getElementById('dashboard-content');
+    if (!dashboardContent || dashboardContent.classList.contains('hidden')) return; // Ne pas charger si dashboard caché
 
     try {
         const { data: games, error } = await _supabase
             .from('games')
-            .select(`
-                *,
-                heroes ( name ),
-                maps ( name )
-            `) // Inclure noms héros/maps
+            .select(`*, heroes ( name ), maps ( name )`)
             .eq('user_id', userId)
-            .order('played_at', { ascending: false }); // Trier par date récente
+            .order('played_at', { ascending: false });
 
         if (error) throw error;
 
-        console.log('Parties récupérées:', games);
-
-        // --- Calculs de Stats (Exemples simples) ---
+        // --- Calculs de Stats ---
         const totalGames = games.length;
-        let totalKills = 0;
-        let totalDeaths = 0;
-        let totalAssists = 0;
-        let wins = 0;
+        let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
         const heroCounts = {};
-        const mapCounts = {};
 
         games.forEach(game => {
             totalKills += game.kills;
             totalDeaths += game.deaths;
             totalAssists += game.assists;
             if (game.result === 'win') wins++;
-
-            // Compter héros
-            if (game.heroes) { // Vérifier si la jointure a fonctionné
-                 heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
-            }
-             // Compter maps
-             if (game.maps) {
-                 mapCounts[game.maps.name] = (mapCounts[game.maps.name] || 0) + 1;
-             }
+            if (game.heroes) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
         });
 
         const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-        // Calcul KDA simple (éviter division par zéro)
         const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
 
-        // Trouver le héros le plus joué
         let mostPlayedHero = 'N/A';
         let maxHeroCount = 0;
         for (const hero in heroCounts) {
-            if (heroCounts[hero] > maxHeroCount) {
-                maxHeroCount = heroCounts[hero];
-                mostPlayedHero = hero;
-            }
+            if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; }
         }
 
-        // --- Affichage des Stats (Mettre à jour les éléments du DOM) ---
-        // (Assurez-vous que les éléments existent dans dashboard.html avec des IDs uniques)
+        // --- Affichage Stats Globales ---
         const kdaElement = document.getElementById('stat-kda');
         const winRateElement = document.getElementById('stat-winrate');
         const totalGamesElement = document.getElementById('stat-total-games');
-        const mainHeroElement = document.getElementById('stat-main-hero'); // Pourrait être un div contenant nom + icône
+        const mainHeroElement = document.getElementById('stat-main-hero');
 
         if (kdaElement) kdaElement.textContent = kda;
         if (winRateElement) {
              winRateElement.textContent = `${winRate}%`;
-             // Ajouter classe couleur ?
-             winRateElement.className = 'stat-value'; // Reset
-             if(winRate >= 50) winRateElement.classList.add('text-win');
-             else if (totalGames > 0) winRateElement.classList.add('text-loss');
+             winRateElement.className = 'stat-value'; // Reset classes
+             if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss');
         }
         if (totalGamesElement) totalGamesElement.textContent = totalGames;
-        if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero; // Simplifié, pourrait afficher une icône
+        if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
-        // --- Affichage de l'historique ---
-        const historyTableBody = document.querySelector('#history-table tbody'); // Assurez-vous d'avoir un id="history-table" sur votre table
+        // --- Affichage Historique ---
+        const historyTableBody = document.querySelector('#history-table tbody');
         if (historyTableBody) {
-            historyTableBody.innerHTML = ''; // Vider l'ancien contenu
-            const gamesToShow = games.slice(0, 10); // Afficher les 10 dernières
+            historyTableBody.innerHTML = ''; // Clear
+            const gamesToShow = games.slice(0, 15); // Show last 15
 
             if (gamesToShow.length === 0) {
-                 historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée pour le moment.</td></tr>';
+                 historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
             } else {
                 gamesToShow.forEach(game => {
                     const row = `
                         <tr>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { short: 'short' })}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || 'N/A'}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || 'N/A'}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills}/${game.deaths}/${game.assists}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300'}">${game.result || 'N/A'}</td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
-                        </tr>
-                    `;
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300'}">${game.result || '?'}</td>
+                            <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
+                        </tr>`;
                     historyTableBody.innerHTML += row;
                 });
             }
         }
-
-        // TODO: Mettre à jour les autres onglets (Par Héros, Par Map) de manière similaire
+        // TODO: Mettre à jour les autres onglets (Par Héros, Par Map)
 
     } catch (error) {
         console.error("Erreur lors de la récupération/affichage des stats:", error.message);
-        // Afficher une erreur à l'utilisateur ?
     }
 }
 
 
-// --- Gestion de l'État d'Authentification ---
+// --- Gestion de l'État d'Authentification et UI ---
 
 /**
- * Met à jour l'interface utilisateur en fonction de l'état de connexion.
+ * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
  * @param {object|null} user L'objet utilisateur Supabase ou null.
  */
 async function updateUserUI(user) {
+    console.log("Updating UI for user:", user ? user.email : 'null');
+
+    // Éléments Desktop Header
+    const userInfoDiv = document.getElementById('user-info');
+    const userGreetingSpan = document.getElementById('user-greeting');
+    const logoutBtn = document.getElementById('logout-button');
+    const loginBtnHeader = document.getElementById('login-button-header');
+
+    // Éléments Mobile Header
+    const mobileLogin = document.getElementById('mobile-login-link');
+    const mobileLogout = document.getElementById('mobile-logout-button');
+    const mobileGreeting = document.getElementById('mobile-user-greeting');
+
+    // Contenu principal (pour dashboard)
+    const dashboardContent = document.getElementById('dashboard-content');
+    const authSection = document.getElementById('auth-section'); // Section affichée si non connecté sur dashboard
+
     if (user) {
-        console.log("Utilisateur connecté:", user.email);
-        // Afficher le dashboard, masquer l'authentification
-        if (authSection) authSection.style.display = 'none';
-        if (dashboardContent) dashboardContent.style.display = 'block'; // Ou la classe appropriée
-        if (logoutButton) logoutButton.style.display = 'inline-block'; // Ou 'block'
+        // --- Utilisateur Connecté ---
+        if (userInfoDiv) userInfoDiv.style.display = 'flex'; // Afficher la section user info
+        if (logoutBtn) logoutBtn.style.display = 'inline-block'; // Afficher bouton logout
+        if (loginBtnHeader) loginBtnHeader.style.display = 'none'; // Cacher bouton login
 
-        // Afficher le nom d'utilisateur (depuis la table profiles)
-        try {
-            const { data: profile, error } = await _supabase
-                .from('profiles')
-                .select('username')
-                .eq('id', user.id)
-                .single(); // On s'attend à un seul profil
+        if (mobileLogin) mobileLogin.style.display = 'none';
+        if (mobileLogout) mobileLogout.style.display = 'block';
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 = 0 rows, normal si profil pas encore créé
-                 throw error;
+        // Afficher le nom d'utilisateur
+        let displayName = user.email; // Fallback
+        if (_supabase) {
+            try {
+                const { data: profile, error } = await _supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('id', user.id)
+                    .single();
+                if (error && error.code !== 'PGRST116') throw error; // Ignorer '0 rows'
+                if (profile && profile.username) {
+                    displayName = profile.username;
+                }
+            } catch (profileError) {
+                console.error("Erreur récupération profil:", profileError.message);
             }
+        }
+        if (userGreetingSpan) userGreetingSpan.textContent = `Salut, ${displayName}!`;
+        if (mobileGreeting) mobileGreeting.textContent = displayName;
 
-            if (userGreeting && profile) {
-                userGreeting.textContent = `Bonjour, ${profile.username || user.email}!`; // Fallback sur email
-            } else if (userGreeting) {
-                 userGreeting.textContent = `Bonjour, ${user.email}!`;
-            }
-        } catch (profileError) {
-             console.error("Erreur récupération profil:", profileError.message);
-             if (userGreeting) userGreeting.textContent = `Bonjour, ${user.email}!`; // Fallback
+
+        // Gérer contenu spécifique dashboard
+        if (dashboardContent) dashboardContent.classList.remove('hidden');
+        if (authSection) authSection.classList.add('hidden'); // Cacher la section d'invite auth
+
+        // Charger les données spécifiques au dashboard si on est sur cette page
+        if (document.getElementById('dashboard-content')) {
+             populateDropdowns();
+             fetchAndDisplayUserStats();
         }
 
-
-        // Charger les données du dashboard
-        populateDropdowns(); // Charger héros/maps dans les menus
-        fetchAndDisplayUserStats();
-
     } else {
-        console.log("Utilisateur déconnecté.");
-        // Afficher l'authentification, masquer le dashboard
-        if (authSection) authSection.style.display = 'block';
-        if (dashboardContent) dashboardContent.style.display = 'none';
-        if (userGreeting) userGreeting.textContent = '';
-        if (logoutButton) logoutButton.style.display = 'none';
+        // --- Utilisateur Déconnecté ---
+        if (userInfoDiv) userInfoDiv.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (loginBtnHeader) loginBtnHeader.style.display = 'inline-block'; // Afficher bouton login
+
+        if (mobileLogin) mobileLogin.style.display = 'block';
+        if (mobileLogout) mobileLogout.style.display = 'none';
+        if (mobileGreeting) mobileGreeting.textContent = '';
+
+        // Gérer contenu spécifique dashboard
+        if (dashboardContent) dashboardContent.classList.add('hidden');
+        if (authSection) authSection.classList.remove('hidden'); // Afficher la section d'invite auth
     }
 }
 
-// --- Écouteurs d'Événements ---
+// --- Initialisation et Écouteurs ---
+
+/**
+ * Vérifie l'état de connexion au chargement et applique les redirections si nécessaire.
+ */
+async function checkAuthStateAndRedirect() {
+    if (!_supabase) {
+        console.log("Supabase client not ready for auth check.");
+        // Peut-être afficher un état d'erreur/chargement ?
+        return;
+    }
+
+    const { data: { session }, error } = await _supabase.auth.getSession();
+    if (error) {
+        console.error("Erreur getSession:", error);
+        return; // Ne pas rediriger en cas d'erreur de session
+    }
+
+    const user = session?.user ?? null;
+    const currentPage = window.location.pathname.split('/').pop(); // Nom du fichier actuel
+
+    console.log(`Checking auth state on page: ${currentPage}, user: ${user ? user.email : 'null'}`);
+
+    // Pages nécessitant d'être connecté
+    const protectedPages = ['dashboard.html'];
+    // Pages nécessitant d'être déconnecté
+    const publicOnlyPages = ['login.html', 'signup.html'];
+
+    if (!user && protectedPages.includes(currentPage)) {
+        console.log("User not logged in, redirecting to login...");
+        window.location.replace('login.html'); // Utiliser replace pour éviter l'historique
+    } else if (user && publicOnlyPages.includes(currentPage)) {
+        console.log("User already logged in, redirecting to dashboard...");
+        window.location.replace('dashboard.html');
+    } else {
+        // Si pas de redirection, mettre à jour l'UI pour l'état actuel
+        updateUserUI(user);
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Écouteur pour le changement d'état d'authentification
+    if (!_supabase) {
+        console.error("DOM Loaded, but Supabase client failed to initialize. Aborting setup.");
+        // Afficher une erreur globale à l'utilisateur ?
+        return;
+    }
+
+    // 1. Vérifier l'état initial et rediriger si nécessaire
+    checkAuthStateAndRedirect();
+
+    // 2. Écouter les changements d'état futurs (ex: après login/logout manuel)
     _supabase.auth.onAuthStateChange((event, session) => {
         console.log('Auth State Change Event:', event, session);
-        const user = session?.user ?? null;
-        updateUserUI(user);
-    });
-
-    // Vérifier l'état initial au chargement (au cas où l'utilisateur est déjà connecté)
-     _supabase.auth.getSession().then(({ data: { session } }) => {
-        console.log('Initial session:', session);
+        // Mettre à jour l'UI, mais la redirection initiale devrait déjà avoir eu lieu.
+        // On pourrait re-vérifier la redirection ici si nécessaire, mais attention aux boucles.
         updateUserUI(session?.user ?? null);
-    }).catch(error => {
-        console.error("Erreur lors de la récupération de la session initiale:", error);
-        updateUserUI(null); // Assumer déconnecté en cas d'erreur
     });
 
+    // 3. Attacher les gestionnaires aux formulaires et boutons
 
-    // Attacher les gestionnaires aux formulaires (si les formulaires existent)
+    // Formulaire Inscription (signup.html)
+    const signupForm = document.getElementById('signup-form');
     if (signupForm) {
         signupForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = signupForm.email.value;
             const password = signupForm.password.value;
-            const username = signupForm.username.value; // Assurez-vous d'avoir un champ username
+            const username = signupForm.username.value;
             if (!username || username.length < 3) {
-                 alert("Le nom d'utilisateur doit faire au moins 3 caractères.");
+                 const feedbackDiv = document.getElementById('form-feedback-signup');
+                 if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');}
+                 else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); }
                  return;
             }
             handleSignUp(email, password, username);
         });
     }
 
+    // Formulaire Connexion (login.html)
+    const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -455,30 +466,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Bouton Déconnexion (principal + mobile)
     if (logoutButton) {
-        logoutButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            handleLogout();
-        });
+        logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+    }
+    if (mobileLogoutButton) {
+         mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
     }
 
+
+    // Formulaire Saisie Partie (dashboard.html)
+    const gameEntryForm = document.getElementById('game-entry-form');
     if (gameEntryForm) {
         gameEntryForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // Récupérer les données du formulaire
             const formData = new FormData(gameEntryForm);
             const gameData = Object.fromEntries(formData.entries());
-            console.log("Données saisies:", gameData);
             saveGameEntry(gameData);
         });
     }
-
-     // --- Initialisation spécifique au Dashboard (si on est sur cette page) ---
-     // On pourrait vérifier l'URL ou la présence d'un élément spécifique
-     if (document.getElementById('dashboard-content')) {
-         // Le listener onAuthStateChange s'occupera de charger les données si l'utilisateur est connecté.
-         console.log("Page Dashboard détectée.");
-     }
 
 }); // Fin DOMContentLoaded
 
