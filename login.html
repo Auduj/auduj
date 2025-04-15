@@ -16,26 +16,32 @@
              theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Bangers', 'cursive'] },
-                    colors: { 'marvel-red': '#e62429', 'marvel-blue': '#007bff', 'marvel-yellow': '#ffc107', 'dark-bg': '#1a202c', 'light-text': '#e2e8f0', 'card-bg': '#2d3748', 'input-bg': '#4a5568', }
+                    colors: { 'marvel-red': '#e62429', 'marvel-blue': '#007bff', 'marvel-yellow': '#ffc107', 'dark-bg': '#1a202c', 'light-text': '#e2e8f0', 'card-bg': '#2d3748', 'input-bg': '#4a5568', } // input-bg n'est plus utilisé par .form-input mais peut l'être ailleurs
                 }
             }
         };
     </script>
      <style>
         /* Styles CSS */
-        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; } body { font-family: 'Inter', sans-serif; } .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; } .btn-red { @apply bg-marvel-red hover:bg-red-700; } .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; } .form-input { @apply w-full px-4 py-2 rounded-md bg-input-bg border border-gray-600 text-light-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-transparent; } .form-label { @apply block mb-2 text-sm font-medium text-gray-300; }
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        /* Style des inputs ajusté */
+        .form-input { @apply w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-transparent; }
+        .form-label { @apply block mb-2 text-sm font-medium text-gray-300; }
     </style>
 </head>
 <body class="bg-dark-bg text-light-text flex flex-col min-h-screen">
 
     <header class="bg-card-bg shadow-md"> <nav class="container mx-auto px-6 py-4 flex justify-center items-center"> <a href="index.html" class="text-4xl font-heading text-marvel-red">Auduj</a> </nav> </header>
 
-    {/* */}
     <main class="flex-grow container mx-auto px-6 py-12 md:py-20 flex items-center justify-center">
         <div class="max-w-md w-full bg-card-bg p-8 rounded-lg shadow-lg">
             <h1 class="text-3xl font-heading text-center mb-6 text-marvel-yellow">Connexion</h1>
             <form id="login-form" action="#" method="POST">
-                 <div id="form-feedback-login" class="mb-4 text-center text-sm hidden"></div> {/* Div pour afficher les erreurs */}
+                 <div id="form-feedback-login" class="mb-4 text-center text-sm hidden"></div>
                 <div class="mb-4"> <label for="email" class="form-label">Email</label> <input type="email" id="email" name="email" class="form-input" placeholder="votre.email@example.com" required autocomplete="email"> </div>
                 <div class="mb-6"> <label for="password" class="form-label">Mot de passe</label> <input type="password" id="password" name="password" class="form-input" placeholder="********" required autocomplete="current-password"> </div>
                 <div class="text-center mb-4"> <button type="submit" class="btn-marvel btn-red w-full"> <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter </button> </div>
@@ -46,7 +52,5 @@
 
     <footer class="bg-card-bg text-gray-400 py-4 mt-8"> <div class="container mx-auto px-6 text-center text-sm"> &copy; 2025 Auduj - Tous droits réservés. <a href="index.html" class="ml-4 hover:text-marvel-yellow">Retour à l'accueil</a> </div> </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> {/* SDK Supabase */}
-    <script src="assets/js/supabase-integration.js"></script> {/* Logique Supabase */}
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script src="assets/js/supabase-integration.js"></script> </body>
 </html>
