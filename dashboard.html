@@ -29,7 +29,8 @@
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-input-bg border border-gray-600 text-light-text placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; }
+        /* Style des inputs du dashboard avec texte en noir */
+        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; } /* Changement: text-gray-100 -> text-black */
         .form-label-dash { @apply block mb-1 text-xs font-medium text-gray-300; }
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
@@ -53,7 +54,8 @@
                 <a href="about.html" class="hover:text-marvel-yellow transition duration-300">À Propos</a>
                 <a href="contact.html" class="hover:text-marvel-yellow transition duration-300">Contact</a>
                 <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span>
-                    <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                    <button id="logout-button" class="btn-logout">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
                     </button>
                 </div>
                  <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div>
@@ -81,25 +83,41 @@
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
                 <form id="game-entry-form" action="#" method="POST">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
-                      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+
+                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
                         <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
+                      </div>
+
+                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                         <div> <label for="kills" class="form-label-dash">Kills</label> <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required> </div>
                         <div> <label for="deaths" class="form-label-dash">Deaths</label> <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required> </div>
                         <div> <label for="assists" class="form-label-dash">Assists</label> <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required> </div>
+                        <div> <label for="damage_dealt" class="form-label-dash">Dégâts Infligés</label> <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0"> </div>
+                        <div> <label for="healing_done" class="form-label-dash">Soins Effectués</label> <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0"> </div>
+                      </div>
+
+                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 items-end">
+                         <div> <label for="damage_mitigated" class="form-label-dash">Dégâts Bloqués</label> <input type="number" id="damage_mitigated" name="damage_mitigated" min="0" class="form-input-dash" placeholder="0"> </div>
                          <div> <label for="objective_score" class="form-label-dash">Score Objectif</label> <input type="number" id="objective_score" name="objective_score" min="0" class="form-input-dash" placeholder="0"> </div>
-                    </div>
-                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 items-end">
-                        <div> <label for="result" class="form-label-dash">Résultat</label> <select id="result" name="result" class="form-input-dash" required><option value="">Choisir...</option><option value="win" class="text-win">Victoire</option><option value="loss" class="text-loss">Défaite</option><option value="draw">Égalité</option></select> </div>
-                        <div class="md:col-span-2"> <label for="notes" class="form-label-dash">Notes (Optionnel)</label> <input type="text" id="notes" name="notes" class="form-input-dash" placeholder="Ex: Bon focus sur healer adverse"> </div>
-                        <div class="text-right"> <button type="submit" class="btn-marvel btn-red w-full"><i class="fas fa-save mr-1"></i> Enregistrer</button> </div>
+                         <div> <label for="result" class="form-label-dash">Résultat</label> <select id="result" name="result" class="form-input-dash" required><option value="">Choisir...</option><option value="win" class="text-win">Victoire</option><option value="loss" class="text-loss">Défaite</option><option value="draw">Égalité</option></select> </div>
+                         <div class="md:col-span-2">
+                            <div class="grid grid-cols-3 gap-4 items-end">
+                                <div class="col-span-2">
+                                    <label for="notes" class="form-label-dash">Notes (Optionnel)</label> <input type="text" id="notes" name="notes" class="form-input-dash" placeholder="Ex: Bon focus sur healer adverse">
+                                </div>
+                                <div>
+                                     <button type="submit" class="btn-marvel btn-red w-full"> <i class="fas fa-save mr-1"></i> Enregistrer </button>
+                                </div>
+                            </div>
+                         </div>
                      </div>
                 </form>
             </section>
 
             <section class="mb-12">
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-chart-bar mr-2"></i>Aperçu Global</h2>
-                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="stat-card"> <div id="stat-kda" class="stat-value">-.--</div> <div class="stat-label">KDA Global</div> </div>
                      <div class="stat-card"> <div id="stat-winrate" class="stat-value">--%</div> <div class="stat-label">Taux de Victoire</div> </div>
                      <div class="stat-card"> <div id="stat-total-games" class="stat-value">0</div> <div class="stat-label">Parties Jouées</div> </div>
@@ -136,7 +154,11 @@
          </div>
     </footer>
 
-    <script src="assets/js/script.js"></script> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> <script src="assets/js/supabase-integration.js"></script> <script>
+    <script src="assets/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-integration.js"></script>
+
+    <script>
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
         tabButtons.forEach(button => {
