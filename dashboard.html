@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         // Configuration Tailwind
         tailwind.config = {
@@ -22,15 +23,15 @@
         };
     </script>
     <style>
-        /* Styles CSS */
+        /* Styles CSS (inchangés, sauf la couleur de police input si modifiée précédemment) */
         .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
         body { font-family: 'Inter', sans-serif; }
         .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard avec texte en noir */
-        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; } /* Changement: text-gray-100 -> text-black */
+        /* Mettez ici la couleur de texte souhaitée (noir ou gris clair) */
+        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-black placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-marvel-blue focus:border-transparent text-sm; }
         .form-label-dash { @apply block mb-1 text-xs font-medium text-gray-300; }
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
@@ -76,27 +77,25 @@
         </div>
     </header>
 
-    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden">
+            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-6 rounded-lg shadow-lg">
-                 <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
+                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
                 <form id="game-entry-form" action="#" method="POST">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
-
-                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
-                        <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required><option value="">Chargement...</option></select> </div>
+                      <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div> <label for="hero" class="form-label-dash">Héros Joué</label> <select id="hero" name="hero" class="form-input-dash" required></select> </div>
+                        <div> <label for="map" class="form-label-dash">Map</label> <select id="map" name="map" class="form-input-dash" required></select> </div>
                       </div>
-
-                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                         <div> <label for="kills" class="form-label-dash">Kills</label> <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required> </div>
                         <div> <label for="deaths" class="form-label-dash">Deaths</label> <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required> </div>
                         <div> <label for="assists" class="form-label-dash">Assists</label> <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required> </div>
                         <div> <label for="damage_dealt" class="form-label-dash">Dégâts Infligés</label> <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0"> </div>
                         <div> <label for="healing_done" class="form-label-dash">Soins Effectués</label> <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0"> </div>
                       </div>
-
                      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 items-end">
                          <div> <label for="damage_mitigated" class="form-label-dash">Dégâts Bloqués</label> <input type="number" id="damage_mitigated" name="damage_mitigated" min="0" class="form-input-dash" placeholder="0"> </div>
                          <div> <label for="objective_score" class="form-label-dash">Score Objectif</label> <input type="number" id="objective_score" name="objective_score" min="0" class="form-input-dash" placeholder="0"> </div>
@@ -116,7 +115,7 @@
             </section>
 
             <section class="mb-12">
-                 <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-chart-bar mr-2"></i>Aperçu Global</h2>
+                <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-chart-bar mr-2"></i>Aperçu Global</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="stat-card"> <div id="stat-kda" class="stat-value">-.--</div> <div class="stat-label">KDA Global</div> </div>
                      <div class="stat-card"> <div id="stat-winrate" class="stat-value">--%</div> <div class="stat-label">Taux de Victoire</div> </div>
@@ -129,28 +128,23 @@
                  <h2 class="text-2xl font-heading mb-4 text-marvel-yellow"><i class="fas fa-search-plus mr-2"></i>Analyses Détaillées</h2>
                  <div class="mb-4 border-b border-gray-700"> <nav class="-mb-px flex space-x-1" aria-label="Tabs"> <button class="tab-button active" data-tab="progression">Progression</button> <button class="tab-button" data-tab="par-heros">Par Héros</button> <button class="tab-button" data-tab="par-map">Par Map</button> <button class="tab-button" data-tab="historique">Historique Parties</button> </nav> </div>
                  <div>
-                     <div class="tab-content" data-tab-content="progression"> <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA & Winrate)</h3> <div class="bg-input-bg p-4 rounded h-64 flex items-center justify-center text-gray-400">[Graphique de Progression]</div> </div>
-                     <div class="tab-content hidden" data-tab-content="par-heros"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Héros</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">KDA</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="4" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div>
-                     <div class="tab-content hidden" data-tab-content="par-map"> <h3 class="text-xl font-semibold mb-4 text-light-text">Statistiques par Map</h3> <div class="overflow-x-auto"> <table class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parties</th><th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Winrate</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="3" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody> </table> </div> </div>
-                     <div class="tab-content hidden" data-tab-content="historique"> <h3 class="text-xl font-semibold mb-4 text-light-text">Historique des Parties</h3> <div class="overflow-x-auto"> <table id="history-table" class="min-w-full divide-y divide-gray-700"> <thead class="bg-gray-800"><tr><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th></tr></thead> <tbody class="bg-card-bg divide-y divide-gray-700"> <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr> </tbody> </table> </div> </div>
+                     <div class="tab-content" data-tab-content="progression">
+                         <h3 class="text-xl font-semibold mb-4 text-light-text">Votre Progression (KDA par Partie)</h3>
+                         <div class="bg-card-bg p-4 rounded">
+                             <canvas id="progressionChart"></canvas>
+                         </div>
+                         <p class="text-sm text-gray-500 mt-2">Affiche l'évolution de votre KDA calculé pour chaque partie enregistrée.</p>
+                     </div>
+                     <div class="tab-content hidden" data-tab-content="par-heros"> </div>
+                     <div class="tab-content hidden" data-tab-content="par-map"> </div>
+                     <div class="tab-content hidden" data-tab-content="historique"> </div>
                  </div>
             </section>
 
     </main> <footer class="bg-card-bg text-gray-400 py-8 mt-16">
-         <div class="container mx-auto px-6 text-center">
+        <div class="container mx-auto px-6 text-center">
              <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
-              <div class="space-x-4 mb-4">
-                <a href="about.html" class="hover:text-marvel-yellow">À Propos</a>
-                <a href="contact.html" class="hover:text-marvel-yellow">Contact</a>
-                <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a>
-                <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a>
-            </div>
-            <div class="space-x-4">
-                <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a>
-                <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a>
-                <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a>
-            </div>
-             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+              <div class="space-x-4 mb-4"> <a href="about.html" class="hover:text-marvel-yellow">À Propos</a> <a href="contact.html" class="hover:text-marvel-yellow">Contact</a> <a href="#" class="hover:text-marvel-yellow">Politique de Confidentialité</a> <a href="#" class="hover:text-marvel-yellow">Conditions d'Utilisation</a> </div> <div class="space-x-4"> <a href="#" aria-label="Twitter" class="hover:text-marvel-blue"><i class="fab fa-twitter fa-lg"></i></a> <a href="#" aria-label="Discord" class="hover:text-indigo-500"><i class="fab fa-discord fa-lg"></i></a> <a href="#" aria-label="Reddit" class="hover:text-orange-500"><i class="fab fa-reddit-alien fa-lg"></i></a> </div> <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
          </div>
     </footer>
 
