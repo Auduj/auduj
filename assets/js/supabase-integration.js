@@ -9,6 +9,7 @@
  */
 
 // --- Configuration ---
+// REMPLACEZ par vos propres URL et Clé Anon Supabase !
 const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co'; // Vos clés réelles
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE'; // Vos clés réelles
 
@@ -46,9 +47,15 @@ const mobileUserGreeting = document.getElementById('mobile-user-greeting');
 
 // --- Fonctions d'Authentification ---
 
+/**
+ * Gère l'inscription d'un nouvel utilisateur.
+ * @param {string} email
+ * @param {string} password
+ * @param {string} username
+ */
 async function handleSignUp(email, password, username) {
     const feedbackDiv = document.getElementById('form-feedback-signup');
-    if(feedbackDiv) feedbackDiv.classList.add('hidden');
+    if(feedbackDiv) feedbackDiv.classList.add('hidden'); // Cacher ancien message
 
     if (!_supabase) {
         console.error("Supabase client non initialisé.");
@@ -57,28 +64,40 @@ async function handleSignUp(email, password, username) {
     }
 
     try {
+        // Appel à Supabase pour l'inscription
         const { data, error } = await _supabase.auth.signUp({
             email: email,
             password: password,
-            options: { data: { username: username } }
+            options: {
+                // Passer le nom d'utilisateur dans les métadonnées pour le trigger SQL
+                data: {
+                    username: username
+                }
+            }
         });
-        if (error) throw error;
+        if (error) throw error; // Lève une exception si Supabase renvoie une erreur
         console.log('Inscription réussie:', data);
-        alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte (si activé).');
-        window.location.href = 'login.html'; // Redirige vers la connexion après inscription
+        alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte (si l\'option est activée dans Supabase).');
+        window.location.href = 'login.html'; // Redirige vers la page de connexion après inscription
 
     } catch (error) {
+        // Gérer les erreurs (doublon d'email, mot de passe faible, etc.)
         console.error('Erreur lors de l\'inscription:', error.message);
          if(feedbackDiv) {
-             feedbackDiv.textContent = `Erreur: ${error.message}`;
+             feedbackDiv.textContent = `Erreur: ${error.message}`; // Afficher l'erreur à l'utilisateur
              feedbackDiv.classList.remove('hidden');
-             feedbackDiv.classList.add('text-red-500'); // Assurez-vous que le style d'erreur est appliqué
+             feedbackDiv.classList.add('text-red-500'); // Appliquer style d'erreur
          } else {
-             alert(`Erreur d'inscription: ${error.message}`);
+             alert(`Erreur d'inscription: ${error.message}`); // Fallback si div non trouvé
          }
     }
 }
 
+/**
+ * Gère la connexion d'un utilisateur existant.
+ * @param {string} email
+ * @param {string} password
+ */
 async function handleLogin(email, password) {
     const feedbackDiv = document.getElementById('form-feedback-login');
     if(feedbackDiv) feedbackDiv.classList.add('hidden');
@@ -90,18 +109,20 @@ async function handleLogin(email, password) {
     }
 
     try {
+        // Appel à Supabase pour la connexion
         const { data, error } = await _supabase.auth.signInWithPassword({
             email: email,
             password: password,
         });
-        if (error) throw error;
+        if (error) throw error; // Lève une exception si erreur (ex: mauvais mdp)
         console.log('Connexion réussie:', data);
-        window.location.href = 'dashboard.html'; // Redirige explicitement vers le dashboard après connexion réussie
+        window.location.href = 'dashboard.html'; // Redirige vers le tableau de bord
 
     } catch (error) {
+        // Gérer les erreurs (identifiants invalides, etc.)
         console.error('Erreur lors de la connexion:', error.message);
         if(feedbackDiv) {
-             feedbackDiv.textContent = `Erreur: ${error.message}`;
+             feedbackDiv.textContent = `Erreur: ${error.message}`; // Afficher l'erreur
              feedbackDiv.classList.remove('hidden');
              feedbackDiv.classList.add('text-red-500');
          } else {
@@ -110,16 +131,20 @@ async function handleLogin(email, password) {
     }
 }
 
+/**
+ * Gère la déconnexion de l'utilisateur.
+ */
 async function handleLogout() {
      if (!_supabase) {
         console.error("Supabase client non initialisé.");
         return;
     }
     try {
+        // Appel à Supabase pour la déconnexion
         const { error } = await _supabase.auth.signOut();
         if (error) throw error;
         console.log('Déconnexion réussie');
-        window.location.href = 'index.html'; // Rediriger vers la page d'accueil après déconnexion
+        window.location.href = 'index.html'; // Rediriger vers la page d'accueil
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error.message);
         alert(`Erreur de déconnexion: ${error.message}`);
@@ -128,54 +153,71 @@ async function handleLogout() {
 
 // --- Fonctions de Gestion des Données (Dashboard) ---
 
+/**
+ * Récupère l'ID de l'utilisateur Supabase actuellement connecté.
+ * @returns {Promise<string|null>} L'UUID de l'utilisateur ou null.
+ */
 async function getUserProfileId() {
     if (!_supabase) return null;
-    // Utilise la session actuelle gérée par Supabase JS
+    // Utilise la méthode recommandée pour obtenir l'utilisateur actuel
     const { data: { user } } = await _supabase.auth.getUser();
-    return user?.id ?? null;
+    return user?.id ?? null; // Renvoie l'ID ou null si personne n'est connecté
 }
 
+/**
+ * Remplit les menus déroulants des héros et des maps depuis la base de données.
+ */
 async function populateDropdowns() {
     const heroSelect = document.getElementById('hero');
     const mapSelect = document.getElementById('map');
+    // Ne rien faire si les éléments n'existent pas ou si Supabase n'est pas prêt
     if (!heroSelect || !mapSelect || !_supabase) return;
 
     try {
-        // Utilisation de Promise.all pour exécuter les requêtes en parallèle
+        // Récupérer les héros et les maps en parallèle pour plus d'efficacité
         const [{ data: heroes, error: heroesError }, { data: maps, error: mapsError }] = await Promise.all([
-            _supabase.from('heroes').select('id, name').order('name'),
-            _supabase.from('maps').select('id, name').order('name')
+            _supabase.from('heroes').select('id, name').order('name'), // Tri par nom
+            _supabase.from('maps').select('id, name').order('name')   // Tri par nom
         ]);
 
+        // Gérer les erreurs potentielles de requête
         if (heroesError) throw heroesError;
         if (mapsError) throw mapsError;
 
-        // Vider les options existantes (sauf la première "Choisir...")
+        // Vider les options existantes (sauf la première "Choisir..." ou "Chargement...")
         heroSelect.length = 1;
         mapSelect.length = 1;
+        // Mettre à jour le texte par défaut si nécessaire
+        heroSelect.options[0].text = "Choisir Héros...";
+        mapSelect.options[0].text = "Choisir Map...";
 
-        // Ajouter les nouvelles options
+
+        // Ajouter les nouvelles options récupérées
         heroes.forEach(hero => heroSelect.add(new Option(hero.name, hero.id)));
         maps.forEach(map => mapSelect.add(new Option(map.name, map.id)));
 
     } catch (error) {
         console.error("Erreur lors du chargement des héros/maps:", error.message);
+        // Afficher une erreur dans les selects ?
+        heroSelect.options[0].text = "Erreur chargement";
+        mapSelect.options[0].text = "Erreur chargement";
     }
 }
 
 
 /**
- * Enregistre une nouvelle partie dans la base de données.
- * @param {object} gameData Données du formulaire.
+ * Enregistre une nouvelle partie dans la base de données Supabase.
+ * @param {object} gameData - Données brutes du formulaire.
  */
 async function saveGameEntry(gameData) {
     const userId = await getUserProfileId();
     const feedbackDiv = document.getElementById('entry-feedback');
 
+    // Vérifications initiales
     if (!userId) { alert("Erreur: Utilisateur non connecté."); return; }
     if (!_supabase) { alert("Erreur: Client Supabase non initialisé."); return; }
 
-    // Reset feedback
+    // Réinitialiser le message de feedback
     if (feedbackDiv) {
         feedbackDiv.classList.add('hidden');
         feedbackDiv.textContent = '';
@@ -183,7 +225,7 @@ async function saveGameEntry(gameData) {
     }
 
     try {
-        // Préparer les données à insérer, en convertissant en nombres et gérant les valeurs potentiellement vides/invalides
+        // Préparer l'objet à insérer avec conversion et valeurs par défaut
         const dataToInsert = {
             user_id: userId,
             hero_id: parseInt(gameData.hero, 10) || null,
@@ -191,31 +233,30 @@ async function saveGameEntry(gameData) {
             kills: parseInt(gameData.kills, 10) || 0,
             deaths: parseInt(gameData.deaths, 10) || 0,
             assists: parseInt(gameData.assists, 10) || 0,
-            damage_dealt: parseInt(gameData.damage_dealt, 10) || 0,       // Champ étendu
-            healing_done: parseInt(gameData.healing_done, 10) || 0,       // Champ étendu
-            damage_mitigated: parseInt(gameData.damage_mitigated, 10) || 0, // Champ étendu
+            damage_dealt: parseInt(gameData.damage_dealt, 10) || 0,
+            healing_done: parseInt(gameData.healing_done, 10) || 0,
+            damage_mitigated: parseInt(gameData.damage_mitigated, 10) || 0,
             objective_score: parseInt(gameData.objective_score, 10) || 0,
-            result: gameData.result || null, // Assurer null si vide
-            notes: gameData.notes || null    // Assurer null si vide
+            result: gameData.result || null,
+            notes: gameData.notes || null
         };
 
-        console.log("Données à insérer:", dataToInsert); // Pour débogage
+        console.log("Données à insérer:", dataToInsert); // Utile pour le débogage
 
-        // Vérifications avant insertion
+        // Vérifications de base avant l'envoi
         if (!dataToInsert.hero_id) throw new Error("Veuillez sélectionner un héros.");
         if (!dataToInsert.map_id) throw new Error("Veuillez sélectionner une map.");
         if (!dataToInsert.result) throw new Error("Veuillez sélectionner un résultat (Victoire/Défaite/Égalité).");
 
-
-        // Insertion dans Supabase
+        // Envoyer les données à Supabase
         const { data, error } = await _supabase
             .from('games')
-            .insert([dataToInsert]) // Doit être un tableau d'objets
-            .select(); // Pour obtenir les données insérées en retour
+            .insert([dataToInsert]) // L'API insert attend un tableau d'objets
+            .select(); // Optionnel: récupérer la ligne insérée
 
-        if (error) throw error; // Laisse Supabase gérer les erreurs DB (FK, etc.)
+        if (error) throw error; // Lève une exception en cas d'erreur Supabase
 
-
+        // Succès de l'insertion
         console.log('Partie enregistrée:', data);
         if (feedbackDiv) {
             feedbackDiv.classList.remove('hidden');
@@ -223,7 +264,7 @@ async function saveGameEntry(gameData) {
             feedbackDiv.textContent = 'Partie enregistrée avec succès !';
         }
 
-        // Vider seulement les champs de stats variables du formulaire
+        // Vider les champs de formulaire (sauf héros/map potentiellement)
         const form = document.getElementById('game-entry-form');
         if(form) {
             form.kills.value = '';
@@ -235,22 +276,20 @@ async function saveGameEntry(gameData) {
             form.objective_score.value = '';
             form.result.value = '';
             form.notes.value = '';
-            // Optionnel: garder hero/map sélectionnés
-            // form.hero.value = '';
-            // form.map.value = '';
         }
-        fetchAndDisplayUserStats(); // Rafraîchir les stats affichées
+        // Mettre à jour immédiatement les statistiques affichées
+        fetchAndDisplayUserStats();
 
     } catch (error) {
+        // Gérer les erreurs (validation, Supabase, etc.)
         console.error('Erreur lors de l\'enregistrement de la partie:', error.message);
         if (feedbackDiv) {
             feedbackDiv.classList.remove('hidden');
             feedbackDiv.classList.add('text-red-500', 'border', 'border-red-500', 'p-2', 'rounded-md', 'text-sm');
-            // Afficher un message d'erreur plus convivial si possible
             feedbackDiv.textContent = `Erreur: ${error.message}`;
         }
     } finally {
-        // Cacher le message après quelques secondes
+        // Cacher le message de feedback après un délai
         setTimeout(() => { if (feedbackDiv) feedbackDiv.classList.add('hidden'); }, 5000);
     }
 }
@@ -258,18 +297,17 @@ async function saveGameEntry(gameData) {
 // --- Fonction pour le Graphique ---
 
 /**
- * Crée ou met à jour le graphique de progression du KDA.
- * @param {Array} gamesData - Tableau des parties récupérées depuis Supabase.
+ * Crée ou met à jour le graphique de progression du KDA avec Chart.js.
+ * @param {Array} gamesData - Tableau des parties, trié du plus ancien au plus récent.
  */
 function renderProgressionChart(gamesData) {
     const canvasElement = document.getElementById('progressionChart');
     if (!canvasElement) {
-         console.log("Canvas 'progressionChart' non trouvé sur cette page.");
-         return; // Ne rien faire si le canvas n'est pas là
+         console.log("Canvas 'progressionChart' non trouvé.");
+         return;
     }
-    // Vérifier si Chart.js est chargé
     if (typeof Chart === 'undefined') {
-        console.error("Chart.js n'est pas chargé. Assurez-vous d'inclure le script dans le HTML.");
+        console.error("Chart.js n'est pas chargé.");
         return;
     }
     const ctx = canvasElement.getContext('2d');
@@ -278,57 +316,48 @@ function renderProgressionChart(gamesData) {
         return;
     }
 
-    // Trier les parties par date (du plus ancien au plus récent) pour le graphique
-    const sortedGames = [...gamesData].sort((a, b) => new Date(a.played_at) - new Date(b.played_at));
-
-    // Préparer les données pour Chart.js
-    const labels = sortedGames.map((_, index) => `Partie ${index + 1}`);
-    const kdaData = sortedGames.map(game => {
+    // Préparer les données
+    const labels = gamesData.map((_, index) => `Partie ${index + 1}`);
+    const kdaData = gamesData.map(game => {
         const kills = game.kills || 0;
         const assists = game.assists || 0;
-        const deaths = Math.max(1, game.deaths || 1); // Évite division par zéro
-        return parseFloat(((kills + assists) / deaths).toFixed(2)); // Assure que c'est un nombre
+        const deaths = Math.max(1, game.deaths || 1);
+        return parseFloat(((kills + assists) / deaths).toFixed(2));
     });
 
-    // Détruire l'ancien graphique s'il existe
+    // Détruire l'ancien graphique si existant
     if (progressionChartInstance) {
         progressionChartInstance.destroy();
-        progressionChartInstance = null; // Réinitialiser la variable
+        progressionChartInstance = null;
     }
 
-    // Couleurs pour le thème sombre
+    // Configuration des couleurs et options pour thème sombre
     const gridColor = 'rgba(255, 255, 255, 0.1)';
-    const labelColor = '#e2e8f0'; // light-text
+    const labelColor = '#e2e8f0';
     const pointColor = '#e62429'; // marvel-red
-    const lineColor = 'rgba(229, 36, 41, 0.7)'; // marvel-red avec transparence
+    const lineColor = 'rgba(229, 36, 41, 0.7)';
 
-    // Créer le nouveau graphique
+    // Créer le graphique
     try {
         progressionChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'KDA par Partie',
-                    data: kdaData,
-                    borderColor: lineColor,
-                    backgroundColor: pointColor,
-                    pointBackgroundColor: pointColor,
-                    pointBorderColor: pointColor,
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: pointColor,
+                    label: 'KDA par Partie', data: kdaData,
+                    borderColor: lineColor, backgroundColor: pointColor,
+                    pointBackgroundColor: pointColor, pointBorderColor: pointColor,
+                    pointHoverBackgroundColor: '#fff', pointHoverBorderColor: pointColor,
                     tension: 0.1
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: {
                     legend: { display: true, labels: { color: labelColor } },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff', bodyColor: '#fff',
-                        borderColor: gridColor, borderWidth: 1
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff',
+                        bodyColor: '#fff', borderColor: gridColor, borderWidth: 1
                     }
                 },
                 scales: {
@@ -345,106 +374,92 @@ function renderProgressionChart(gamesData) {
 // --- Fonctions pour les Tableaux d'Analyse Détaillée ---
 
 /**
- * Calcule et affiche les statistiques agrégées par héros.
- * @param {Array} gamesData - Tableau des parties récupérées depuis Supabase.
+ * Calcule et affiche les statistiques agrégées par héros dans le tableau HTML.
+ * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderHeroStatsTable(gamesData) {
-    const heroStats = {}; // { heroName: { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 }, ... }
+    const heroStats = {};
     const tableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-    if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
+    if (!tableBody) return;
 
-    // 1. Agréger les données par héros
+    // 1. Agréger les données
     gamesData.forEach(game => {
         const heroName = game.heroes?.name;
         if (!heroName) return;
-
-        if (!heroStats[heroName]) {
-            heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
-        }
-
+        if (!heroStats[heroName]) heroStats[heroName] = { played: 0, wins: 0, kills: 0, deaths: 0, assists: 0 };
         heroStats[heroName].played++;
-        if (game.result === 'win') {
-            heroStats[heroName].wins++;
-        }
+        if (game.result === 'win') heroStats[heroName].wins++;
         heroStats[heroName].kills += game.kills || 0;
         heroStats[heroName].deaths += game.deaths || 0;
         heroStats[heroName].assists += game.assists || 0;
     });
 
-    // 2. Préparer les données pour l'affichage
+    // 2. Préparer pour affichage
     const displayData = Object.entries(heroStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
         const deathsForKda = Math.max(1, stats.deaths);
         const kda = ((stats.kills + stats.assists) / deathsForKda).toFixed(2);
         return { name, played: stats.played, winRate, kda };
     });
+    displayData.sort((a, b) => b.played - a.played); // Trier
 
-    displayData.sort((a, b) => b.played - a.played); // Trier par parties jouées
-
-    // 3. Afficher dans le tableau HTML
-    tableBody.innerHTML = ''; // Vider le contenu précédent
+    // 3. Afficher
+    tableBody.innerHTML = '';
     if (displayData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Aucune donnée par héros disponible.</td></tr>';
     } else {
         displayData.forEach(hero => {
+            const winRateClass = hero.winRate >= 50 ? 'text-win' : 'text-loss';
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${hero.name}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.played}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm ${hero.winRate >= 50 ? 'text-win' : 'text-loss'}">${hero.winRate}%</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass}">${hero.winRate}%</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${hero.kda}</td>
-                </tr>
-            `;
+                </tr>`;
             tableBody.innerHTML += row;
         });
     }
 }
 
 /**
- * Calcule et affiche les statistiques agrégées par map.
- * @param {Array} gamesData - Tableau des parties récupérées depuis Supabase.
+ * Calcule et affiche les statistiques agrégées par map dans le tableau HTML.
+ * @param {Array} gamesData - Tableau complet des parties de l'utilisateur.
  */
 function renderMapStatsTable(gamesData) {
-    const mapStats = {}; // { mapName: { played: 0, wins: 0 }, ... }
+    const mapStats = {};
     const tableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-     if (!tableBody) return; // Ne rien faire si le tableau n'est pas là
+     if (!tableBody) return;
 
-    // 1. Agréger les données par map
+    // 1. Agréger
     gamesData.forEach(game => {
         const mapName = game.maps?.name;
         if (!mapName) return;
-
-        if (!mapStats[mapName]) {
-            mapStats[mapName] = { played: 0, wins: 0 };
-        }
-
+        if (!mapStats[mapName]) mapStats[mapName] = { played: 0, wins: 0 };
         mapStats[mapName].played++;
-        if (game.result === 'win') {
-            mapStats[mapName].wins++;
-        }
+        if (game.result === 'win') mapStats[mapName].wins++;
     });
 
-    // 2. Préparer les données pour l'affichage
+    // 2. Préparer
     const displayData = Object.entries(mapStats).map(([name, stats]) => {
         const winRate = stats.played > 0 ? Math.round((stats.wins / stats.played) * 100) : 0;
         return { name, played: stats.played, winRate };
     });
+    displayData.sort((a, b) => b.played - a.played); // Trier
 
-    displayData.sort((a, b) => b.played - a.played); // Trier par parties jouées
-
-    // 3. Afficher dans le tableau HTML
-    tableBody.innerHTML = ''; // Vider le contenu précédent
+    // 3. Afficher
+    tableBody.innerHTML = '';
     if (displayData.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée par map disponible.</td></tr>';
     } else {
         displayData.forEach(map => {
+             const winRateClass = map.winRate >= 50 ? 'text-win' : 'text-loss';
             const row = `
                 <tr>
                     <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-light-text">${map.name}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300">${map.played}</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-sm ${map.winRate >= 50 ? 'text-win' : 'text-loss'}">${map.winRate}%</td>
-                </tr>
-            `;
+                    <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass}">${map.winRate}%</td>
+                </tr>`;
             tableBody.innerHTML += row;
         });
     }
@@ -452,7 +467,7 @@ function renderMapStatsTable(gamesData) {
 
 
 /**
- * Récupère et affiche TOUTES les statistiques (globales, historique, graphique, détaillées).
+ * Fonction principale pour récupérer et afficher toutes les données du dashboard.
  */
 async function fetchAndDisplayUserStats() {
     const userId = await getUserProfileId();
@@ -465,12 +480,12 @@ async function fetchAndDisplayUserStats() {
     }
 
     try {
-        // Récupérer TOUTES les parties de l'utilisateur
+        // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
         const { data: games, error } = await _supabase
             .from('games')
-            .select(`*, heroes ( name ), maps ( name )`) // Jointures importantes
+            .select(`*, heroes ( name ), maps ( name )`) // Jointures essentielles
             .eq('user_id', userId)
-            .order('played_at', { ascending: false }); // Trié récent d'abord pour l'historique
+            .order('played_at', { ascending: false });
 
         if (error) throw error;
         console.log('Parties récupérées pour toutes les stats:', games);
@@ -502,20 +517,46 @@ async function fetchAndDisplayUserStats() {
         if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
 
-        // --- Affichage Historique ---
+        // --- Affichage Historique (15 dernières parties) ---
         const historyTableBody = document.querySelector('#history-table tbody');
         if (historyTableBody) {
             historyTableBody.innerHTML = '';
-            const gamesToShow = games.slice(0, 15);
-            if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
-            else { gamesToShow.forEach(game => { /* ... génération des lignes ... */
-                 const row = `<tr>...</tr>`; historyTableBody.innerHTML += row; });
+            const gamesToShow = games.slice(0, 15); // Déjà trié DESC par la requête
+            if (gamesToShow.length === 0) {
+                 historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+            } else {
+                gamesToShow.forEach(game => {
+                    const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
+                    const row = `
+                        <tr>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
+                            <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
+                        </tr>`;
+                    historyTableBody.innerHTML += row;
+                });
             }
         }
 
         // --- Génération du Graphique ---
-        if (games.length > 0) { renderProgressionChart(games); }
-        else { /* ... effacer graphique ... */ }
+        // Note: renderProgressionChart a besoin des données triées ASC (plus ancien d'abord)
+        if (games.length > 0) {
+            renderProgressionChart(games); // La fonction inverse elle-même l'ordre maintenant
+        } else {
+             // Effacer le graphique si pas/plus de données
+             const chartCanvas = document.getElementById('progressionChart');
+             if (chartCanvas) {
+                 const ctx = chartCanvas.getContext('2d');
+                 ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+             }
+             if (progressionChartInstance) {
+                progressionChartInstance.destroy();
+                progressionChartInstance = null;
+             }
+        }
 
         // --- Calcul et Affichage Stats Détaillées ---
         if (games.length > 0) {
@@ -531,14 +572,178 @@ async function fetchAndDisplayUserStats() {
 
     } catch (error) {
         console.error("Erreur lors de la récupération/affichage complet des stats:", error.message);
+        // Afficher une erreur plus globale à l'utilisateur ?
     }
 }
 
 
 // --- Gestion de l'État d'Authentification et UI ---
-async function updateUserUI(user) { /* ... inchangé ... */ }
+/**
+ * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
+ * @param {object|null} user L'objet utilisateur Supabase ou null.
+ */
+async function updateUserUI(user) {
+    console.log("Updating UI for user:", user ? user.email : 'null');
+    const userInfoDiv = document.getElementById('user-info');
+    const userGreetingSpan = document.getElementById('user-greeting');
+    const logoutBtn = document.getElementById('logout-button');
+    const loginBtnHeader = document.getElementById('login-button-header');
+    const mobileLogin = document.getElementById('mobile-login-link');
+    const mobileLogout = document.getElementById('mobile-logout-button');
+    const mobileGreeting = document.getElementById('mobile-user-greeting');
+    const dashboardContent = document.getElementById('dashboard-content');
+
+    if (user) {
+        // --- Utilisateur Connecté ---
+        if (userInfoDiv) userInfoDiv.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+        if (loginBtnHeader) loginBtnHeader.style.display = 'none';
+        if (mobileLogin) mobileLogin.style.display = 'none';
+        if (mobileLogout) mobileLogout.style.display = 'block';
+
+        // Afficher le nom d'utilisateur
+        let displayName = user.email; // Fallback
+        if (_supabase) {
+            try {
+                const { data: profile, error } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
+                if (error && error.code !== 'PGRST116') throw error; // Ignorer '0 rows'
+                if (profile && profile.username) displayName = profile.username;
+            } catch (profileError) { console.error("Erreur récupération profil:", profileError.message); }
+        }
+        if (userGreetingSpan) userGreetingSpan.textContent = `Salut, ${displayName}!`;
+        if (mobileGreeting) mobileGreeting.textContent = displayName;
+
+        // Afficher le contenu du dashboard
+        if (dashboardContent) dashboardContent.classList.remove('hidden');
+
+        // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
+         if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
+             populateDropdowns();
+             fetchAndDisplayUserStats();
+        }
+
+    } else {
+        // --- Utilisateur Déconnecté ---
+        if (userInfoDiv) userInfoDiv.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (loginBtnHeader) loginBtnHeader.style.display = 'inline-block';
+        if (mobileLogin) mobileLogin.style.display = 'block';
+        if (mobileLogout) mobileLogout.style.display = 'none';
+        if (mobileGreeting) mobileGreeting.textContent = '';
+
+        // Cacher le contenu du dashboard
+        if (dashboardContent) dashboardContent.classList.add('hidden');
+
+         // Effacer le graphique lors de la déconnexion ou si dashboard caché
+         if (progressionChartInstance) {
+            progressionChartInstance.destroy();
+            progressionChartInstance = null;
+         }
+    }
+}
 
 // --- Initialisation et Écouteurs ---
-async function checkAuthStateAndRedirect() { /* ... inchangé ... */ }
-document.addEventListener('DOMContentLoaded', () => { /* ... inchangé ... */ });
+
+/**
+ * Vérifie l'état de connexion au chargement et applique les redirections si nécessaire.
+ */
+async function checkAuthStateAndRedirect() {
+    if (!_supabase) { console.log("Supabase client not ready for auth check."); return; }
+
+    const { data: { session }, error } = await _supabase.auth.getSession();
+    if (error) { console.error("Erreur getSession:", error); return; } // Ne pas rediriger en cas d'erreur
+
+    const user = session?.user ?? null;
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html'; // Default to index
+
+    console.log(`Checking auth state on page: ${currentPage}, user: ${user ? user.email : 'null'}`);
+
+    const protectedPages = ['dashboard.html'];
+    const publicOnlyPages = ['login.html', 'signup.html'];
+
+    // Redirection si nécessaire
+    if (!user && protectedPages.includes(currentPage)) {
+        console.log("User not logged in, redirecting to login...");
+        window.location.replace('login.html'); // Utiliser replace pour éviter l'historique
+    } else if (user && publicOnlyPages.includes(currentPage)) {
+        console.log("User already logged in, redirecting to dashboard...");
+        window.location.replace('dashboard.html');
+    } else {
+        // Si pas de redirection, mettre à jour l'UI pour l'état actuel
+        // Cela va aussi déclencher le fetch des données si on est sur le dashboard et connecté
+        updateUserUI(user);
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!_supabase) {
+        console.error("DOM Loaded, but Supabase client failed to initialize. Aborting setup.");
+        // Afficher une erreur globale à l'utilisateur ?
+        return;
+    }
+
+    // 1. Vérifier l'état initial et rediriger si nécessaire
+    checkAuthStateAndRedirect();
+
+    // 2. Écouter les changements d'état futurs (ex: login/logout dans un autre onglet)
+    _supabase.auth.onAuthStateChange((event, session) => {
+        console.log('Auth State Change Event:', event, session);
+        // Mettre à jour l'UI pour refléter le nouvel état
+        // La redirection n'est généralement pas nécessaire ici, sauf cas spécifiques
+        updateUserUI(session?.user ?? null);
+    });
+
+    // 3. Attacher les gestionnaires d'événements aux formulaires et boutons
+
+    // Formulaire Inscription (signup.html)
+    const signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = signupForm.email.value;
+            const password = signupForm.password.value;
+            const username = signupForm.username.value;
+            if (!username || username.length < 3) {
+                 const feedbackDiv = document.getElementById('form-feedback-signup');
+                 if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');}
+                 else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); }
+                 return;
+            }
+            handleSignUp(email, password, username);
+        });
+    }
+
+    // Formulaire Connexion (login.html)
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = loginForm.email.value;
+            const password = loginForm.password.value;
+            handleLogin(email, password);
+        });
+    }
+
+    // Bouton Déconnexion (principal + mobile)
+    if (logoutButton) {
+        logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+    }
+    if (mobileLogoutButton) {
+         mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+    }
+
+
+    // Formulaire Saisie Partie (dashboard.html)
+    const gameEntryForm = document.getElementById('game-entry-form');
+    if (gameEntryForm) {
+        gameEntryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(gameEntryForm);
+            const gameData = Object.fromEntries(formData.entries());
+            saveGameEntry(gameData); // Appelle la fonction mise à jour
+        });
+    }
+
+}); // Fin DOMContentLoaded
 
