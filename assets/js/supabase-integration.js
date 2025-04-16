@@ -7,6 +7,7 @@
  * - Affichage des graphiques de progression (KDA, Précision) + FILTRE HEROS PERSISTANT
  * - Calcul et affichage des stats étendues par héros et par map
  * - Affichage détails partie depuis historique (MODALE)
+ * - Implémentation du CACHE LOCAL pour affichage rapide
  */
 
 // --- Configuration ---
@@ -17,8 +18,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let _supabase; // Variable pour le client Supabase
 let progressionChartInstance = null; // Instance pour le graphique KDA
 let accuracyChartInstance = null;    // Instance pour le graphique Précision
-let allUserGames = []; // Stocker toutes les parties récupérées pour filtrage/détails
+let allUserGames = []; // Stocker toutes les parties récupérées (cache ou fetch)
 let selectedChartHeroId = 'all'; // ID du héros sélectionné pour filtrer les graphiques ('all' par défaut)
+const CACHE_KEY_GAMES = 'auduj_cachedGames'; // Clé pour le cache local
 
 // --- Initialisation et Vérification des Clés ---
 // Vérification simple que les clés sont définies (CORRIGÉ)
@@ -53,6 +55,7 @@ const chartHeroFilter = document.getElementById('chartHeroFilter');
 const gameDetailModal = document.getElementById('gameDetailModal');
 const closeModalButton = document.getElementById('closeModalButton');
 const historyTableBody = document.querySelector('#history-table tbody');
+const dashboardContent = document.getElementById('dashboard-content'); // Référence ajoutée ici
 
 // --- Fonctions d'Authentification ---
 
@@ -152,9 +155,10 @@ async function handleLogout() {
         // Appel à Supabase pour la déconnexion
         const { error } = await _supabase.auth.signOut();
         if (error) throw error;
-        console.log('Déconnexion réussie');
-        // Optionnel: Effacer la préférence de filtre lors de la déconnexion ?
-        // localStorage.removeItem('auduj_chartHeroFilter');
+        // Effacer les données en cache lors de la déconnexion
+        localStorage.removeItem(CACHE_KEY_GAMES);
+        localStorage.removeItem('auduj_chartHeroFilter'); // Effacer aussi le filtre
+        console.log('Déconnexion réussie et cache vidé.');
         window.location.href = 'index.html'; // Rediriger vers la page d'accueil
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error.message);
@@ -318,7 +322,7 @@ async function saveGameEntry(gameData) {
             form.notes.value = '';
         }
         // Mettre à jour immédiatement les statistiques affichées
-        fetchAndDisplayUserStats();
+        fetchAndRefreshDashboard(); // Utiliser la fonction qui fetch les données fraîches
 
     } catch (error) {
         // Gérer les erreurs (validation, Supabase, etc.)
@@ -622,89 +626,116 @@ function showGameDetails(game) {
 
 
 /**
- * Fonction principale pour récupérer et afficher toutes les données du dashboard.
+ * Fonction principale pour récupérer les données fraîches et mettre à jour l'affichage.
  */
-async function fetchAndDisplayUserStats() {
+async function fetchAndRefreshDashboard() { // Anciennement fetchAndDisplayUserStats
     const userId = await getUserProfileId();
     if (!userId || !_supabase) return;
     const dashboardContent = document.getElementById('dashboard-content');
     if (!dashboardContent || dashboardContent.classList.contains('hidden')) { return; }
 
+    console.log("Récupération des données fraîches depuis Supabase...");
+
     try {
-        // Récupérer TOUTES les parties de l'utilisateur, triées par date pour l'historique
+        // Récupérer TOUTES les parties de l'utilisateur
         const { data: games, error } = await _supabase
             .from('games')
             .select(`*, heroes ( id, name ), maps ( id, name )`) // Jointures essentielles
             .eq('user_id', userId)
-            .order('played_at', { ascending: false });
+            .order('played_at', { ascending: false }); // Trié récent d'abord
 
         if (error) throw error;
-        console.log('Parties récupérées:', games);
-        allUserGames = games; // Stocker globalement
+        console.log('Données fraîches reçues:', games);
+        allUserGames = games; // Mettre à jour le cache global en mémoire
 
-        // --- Calculs et Affichage Stats Globales ---
-        const totalGames = allUserGames.length;
-        let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
-        const heroCounts = {};
-        allUserGames.forEach(game => {
-            totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
-            if (game.result === 'win') wins++;
-            if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
-        });
-        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-        const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
-        let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
-        for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
-
-        const kdaElement = document.getElementById('stat-kda');
-        const winRateElement = document.getElementById('stat-winrate');
-        const totalGamesElement = document.getElementById('stat-total-games');
-        const mainHeroElement = document.getElementById('stat-main-hero');
-        if (kdaElement) kdaElement.textContent = kda;
-        if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
-        if (totalGamesElement) totalGamesElement.textContent = totalGames;
-        if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
-
-
-        // --- Affichage Historique (Ajout data-game-id) ---
-        if (historyTableBody) {
-            historyTableBody.innerHTML = '';
-            const gamesToShow = allUserGames.slice(0, 15); // Utiliser allUserGames
-            if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
-            else { gamesToShow.forEach(game => {
-                const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
-                // Ajout de data-game-id="${game.id}" à la ligne <tr>
-                const row = `
-                    <tr data-game-id="${game.id}">
-                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
-                        <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
-                    </tr>`;
-                historyTableBody.innerHTML += row; });
-            }
+        // Sauvegarder les données fraîches dans localStorage
+        try {
+            localStorage.setItem(CACHE_KEY_GAMES, JSON.stringify(allUserGames));
+            console.log('Données des parties mises en cache.');
+        } catch (storageError) {
+            console.error('Erreur sauvegarde cache jeux:', storageError);
+            // Ne pas bloquer l'affichage à cause de ça
         }
 
-        // --- Génération des Graphiques (via updateCharts qui utilise le filtre) ---
-        updateCharts(); // Appelle la fonction qui gère le filtrage et le rendu
-
-        // --- Calcul et Affichage Stats Détaillées ---
-        if (allUserGames.length > 0) {
-            renderHeroStatsTable(allUserGames); // Appelle la version mise à jour
-            renderMapStatsTable(allUserGames);
-        } else {
-            // Vider les tableaux si aucune partie
-             const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-             const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-             if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>'; // Colspan 8
-             if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
-        }
+        // Ré-afficher TOUT le dashboard avec les données fraîches
+        displayDashboardData(allUserGames);
 
     } catch (error) {
-        console.error("Erreur fetch/display stats:", error.message);
+        console.error("Erreur lors de la récupération/affichage des stats fraîches:", error.message);
+        // Optionnel: Afficher une erreur à l'utilisateur
+        // Peut-être laisser les données du cache affichées ?
     }
+}
+
+/**
+ * Affiche toutes les sections du dashboard en utilisant les données fournies.
+ * @param {Array} gamesToDisplay - Les données des parties (du cache ou fraîches).
+ */
+function displayDashboardData(gamesToDisplay) {
+    console.log("Affichage des données du dashboard...");
+    if (!gamesToDisplay) {
+        console.warn("Aucune donnée à afficher.");
+        return;
+    }
+
+     // --- Calculs et Affichage Stats Globales ---
+     const totalGames = gamesToDisplay.length;
+     let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
+     const heroCounts = {};
+     gamesToDisplay.forEach(game => {
+         totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
+         if (game.result === 'win') wins++;
+         if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
+     });
+     const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+     const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
+     let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
+     for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
+
+     const kdaElement = document.getElementById('stat-kda');
+     const winRateElement = document.getElementById('stat-winrate');
+     const totalGamesElement = document.getElementById('stat-total-games');
+     const mainHeroElement = document.getElementById('stat-main-hero');
+     if (kdaElement) kdaElement.textContent = kda;
+     if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
+     if (totalGamesElement) totalGamesElement.textContent = totalGames;
+     if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
+
+     // --- Affichage Historique ---
+     if (historyTableBody) {
+         historyTableBody.innerHTML = '';
+         const gamesToShow = gamesToDisplay.slice(0, 15); // Afficher les 15 dernières des données fournies
+         if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
+         else { gamesToShow.forEach(game => {
+             const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
+             const row = `
+                 <tr data-game-id="${game.id}">
+                     <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                     <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
+                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
+                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
+                     <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
+                     <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
+                 </tr>`;
+             historyTableBody.innerHTML += row; });
+         }
+     }
+
+     // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
+     // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
+     updateCharts();
+
+     // --- Calcul et Affichage Stats Détaillées ---
+     if (gamesToDisplay.length > 0) {
+         renderHeroStatsTable(gamesToDisplay);
+         renderMapStatsTable(gamesToDisplay);
+     } else {
+         // Vider les tableaux si aucune partie
+          const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
+          const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
+          if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+          if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+     }
 }
 
 
@@ -743,14 +774,12 @@ async function updateUserUI(user) {
         if (userGreetingSpan) userGreetingSpan.textContent = `Salut, ${displayName}!`;
         if (mobileGreeting) mobileGreeting.textContent = displayName;
 
-        // Afficher le contenu du dashboard
+        // Afficher le contenu du dashboard (le cache l'a peut-être déjà fait)
         if (dashboardContent) dashboardContent.classList.remove('hidden');
 
         // Charger les données spécifiques au dashboard (dropdowns, stats, graph, tables)
-         if (document.getElementById('dashboard-content')) { // Vérifier si on est sur la bonne page
-             // populateDropdowns est appelé dans DOMContentLoaded maintenant
-             // fetchAndDisplayUserStats sera appelé par checkAuthStateAndRedirect ou onAuthStateChange
-        }
+         // Note: Le fetch initial est maintenant déclenché par checkAuthStateAndRedirect
+         // après la mise à jour de l'UI.
 
     } else {
         // --- Utilisateur Déconnecté ---
@@ -767,7 +796,7 @@ async function updateUserUI(user) {
          // Effacer les graphiques et vider données globales
          if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
          if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
-         allUserGames = []; // Vider les données stockées
+         allUserGames = []; // Vider les données en mémoire
          // Optionnel: Effacer le contenu des canvas
          const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
          const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
@@ -779,108 +808,129 @@ async function updateUserUI(user) {
 // --- Initialisation et Écouteurs ---
 
 /**
- * NOUVEAU: Charge la préférence de filtre depuis localStorage.
+ * NOUVEAU: Charge les données depuis le cache local et les affiche.
+ * @returns {boolean} True si des données ont été chargées et affichées depuis le cache, false sinon.
+ */
+function loadDataFromCacheAndDisplay() {
+    console.log("Tentative de chargement depuis le cache...");
+    const cachedData = localStorage.getItem(CACHE_KEY_GAMES);
+    if (cachedData) {
+        try {
+            const parsedData = JSON.parse(cachedData);
+            // Vérifier si c'est bien un tableau non vide
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                allUserGames = parsedData; // Mettre à jour les données globales
+                console.log(`Affichage de ${allUserGames.length} parties depuis le cache.`);
+                displayDashboardData(allUserGames); // Afficher immédiatement
+                return true; // Indiquer que le cache a été utilisé
+            } else {
+                 console.log("Cache vide ou invalide trouvé.");
+                 localStorage.removeItem(CACHE_KEY_GAMES); // Nettoyer cache invalide
+                 allUserGames = [];
+                 return false;
+            }
+        } catch (e) {
+            console.error("Erreur parsing cache jeux:", e);
+            localStorage.removeItem(CACHE_KEY_GAMES); // Supprimer cache invalide
+            allUserGames = []; // Réinitialiser
+            return false;
+        }
+    } else {
+        console.log("Aucune donnée dans le cache.");
+        allUserGames = []; // Assurer que c'est vide
+        return false;
+    }
+}
+
+
+/**
+ * Charge la préférence de filtre depuis localStorage.
  */
 function loadFilterPreference() {
     const savedHeroId = localStorage.getItem('auduj_chartHeroFilter');
     if (savedHeroId) {
-        selectedChartHeroId = savedHeroId; // Mettre à jour la variable globale
+        selectedChartHeroId = savedHeroId;
         if (chartHeroFilter) {
-            // Essayer de définir la valeur du dropdown.
-            // Important: Cela doit être appelé APRÈS que populateDropdowns a rempli les options.
             chartHeroFilter.value = selectedChartHeroId;
-             // Vérifier si la valeur a bien été appliquée (au cas où l'ID sauvegardé n'existe plus)
              if (chartHeroFilter.value !== selectedChartHeroId) {
-                 console.warn(`Hero ID ${selectedChartHeroId} non trouvé dans le filtre, retour à 'Tous'.`);
+                 console.warn(`Filtre Hero ID ${selectedChartHeroId} invalide, retour à 'Tous'.`);
                  selectedChartHeroId = 'all';
                  chartHeroFilter.value = 'all';
-             } else {
-                console.log(`Filtre héros chargé depuis localStorage: ${selectedChartHeroId}`);
-             }
+             } else { console.log(`Filtre héros chargé: ${selectedChartHeroId}`); }
         }
     } else {
-        // Assurer la valeur par défaut si rien n'est sauvegardé
         selectedChartHeroId = 'all';
-        if (chartHeroFilter) {
-            chartHeroFilter.value = 'all';
-        }
+        if (chartHeroFilter) { chartHeroFilter.value = 'all'; }
     }
 }
 
 /**
- * Vérifie l'état de connexion au chargement et applique les redirections si nécessaire.
+ * Vérifie l'état de connexion au chargement, gère l'UI et lance le fetch de données fraîches.
  */
 async function checkAuthStateAndRedirect() {
     if (!_supabase) { console.log("Supabase client not ready."); return; }
+
     const { data: { session }, error } = await _supabase.auth.getSession();
-    if (error) { console.error("Erreur getSession:", error); return; } // Ne pas rediriger en cas d'erreur
+    if (error) { console.error("Erreur getSession:", error); return; }
+
     const user = session?.user ?? null;
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html'; // Default to index
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     console.log(`Checking auth state on page: ${currentPage}, user: ${user ? user.email : 'null'}`);
+
     const protectedPages = ['dashboard.html'];
     const publicOnlyPages = ['login.html', 'signup.html'];
-    if (!user && protectedPages.includes(currentPage)) { window.location.replace('login.html'); }
-    else if (user && publicOnlyPages.includes(currentPage)) { window.location.replace('dashboard.html'); }
-    else {
-        // Si pas de redirection, mettre à jour l'UI pour l'état actuel
-        // L'appel à fetchAndDisplayUserStats est maintenant DANS updateUserUI
-        updateUserUI(user);
+
+    // Redirection si nécessaire
+    if (!user && protectedPages.includes(currentPage)) { window.location.replace('login.html'); return; }
+    if (user && publicOnlyPages.includes(currentPage)) { window.location.replace('dashboard.html'); return; }
+
+    // Si pas de redirection, mettre à jour l'UI
+    await updateUserUI(user); // Attendre la mise à jour de l'UI
+
+    // Si l'utilisateur est connecté ET qu'on est sur le dashboard, lancer le fetch
+    if (user && currentPage === 'dashboard.html') {
+        fetchAndRefreshDashboard();
     }
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     if (!_supabase) { console.error("DOM Loaded, Supabase non initialisé."); return; }
 
-    // 1. Charger la préférence de filtre AVANT de vérifier l'état d'auth
-    //    MAIS s'assurer que les dropdowns sont peuplés d'abord si on est sur le dashboard.
+    // 1. Essayer d'afficher depuis le cache IMMEDIATEMENT (si sur dashboard)
+    let displayedFromCache = false;
     if (document.getElementById('dashboard-content')) {
-        // Peupler les dropdowns d'abord, puis charger la préférence, puis vérifier l'auth
-        populateDropdowns().then(() => {
-             loadFilterPreference(); // Charger la préférence après que les options existent
-             checkAuthStateAndRedirect(); // Vérifier l'auth et mettre à jour l'UI/charger les données
-        });
-    } else {
-        // Si on n'est pas sur le dashboard, pas besoin de populate/load filter
-         checkAuthStateAndRedirect();
+        // Il faut que les dropdowns soient peuplés AVANT de charger le filtre
+        // et idéalement avant d'afficher le cache (car le cache contient des IDs)
+        // On peuple donc les dropdowns en premier lieu.
+        await populateDropdowns();
+        loadFilterPreference(); // Charger la préférence APRÈS que les options existent
+        displayedFromCache = loadDataFromCacheAndDisplay(); // Afficher le cache ensuite
     }
 
+    // 2. Vérifier l'état d'authentification, rediriger si besoin, et lancer le fetch réel si connecté
+    // checkAuthStateAndRedirect mettra à jour l'UI et appellera fetchAndRefreshDashboard si nécessaire
+    await checkAuthStateAndRedirect();
 
-    // 2. Écouter les changements d'état futurs
-    _supabase.auth.onAuthStateChange((event, session) => {
+    // 3. Écouter les changements d'état futurs
+    _supabase.auth.onAuthStateChange(async (event, session) => { // Rendu async
         console.log('Auth State Change Event:', event, session);
-        // Mettre à jour l'UI pour refléter le nouvel état
-        updateUserUI(session?.user ?? null);
+        // Mettre à jour l'UI et potentiellement re-fetcher si l'utilisateur change
+        await updateUserUI(session?.user ?? null);
+         // Re-fetcher les données si l'état change vers connecté et qu'on est sur le dashboard
+         // (utile si l'utilisateur se connecte dans un autre onglet)
+         if (event === 'SIGNED_IN' && document.getElementById('dashboard-content')) {
+             fetchAndRefreshDashboard();
+         }
     });
 
-    // 3. Attacher les gestionnaires d'événements
+    // 4. Attacher les autres gestionnaires d'événements
 
     // Formulaires Auth
     const signupForm = document.getElementById('signup-form');
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = signupForm.email.value;
-            const password = signupForm.password.value;
-            const username = signupForm.username.value;
-            if (!username || username.length < 3) {
-                 const feedbackDiv = document.getElementById('form-feedback-signup');
-                 if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');}
-                 else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); }
-                 return;
-            }
-            handleSignUp(email, password, username);
-        });
-    }
+    if (signupForm) { signupForm.addEventListener('submit', (e) => { e.preventDefault(); const email = signupForm.email.value; const password = signupForm.password.value; const username = signupForm.username.value; if (!username || username.length < 3) { const feedbackDiv = document.getElementById('form-feedback-signup'); if(feedbackDiv) { feedbackDiv.textContent = "Le nom d'utilisateur doit faire au moins 3 caractères."; feedbackDiv.classList.remove('hidden'); feedbackDiv.classList.add('text-red-500');} else { alert("Le nom d'utilisateur doit faire au moins 3 caractères."); } return; } handleSignUp(email, password, username); }); }
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = loginForm.email.value;
-            const password = loginForm.password.value;
-            handleLogin(email, password);
-        });
-    }
+    if (loginForm) { loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = loginForm.email.value; const password = loginForm.password.value; handleLogin(email, password); }); }
 
     // Boutons Logout
     if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
@@ -888,14 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Formulaire Saisie Partie
     const gameEntryForm = document.getElementById('game-entry-form');
-    if (gameEntryForm) {
-        gameEntryForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(gameEntryForm);
-            const gameData = Object.fromEntries(formData.entries());
-            saveGameEntry(gameData); // Appelle la fonction mise à jour
-        });
-    }
+    if (gameEntryForm) { gameEntryForm.addEventListener('submit', (e) => { e.preventDefault(); const formData = new FormData(gameEntryForm); const gameData = Object.fromEntries(formData.entries()); saveGameEntry(gameData); }); }
 
     // Filtre des graphiques (Sauvegarde dans localStorage)
     if (chartHeroFilter) {

@@ -23,15 +23,31 @@
         };
     </script>
     <style>
-        /* Styles CSS (inchangés) */
+        /* Styles CSS */
         .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
         body { font-family: 'Inter', sans-serif; }
         .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; }
-        .form-label-dash { @apply block mb-1.5 text-xs font-medium text-gray-300; }
+        /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR */
+        .form-input-dash {
+            @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm;
+        }
+        /* Ajustement label pour contraste sur fond sombre global */
+        .form-label-dash {
+            @apply block mb-1.5 text-xs font-medium text-gray-300;
+        }
+        /* Ajustement select pour fond blanc */
+        select.form-input-dash {
+            @apply appearance-none; /* Retire apparence native */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        /* Autres styles */
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
         .stat-label { @apply text-sm text-gray-400; }
@@ -52,12 +68,35 @@
 <body class="bg-dark-bg text-light-text">
 
     <header class="bg-card-bg shadow-lg sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center"> <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a> <div class="hidden md:flex space-x-6 items-center"> <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a> <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a> <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a> <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a> <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span> <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button> </div> <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div> <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div> </nav> <div id="mobile-menu" class="hidden md:hidden bg-card-bg"> <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a> <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a> <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a> <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a> <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion</a> <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span> <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button> </div>
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
+                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span>
+                    <button id="logout-button" class="btn-logout">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
+                    </button>
+                </div>
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
+            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion</a>
+            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
+            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
+        </div>
     </header>
 
-    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden">
-
-            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
@@ -186,8 +225,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-card-bg divide-y divide-gray-700">
-                                    <tr><td colspan="8" class="text-center text-gray-500 py-4">Chargement...</td></tr>
-                                </tbody>
+                                    <tr><td colspan="8" class="text-center text-gray-500 py-4">Chargement...</td></tr> </tbody>
                             </table>
                          </div>
                      </div>
