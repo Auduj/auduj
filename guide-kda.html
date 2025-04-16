@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apprenez à interpréter votre KDA dans Marvel Rivals et découvrez des stratégies pour l'améliorer en utilisant Auduj pour suivre et analyser vos progrès."> <title>Guide : Comprendre et Améliorer Votre KDA sur Marvel Rivals - Auduj</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        // Configuration Tailwind personnalisée
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Bangers', 'cursive'],
+                    },
+                    colors: {
+                        'marvel-red': '#e62429',
+                        'marvel-blue': '#007bff',
+                        'marvel-yellow': '#ffc107',
+                        'dark-bg': '#1a202c',
+                        'light-text': '#e2e8f0',
+                        'card-bg': '#2d3748',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
+        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
+        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
+        /* Styles spécifiques pour le contenu de l'article */
+        .article-content h2 { @apply text-3xl font-semibold mt-12 mb-5 text-marvel-yellow; }
+        .article-content h3 { @apply text-xl font-semibold mt-8 mb-4 text-marvel-red; }
+        .article-content p { @apply text-lg mb-6 text-gray-200 leading-loose; }
+        .article-content ul { @apply list-disc list-inside space-y-2 text-gray-200 mb-8 pl-4; }
+        .article-content li::marker { @apply text-marvel-yellow; }
+        .article-content strong { @apply text-white font-semibold; }
+        .article-content em { @apply italic text-gray-400; }
+        .article-content code { @apply bg-gray-700 text-marvel-yellow px-2 py-0.5 rounded text-sm font-mono; }
+        .article-content blockquote { @apply border-l-4 border-marvel-blue pl-4 py-2 my-8 bg-gray-800 italic text-gray-400; }
+        /* Style pour les CTAs dans l'article */
+        .article-cta { @apply block w-full sm:w-auto text-center px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 bg-marvel-yellow hover:bg-yellow-600 text-gray-900 my-6; }
+    </style>
+</head>
+<body class="bg-dark-bg text-light-text">
+
+    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
+                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
+                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
+                <a href="guides.html" class="text-marvel-yellow font-semibold transition duration-300">Guides</a>
+                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span> <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button> </div>
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion / Tableau de Bord</a>
+            </div>
+            <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
+             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
+            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
+            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
+            <a href="guides.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">Guides</a>
+            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion / Tableau de Bord</a>
+            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
+            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20 max-w-4xl">
+        <article class="article-content">
+            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Comprendre et Améliorer Votre KDA sur Marvel Rivals</h1>
+
+            <p>Le KDA (Kills/Deaths/Assists) est l'une des statistiques les plus regardées dans les jeux de tir compétitifs comme Marvel Rivals. Un bon KDA est souvent synonyme de performance, mais que signifie-t-il vraiment ? Et surtout, comment l'utiliser pour <strong>réellement</strong> progresser ?</p>
+            <p>Ce guide vous aidera à décrypter votre KDA, à comprendre son importance (et ses limites), et à utiliser les données que vous suivez dans <strong>Auduj</strong> pour l'améliorer de manière significative.</p>
+
+            <h2>1. Qu'est-ce que le KDA et Comment est-il Calculé ?</h2>
+            <p>Le KDA est un ratio qui mesure votre efficacité au combat en comparant vos contributions offensives (Kills et Assists) à vos morts (Deaths).</p> <ul> <li><strong>Kills (K) :</strong> Le nombre d'ennemis que vous avez éliminés personnellement.</li> <li><strong>Deaths (D) :</strong> Le nombre de fois où vous avez été éliminé.</li> <li><strong>Assists (A) :</strong> Le nombre de fois où vous avez contribué à l'élimination d'un ennemi sans porter le coup fatal.</li> </ul> <p>La formule la plus courante pour le KDA est :</p> <blockquote><p><strong>KDA = (Kills + Assists) / Deaths</strong></p></blockquote> <h3>Cas Particulier : 0 Mort (Deaths = 0)</h3> <p>Si vous terminez une partie sans mourir (bravo !), la division par zéro est impossible. Dans ce cas :</p> <ul> <li>Certains considèrent le KDA comme "Parfait" ou "Infini".</li> <li>Pour le calcul dans Auduj et pour pouvoir le comparer, on utilise souvent la formule <code>(Kills + Assists) / 1</code>. Un KDA de 15/0/10 deviendrait donc (15+10)/1 = 25.</li> </ul> <p><strong>Important :</strong> Ne confondez pas le KDA avec le simple ratio K/D (Kills / Deaths).</p>
+
+
+            <h2>2. Interpréter Votre KDA : Plus qu'un Simple Chiffre</h2>
+            <p>Avoir un KDA élevé, c'est bien, mais ce chiffre seul ne raconte pas toute l'histoire. <strong>Le contexte est primordial !</strong></p> <ul> <li><strong>Votre Rôle/Héros :</strong> <ul> <li>Un <strong>Vanguard</strong> aura souvent plus de morts et moins de kills qu'un <strong>Duelist</strong>.</li> <li>Un <strong>Strategist</strong> aura généralement beaucoup d'assists.</li> <li>Comparez votre KDA à celui d'autres joueurs ayant le <strong>même rôle</strong> ou jouant le <strong>même héros</strong>.</li> </ul> </li> <li><strong>Le Mode de Jeu :</strong> Les objectifs peuvent nécessiter des sacrifices.</li> <li><strong>La Composition d'Équipe :</strong> La synergie influence les stats.</li> <li><strong>Le Résultat du Match :</strong> Le KDA est souvent meilleur en cas de victoire, mais pas toujours.</li> </ul> <h3>Qu'est-ce qu'un "bon" KDA alors ?</h3> <p>C'est un KDA qui reflète votre capacité à être <strong>efficace</strong> dans votre rôle et à avoir un <strong>impact positif</strong>, tout en minimisant les morts inutiles.</p>
+
+            <h2>3. Comment Utiliser Auduj pour Analyser Votre KDA</h2>
+            <p>C'est là qu'Auduj devient votre meilleur allié ! En saisissant vos données après chaque partie, vous pouvez :</p>
+            <ul>
+                <li><strong>Suivre l'Évolution Générale :</strong> Regardez le graphique "Progression KDA" dans l'onglet "Progression" de votre <a href="dashboard.html" class="text-marvel-blue hover:underline">tableau de bord</a>. Est-ce que votre KDA moyen a tendance à monter, stagner ou baisser ?</li>
+                <li><strong>Analyser par Héros :</strong> Consultez le tableau "Par Héros".
+                    <ul>
+                        <li>Quels sont les héros avec lesquels vous avez le meilleur/pire KDA moyen ?</li>
+                        <li>Comparez le KDA moyen au Winrate pour ce héros.</li>
+                        <li>Utilisez le filtre sur les graphiques de progression pour isoler la tendance KDA d'un héros spécifique.</li>
+                    </ul>
+                </li>
+                <li><strong>Examiner les Parties Spécifiques :</strong> Dans l'onglet "Historique Parties", repérez les matchs avec un KDA particulier. Cliquez sur la ligne pour ouvrir la <strong>fenêtre de détails</strong>. Revoyez toutes les stats et vos notes pour comprendre le contexte !</li>
+            </ul>
+            <div class="text-center">
+                 <a href="dashboard.html#progression" class="article-cta">
+                    <i class="fas fa-chart-line mr-2"></i>Voir mes Graphiques de Progression KDA
+                 </a>
+            </div>
+
+
+            <h2>4. Stratégies Concrètes pour Améliorer Votre KDA (et Votre Impact)</h2>
+             <p>Améliorer son KDA ne veut pas dire jouer uniquement pour les kills. Il s'agit d'améliorer son efficacité globale.</p> <h3>Objectif N°1 : Réduire les Morts !</h3> <ul> <li><strong>Positionnement :</strong> Apprenez où vous placer.</li> <li><strong>Gestion des Cooldowns :</strong> Gardez vos escapes/défenses.</li> <li><strong>Savoir se Retirer :</strong> Ne restez pas dans un combat perdu.</li> <li><strong>Communication :</strong> Demandez de l'aide.</li> </ul> <h3>Objectif N°2 : Maximiser les Kills et Assists !</h3> <ul> <li><strong>Précision :</strong> Travaillez votre visée (suivez votre % dans Auduj !).</li> <li><strong>Focus Cible :</strong> Concentrez vos tirs.</li> <li><strong>Teamplay :</strong> Participez aux combats groupés.</li> <li><strong>Combos & Team-Ups :</strong> Coordonnez vos capacités.</li> </ul> <h3>Objectif N°3 : Jouer son Rôle !</h3> <p>Ne sacrifiez pas l'objectif pour votre KDA personnel.</p>
+
+            <h2>Conclusion</h2>
+            <p>Le KDA est une métrique intéressante, mais elle doit être analysée avec intelligence et replacée dans son contexte. C'est un <strong>outil</strong> pour évaluer une partie de votre performance, pas une fin en soi.</p>
+            <p>En utilisant <strong>Auduj</strong> pour suivre régulièrement votre KDA et les autres statistiques détaillées, partie après partie, héros par héros, vous obtiendrez des informations précieuses et personnalisées pour identifier vos points faibles et mesurer vos progrès.</p>
+            <p>Alors, n'attendez plus : lancez Marvel Rivals, faites de votre mieux, puis venez <strong>enregistrer vos parties dans Auduj</strong> pour devenir un meilleur joueur ! Bonne chance sur le champ de bataille !</p>
+
+             <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="dashboard.html" class="btn-marvel btn-red w-full sm:w-auto">
+                    <i class="fas fa-plus-circle mr-2"></i> Enregistrer ma Dernière Partie
+                </a>
+                 <a href="guides.html" class="btn-marvel btn-blue w-full sm:w-auto">
+                    <i class="fas fa-arrow-left mr-2"></i> Retour aux Guides
+                </a>
+             </div>
+
+        </article>
+    </main>
+
+    <footer class="bg-card-bg text-gray-400 py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
+            <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+    <script>
+        // Script menu mobile (intégré)
+        const mobileMenuButton = document.getElementById('mobile-menu-button'); /* ... etc ... */
+    </script>
+</body>
+</html>
