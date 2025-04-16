@@ -33,9 +33,16 @@
         /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR (CORRIGÉ) */
         .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-white focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; }
         /* Labels remis en couleur claire pour lisibilité sur fond sombre (CORRIGÉ) */
-        .form-label-dash {@apply block mb-1.5 text-xs font-medium text-gray-300; /* CORRIGÉ: text-gray-300 */ }
+        .form-label-dash { @apply block mb-1.5 text-xs font-medium text-gray-300; }
         /* Ajustement select pour fond blanc */
-        select.form-input-dash { @apply appearance-none; /* Retire apparence native */ background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Flèche grise */ background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+        select.form-input-dash {
+            @apply appearance-none; /* Retire apparence native */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Flèche grise */
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
         /* Autres styles */
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
@@ -44,7 +51,7 @@
         .tab-button.active { @apply bg-card-bg text-marvel-yellow; }
         .tab-button:not(.active) { @apply text-gray-400 hover:bg-gray-700 hover:text-light-text; }
         .tab-content { @apply p-4 bg-card-bg rounded-b-lg rounded-tr-lg; }
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; }
+        .input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; }
         .chart-container { @apply relative h-64 md:h-80; }
         .modal { @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
