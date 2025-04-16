@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Explorez les outils d'analyse, les métriques suivies et la visualisation des statistiques offerts par Auduj pour optimiser votre jeu sur Marvel Rivals.">
-    <title>Fonctionnalités d'Auduj - Tracker Stats Marvel Rivals</title>
+    <meta name="description" content="Explorez les outils d'analyse, les métriques suivies (KDA, Précision, etc.) et la visualisation des statistiques offerts par Auduj pour optimiser votre jeu sur Marvel Rivals."> <title>Fonctionnalités d'Auduj - Tracker Stats Marvel Rivals</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,89 +49,75 @@
                 <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
                 <a href="features.html" class="text-marvel-yellow font-semibold transition duration-300">Fonctionnalités</a>
                 <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
-                <a href="dashboard.html" class="btn-marvel btn-blue">Tableau de Bord</a>
+                 <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span> <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button> </div>
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion / Tableau de Bord</a>
             </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-light-text focus:outline-none">
-                    <i class="fas fa-bars fa-lg"></i>
-                </button>
-            </div>
+            <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div>
         </nav>
         <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
              <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
             <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
             <a href="features.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">Fonctionnalités</a>
             <a href="guides.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Guides</a>
-            <a href="dashboard.html" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700">Tableau de Bord</a>
+            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion / Tableau de Bord</a>
+            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
+            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
         </div>
     </header>
 
     <main class="container mx-auto px-6 py-12 md:py-20">
-        <h1 class="text-4xl md:text-6xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Fonctionnalités Clés d'Auduj pour Booster Votre Niveau sur Marvel Rivals</h1>
-        <p class="text-lg text-center mb-16 max-w-3xl mx-auto text-gray-300">Découvrez les outils conçus spécifiquement pour vous aider à analyser vos performances et à progresser efficacement.</p>
+        <h1 class="text-4xl md:text-6xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Fonctionnalités Actuelles d'Auduj</h1> <p class="text-lg text-center mb-16 max-w-3xl mx-auto text-gray-300">Découvrez les outils concrets à votre disposition pour analyser vos performances et progresser sur Marvel Rivals.</p>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-tachometer-alt feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Tableau de Bord Centralisé</h2>
-                <p class="text-gray-400 flex-grow">Votre hub personnel pour visualiser rapidement vos statistiques clés, accéder à la saisie de parties et naviguer vers vos analyses détaillées.</p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Dashboard" alt="Mockup Tableau de Bord" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+                <i class="fas fa-columns feature-icon"></i> <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Tableau de Bord Personnel</h2>
+                <p class="text-gray-400 flex-grow">Votre espace centralisé après connexion pour saisir vos parties, consulter vos statistiques globales et accéder aux analyses détaillées.</p>
             </div>
 
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
                 <i class="fas fa-keyboard feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Saisie Manuelle Ergonomique</h2>
-                <p class="text-gray-400 flex-grow">Un formulaire optimisé pour une saisie rapide et sans erreur : menus déroulants (héros, maps), champs numériques clairs, responsive design pour mobile.</p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Formulaire" alt="Mockup Formulaire Saisie" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Saisie Manuelle Détaillée</h2>
+                <p class="text-gray-400 flex-grow">Un formulaire optimisé pour enregistrer rapidement les infos clés : Héros, Map, Résultat, K/D/A, Élim. Solo, Tirs Tête, Last Kills, Dégâts, Soins, Bloqués, Précision et Notes.</p>
             </div>
 
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-calculator feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Suivi des Métriques Clés</h2>
-                <p class="text-gray-400 flex-grow">Enregistrez et analysez les statistiques essentielles : KDA (Kills/Deaths/Assists), Taux de Victoire (Win Rate), Score d'Objectif, Héros joué, Map, etc.</p>
-                 <div class="mt-4 text-center text-gray-500">[Icônes représentant KDA, WinRate, etc.]</div>
+                <i class="fas fa-database feature-icon"></i> <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Stockage Sécurisé</h2>
+                <p class="text-gray-400 flex-grow">Vos données de parties sont enregistrées de manière sécurisée dans votre espace personnel. Vous seul y avez accès.</p>
             </div>
 
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-chart-pie feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Visualisation des Données</h2>
-                <p class="text-gray-400 flex-grow">Des graphiques clairs et interactifs (courbes de progression, diagrammes circulaires, histogrammes) pour comprendre vos performances en un coup d'œil. <em class="text-sm text-gray-500">(Nécessite une implémentation backend/JS)</em></p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Graphiques" alt="Mockup Graphiques Stats" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+                <i class="fas fa-chart-bar feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Aperçu Global Rapide</h2>
+                <p class="text-gray-400 flex-grow">Visualisez en un coup d'œil votre KDA global, votre taux de victoire total, le nombre de parties jouées et votre héros principal (le plus joué).</p>
             </div>
 
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
                 <i class="fas fa-chart-line feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Analyse de Progression</h2>
-                <p class="text-gray-400 flex-grow">Suivez l'évolution de vos statistiques clés (KDA global, Win Rate) sur différentes périodes (jour, semaine, mois) pour mesurer concrètement votre amélioration.</p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Courbe+Progression" alt="Mockup Courbe Progression" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Graphiques de Progression</h2>
+                <p class="text-gray-400 flex-grow">Suivez l'évolution de votre KDA et de votre Précision (%) partie après partie grâce à des graphiques linéaires. Filtrez par héros pour une analyse ciblée (filtre mémorisé).</p>
             </div>
 
             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-filter feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Filtres & Analyses Détaillées</h2>
-                <p class="text-gray-400 flex-grow">Affinez vos analyses en filtrant par héros, par map, ou par période. Découvrez vos meilleurs héros, vos maps les plus difficiles, etc.</p>
-                 <div class="mt-4 text-center text-gray-500">[Icônes représentant filtres, héros, maps]</div>
+                <i class="fas fa-user-tag feature-icon"></i> <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Analyse par Héros</h2>
+                <p class="text-gray-400 flex-grow">Consultez un tableau détaillé indiquant pour chaque héros : parties jouées, winrate, KDA moyen, dégâts moyens, soins moyens, dégâts bloqués moyens et précision moyenne.</p>
             </div>
 
              <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-book-open feature-icon"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Section Guides & Astuces</h2>
-                <p class="text-gray-400 flex-grow">Accédez à des articles et guides pour mieux interpréter vos statistiques, découvrir des stratégies et progresser plus vite sur Marvel Rivals.</p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mockup+Blog" alt="Mockup Section Guides" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
+                <i class="fas fa-map-marked-alt feature-icon"></i> <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Analyse par Map</h2>
+                <p class="text-gray-400 flex-grow">Identifiez vos points forts et faibles sur chaque carte grâce à un tableau récapitulant vos parties jouées et votre taux de victoire par map.</p>
+            </div>
+
+             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
+                <i class="fas fa-history feature-icon"></i>
+                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Historique Détaillé</h2>
+                <p class="text-gray-400 flex-grow">Retrouvez la liste de vos dernières parties enregistrées. Cliquez sur une partie pour ouvrir une fenêtre affichant l'intégralité des statistiques saisies pour ce match.</p>
             </div>
 
              <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
                 <i class="fas fa-mobile-alt feature-icon"></i>
                 <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Optimisé Mobile</h2>
-                <p class="text-gray-400 flex-grow">Consultez vos stats et saisissez vos parties facilement depuis votre smartphone ou tablette, où que vous soyez.</p>
-                 <img src="https://placehold.co/300x200/2d3748/e2e8f0?text=Mobile+Friendly" alt="Mockup Mobile" class="mt-4 rounded self-center" onerror="this.src='https://placehold.co/300x200/2d3748/e2e8f0?text=Erreur+Image';">
-            </div>
-
-             <div class="bg-card-bg p-6 rounded-lg shadow-lg flex flex-col">
-                <i class="fas fa-check-circle feature-icon text-green-500"></i>
-                <h2 class="text-2xl font-semibold mb-3 text-marvel-yellow">Feedback Visuel Instantané</h2>
-                <p class="text-gray-400 flex-grow">Recevez une confirmation claire et immédiate après chaque saisie de partie réussie, pour une expérience utilisateur fluide.</p>
-                 <div class="mt-4 text-center text-gray-500">[Animation/Icone de succès]</div>
+                <p class="text-gray-400 flex-grow">Consultez vos stats et saisissez vos parties facilement depuis votre smartphone ou tablette.</p>
             </div>
 
         </div>
@@ -141,7 +126,8 @@
             <a href="dashboard.html" class="btn-marvel btn-red text-lg">
                 <i class="fas fa-columns mr-2"></i>Accéder à Votre Tableau de Bord
             </a>
-            <a href="dashboard.html#saisie-partie" class="btn-marvel btn-blue text-lg"> <i class="fas fa-pencil-alt mr-2"></i>Commencer la Saisie Manuelle
+            <a href="how-it-works.html" class="btn-marvel btn-blue text-lg">
+                 Comment Ça Marche ? <i class="fas fa-question-circle ml-2"></i>
             </a>
         </div>
 
@@ -150,10 +136,41 @@
     <footer class="bg-card-bg text-gray-400 py-8 mt-16">
         <div class="container mx-auto px-6 text-center">
             <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
-             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+            <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
         </div>
     </footer>
 
     <script src="assets/js/script.js"></script>
+    <script>
+        // Script simple pour menu mobile (intégré ici pour autonomie de la page)
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = mobileMenuButton ? mobileMenuButton.querySelector('i') : null;
+        const userInfoMobile = document.getElementById('user-info');
+        const loginButtonHeaderMobile = document.getElementById('login-button-header');
+        const mobileLoginLink = document.getElementById('mobile-login-link');
+        const mobileUserGreeting = document.getElementById('mobile-user-greeting');
+        const mobileLogoutButton = document.getElementById('mobile-logout-button');
+
+        if (mobileMenuButton && mobileMenu && menuIcon) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                if (mobileMenu.classList.contains('hidden')) { menuIcon.classList.remove('fa-times'); menuIcon.classList.add('fa-bars'); }
+                else { menuIcon.classList.remove('fa-bars'); menuIcon.classList.add('fa-times'); }
+                // Logique simple affichage connexion/déconnexion mobile
+                if (userInfoMobile && !userInfoMobile.classList.contains('hidden')) {
+                    if(mobileLoginLink) mobileLoginLink.classList.add('hidden');
+                    if(mobileUserGreeting) mobileUserGreeting.classList.remove('hidden');
+                    if(mobileLogoutButton) mobileLogoutButton.classList.remove('hidden');
+                } else {
+                     if(mobileLoginLink) mobileLoginLink.classList.remove('hidden');
+                    if(mobileUserGreeting) mobileUserGreeting.classList.add('hidden');
+                    if(mobileLogoutButton) mobileLogoutButton.classList.add('hidden');
+                }
+            });
+        }
+        // Gérer affichage initial header (idéalement via JS global si possible)
+        // Pour l'instant, on suppose que le JS global mettra à jour l'état au chargement
+    </script>
 </body>
 </html>
