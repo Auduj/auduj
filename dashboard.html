@@ -23,26 +23,14 @@
         };
     </script>
     <style>
-        /* Styles CSS */
+        /* Styles CSS Globaux (sans .form-input-dash / .form-label-dash) */
         .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
         body { font-family: 'Inter', sans-serif; }
         .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR (CORRIGÉ) */
-        .form-input-dash { @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm !text-black; /* Ajout de !text-black */ }
-        /* Labels remis en couleur claire pour lisibilité sur fond sombre (CORRIGÉ) */
-        .form-label-dash { @apply block mb-1.5 text-xs font-medium text-gray-300; }
-        /* Ajustement select pour fond blanc */
-        select.form-input-dash {
-            @apply appearance-none; /* Retire apparence native */
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-        }
-        /* Autres styles */
+        /* Les styles pour .form-input-dash et .form-label-dash ont été retirés */
         .stat-card { @apply bg-card-bg p-4 rounded-lg shadow-lg text-center; }
         .stat-value { @apply text-3xl font-bold text-marvel-yellow mb-1; }
         .stat-label { @apply text-sm text-gray-400; }
@@ -50,7 +38,7 @@
         .tab-button.active { @apply bg-card-bg text-marvel-yellow; }
         .tab-button:not(.active) { @apply text-gray-400 hover:bg-gray-700 hover:text-light-text; }
         .tab-content { @apply p-4 bg-card-bg rounded-b-lg rounded-tr-lg; }
-        .input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } input[type=number] { -moz-appearance: textfield; }
         .chart-container { @apply relative h-64 md:h-80; }
         .modal { @apply fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
@@ -58,6 +46,14 @@
         .modal.active .modal-content { @apply scale-100; }
         .modal-close { @apply absolute top-3 right-3 text-gray-400 hover:text-white text-2xl cursor-pointer; }
         #history-table tbody tr { @apply cursor-pointer hover:bg-gray-700 transition-colors duration-150; }
+        /* Style pour la flèche du select (si appearance-none est utilisé) */
+        .select-arrow {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
     </style>
 </head>
 <body class="bg-dark-bg text-light-text">
@@ -70,15 +66,13 @@
                 <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
                 <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
                 <a href="guides.html" class="hover:text-marvel-yellow transition duration-300">Guides</a>
-                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span>
-                    <button id="logout-button" class="btn-logout">
-                        <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion
-                    </button>
+                <div id="user-info" class="items-center space-x-4 hidden">
+                    <span id="user-greeting" class="text-sm text-gray-300"></span>
+                    <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button>
                 </div>
-                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a> </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button>
+                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion</a>
             </div>
+            <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div>
         </nav>
         <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
              <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
@@ -91,7 +85,9 @@
         </div>
     </header>
 
-    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden"> <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
+    <main id="dashboard-content" class="container mx-auto px-6 py-12 md:py-16 hidden">
+
+            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
@@ -101,16 +97,16 @@
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label for="hero" class="form-label-dash">Héros Joué</label>
-                            <select id="hero" name="hero" class="form-input-dash" required><option value="">Choisir Héros...</option></select>
+                            <label for="hero" class="block mb-1.5 text-xs font-medium text-gray-300">Héros Joué</label>
+                            <select id="hero" name="hero" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm appearance-none select-arrow" required><option value="">Choisir Héros...</option></select>
                         </div>
                         <div>
-                            <label for="map" class="form-label-dash">Map</label>
-                             <select id="map" name="map" class="form-input-dash" required><option value="">Choisir Map...</option></select>
+                            <label for="map" class="block mb-1.5 text-xs font-medium text-gray-300">Map</label>
+                             <select id="map" name="map" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm appearance-none select-arrow" required><option value="">Choisir Map...</option></select>
                         </div>
                          <div>
-                            <label for="result" class="form-label-dash">Résultat</label>
-                            <select id="result" name="result" class="form-input-dash" required>
+                            <label for="result" class="block mb-1.5 text-xs font-medium text-gray-300">Résultat</label>
+                            <select id="result" name="result" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm appearance-none select-arrow" required>
                                 <option value="">Choisir...</option>
                                 <option value="win">Victoire</option>
                                 <option value="loss">Défaite</option>
@@ -121,57 +117,57 @@
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label for="kills" class="form-label-dash">Kills</label>
-                            <input type="number" id="kills" name="kills" min="0" class="form-input-dash" placeholder="0" required>
+                            <label for="kills" class="block mb-1.5 text-xs font-medium text-gray-300">Kills</label>
+                            <input type="number" id="kills" name="kills" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0" required>
                         </div>
                         <div>
-                            <label for="deaths" class="form-label-dash">Deaths</label>
-                             <input type="number" id="deaths" name="deaths" min="0" class="form-input-dash" placeholder="0" required>
+                            <label for="deaths" class="block mb-1.5 text-xs font-medium text-gray-300">Deaths</label>
+                             <input type="number" id="deaths" name="deaths" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0" required>
                         </div>
                         <div>
-                             <label for="assists" class="form-label-dash">Assists</label>
-                             <input type="number" id="assists" name="assists" min="0" class="form-input-dash" placeholder="0" required>
+                             <label for="assists" class="block mb-1.5 text-xs font-medium text-gray-300">Assists</label>
+                             <input type="number" id="assists" name="assists" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0" required>
                         </div>
                       </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
-                            <label for="solo_kills" class="form-label-dash">Élim. Solo</label>
-                            <input type="number" id="solo_kills" name="solo_kills" min="0" class="form-input-dash" placeholder="0">
+                            <label for="solo_kills" class="block mb-1.5 text-xs font-medium text-gray-300">Élim. Solo</label>
+                            <input type="number" id="solo_kills" name="solo_kills" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                          <div>
-                            <label for="head_kills" class="form-label-dash">Tirs Tête</label>
-                            <input type="number" id="head_kills" name="head_kills" min="0" class="form-input-dash" placeholder="0">
+                            <label for="head_kills" class="block mb-1.5 text-xs font-medium text-gray-300">Tirs Tête</label>
+                            <input type="number" id="head_kills" name="head_kills" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                          <div>
-                            <label for="last_kills" class="form-label-dash">Last Kills</label>
-                            <input type="number" id="last_kills" name="last_kills" min="0" class="form-input-dash" placeholder="0">
+                            <label for="last_kills" class="block mb-1.5 text-xs font-medium text-gray-300">Last Kills</label>
+                            <input type="number" id="last_kills" name="last_kills" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                       </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
-                            <label for="damage_dealt" class="form-label-dash">Dégâts</label>
-                            <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="form-input-dash" placeholder="0">
+                            <label for="damage_dealt" class="block mb-1.5 text-xs font-medium text-gray-300">Dégâts</label>
+                            <input type="number" id="damage_dealt" name="damage_dealt" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                         <div>
-                             <label for="healing_done" class="form-label-dash">Soins</label>
-                            <input type="number" id="healing_done" name="healing_done" min="0" class="form-input-dash" placeholder="0">
+                             <label for="healing_done" class="block mb-1.5 text-xs font-medium text-gray-300">Soins</label>
+                            <input type="number" id="healing_done" name="healing_done" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                          <div>
-                            <label for="damage_blocked" class="form-label-dash">Bloqués</label>
-                            <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="form-input-dash" placeholder="0">
+                            <label for="damage_blocked" class="block mb-1.5 text-xs font-medium text-gray-300">Bloqués</label>
+                            <input type="number" id="damage_blocked" name="damage_blocked" min="0" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="0">
                         </div>
                      </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
-                            <label for="accuracy" class="form-label-dash">Précision (%)</label>
-                            <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="form-input-dash" placeholder="ex: 45.5">
+                            <label for="accuracy" class="block mb-1.5 text-xs font-medium text-gray-300">Précision (%)</label>
+                            <input type="number" id="accuracy" name="accuracy" min="0" max="100" step="0.1" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="ex: 45.5">
                         </div>
                          <div class="md:col-span-2">
-                            <label for="notes" class="form-label-dash">Notes (Optionnel)</label>
-                            <textarea id="notes" name="notes" rows="3" class="form-input-dash" placeholder="Stratégie utilisée, points à améliorer..."></textarea>
+                            <label for="notes" class="block mb-1.5 text-xs font-medium text-gray-300">Notes (Optionnel)</label>
+                            <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm" placeholder="Stratégie utilisée, points à améliorer..."></textarea>
                          </div>
                      </div>
 
@@ -199,7 +195,7 @@
                 </div>
                 <div>
                     <div class="tab-content space-y-8" data-tab-content="progression">
-                         <div class="flex justify-end"> <label for="chartHeroFilter" class="text-sm text-gray-400 mr-2 self-center">Filtrer par héros:</label> <select id="chartHeroFilter" class="form-input-dash w-auto bg-gray-800 text-sm"> <option value="all">Tous les héros</option> </select> </div>
+                         <div class="flex justify-end"> <label for="chartHeroFilter" class="text-sm text-gray-400 mr-2 self-center">Filtrer par héros:</label> <select id="chartHeroFilter" class="w-auto bg-gray-800 text-sm px-3 py-2 rounded-md border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out appearance-none select-arrow"> <option value="all">Tous les héros</option> </select> </div>
                          <div> <h3 class="text-xl font-semibold mb-4 text-light-text">Progression KDA</h3> <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="progressionChart"></canvas> </div> <p class="text-sm text-gray-500 mt-2">Évolution de votre KDA calculé pour chaque partie (filtré).</p> </div>
                          <div> <h3 class="text-xl font-semibold mb-4 text-light-text">Progression Précision (%)</h3> <div class="bg-card-bg p-4 rounded chart-container"> <canvas id="accuracyChart"></canvas> </div> <p class="text-sm text-gray-500 mt-2">Évolution de votre précision enregistrée (filtré).</p> </div>
                      </div>
