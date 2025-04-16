@@ -3,144 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Apprenez à interpréter votre KDA dans Marvel Rivals et découvrez des stratégies pour l'améliorer en utilisant Auduj pour suivre et analyser vos progrès."> <title>Guide : Comprendre et Améliorer Votre KDA sur Marvel Rivals - Auduj</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script>
-        // Configuration Tailwind personnalisée
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        heading: ['Bangers', 'cursive'],
-                    },
-                    colors: {
-                        'marvel-red': '#e62429',
-                        'marvel-blue': '#007bff',
-                        'marvel-yellow': '#ffc107',
-                        'dark-bg': '#1a202c',
-                        'light-text': '#e2e8f0',
-                        'card-bg': '#2d3748',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Comprendre et Améliorer Votre KDA sur Marvel Rivals - Auduj</title>
     <style>
-        .font-heading { font-family: 'Bangers', cursive; letter-spacing: 1px; }
-        body { font-family: 'Inter', sans-serif; }
-        .btn-marvel { @apply inline-block px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1; }
-        .btn-red { @apply bg-marvel-red hover:bg-red-700; }
-        .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
-        /* Styles spécifiques pour le contenu de l'article */
-        .article-content h2 { @apply text-3xl font-semibold mt-12 mb-5 text-marvel-yellow; }
-        .article-content h3 { @apply text-xl font-semibold mt-8 mb-4 text-marvel-red; }
-        .article-content p { @apply text-lg mb-6 text-gray-200 leading-loose; }
-        .article-content ul { @apply list-disc list-inside space-y-2 text-gray-200 mb-8 pl-4; }
-        .article-content li::marker { @apply text-marvel-yellow; }
-        .article-content strong { @apply text-white font-semibold; }
-        .article-content em { @apply italic text-gray-400; }
-        .article-content code { @apply bg-gray-700 text-marvel-yellow px-2 py-0.5 rounded text-sm font-mono; }
-        .article-content blockquote { @apply border-l-4 border-marvel-blue pl-4 py-2 my-8 bg-gray-800 italic text-gray-400; }
-        /* Style pour les CTAs dans l'article */
-        .article-cta { @apply block w-full sm:w-auto text-center px-6 py-3 rounded-lg text-white font-semibold tracking-wide shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 bg-marvel-yellow hover:bg-yellow-600 text-gray-900 my-6; }
+        :root {
+            /* Couleurs de l'exemple fourni par l'utilisateur */
+            --primary: #d63384; /* Rose/Violet */
+            --primary-dark: #ad2167;
+            --secondary: #0d6efd; /* Bleu */
+            --secondary-light: #e7f1ff;
+            --text: #212529; /* Texte sombre */
+            --text-light: #6c757d; /* Texte gris */
+            --background: #f8f9fa; /* Fond très clair */
+            --card-bg: #ffffff; /* Fond des cartes/sections : Blanc */
+            --accent: #20c997; /* Vert accent */
+            /* Couleurs Marvel (pour référence ou mélange si besoin) */
+            --marvel-red: #e23636;
+            --marvel-blue: #2b4e97;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Police de l'exemple */
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* --- Header Style --- */
+        header {
+            /* Utilisation des couleurs Marvel pour le gradient */
+            background: linear-gradient(135deg, var(--marvel-red), var(--marvel-blue));
+            color: white;
+            padding: 2.5rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        /* Placeholder pour image de fond header (optionnel) */
+        /* .header-container::before { ... } */
+
+        .logo { /* Style pour le logo Auduj si utilisé */
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            font-family: 'Bangers', cursive; /* Police Auduj */
+            color: var(--marvel-red); /* Couleur Auduj */
+        }
+
+        h1 { /* Titre principal de l'article */
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* --- Conteneur Principal --- */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* --- Table des Matières (TOC) --- */
+        .toc {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .toc h2 { /* Titre "Sommaire" */
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--marvel-red); /* Couleur Auduj */
+            border-bottom: 2px solid var(--marvel-red);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        .toc ul { list-style-type: none; }
+        .toc li { margin-bottom: 0.8rem; }
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .toc a:hover {
+            color: var(--marvel-blue); /* Couleur Auduj */
+            background-color: rgba(43, 78, 151, 0.1);
+            transform: translateX(5px);
+        }
+        .toc a::before {
+            content: "→";
+            margin-right: 0.5rem;
+            color: var(--marvel-red); /* Couleur Auduj */
+            font-weight: bold;
+        }
+
+        /* --- Sections --- */
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .section h2 { /* Titres de section H2 */
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--marvel-blue); /* Couleur Auduj */
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .section h2::after { /* Soulignement rouge */
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 80px; height: 3px;
+            background: var(--marvel-red);
+        }
+        .section h3 { /* Sous-titres H3 */
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--marvel-red); /* Couleur Auduj */
+        }
+        .section p { margin-bottom: 1rem; color: var(--text-light); } /* Texte paragraphe gris */
+        .section ul { list-style-position: outside; padding-left: 1.5rem; margin-bottom: 1rem; color: var(--text-light); }
+        .section li { margin-bottom: 0.5rem; }
+        .section code { background-color: #eee; padding: 0.2em 0.4em; border-radius: 3px; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; color: var(--primary-dark); }
+        .section blockquote { border-left: 4px solid var(--marvel-blue); padding-left: 1rem; margin: 1.5rem 0; color: var(--text-light); font-style: italic; }
+        .section strong { color: var(--text); font-weight: 600; }
+
+        /* --- Éléments Spécifiques --- */
+        .highlight-box {
+            background-color: rgba(226, 54, 54, 0.05); /* Fond léger rouge Marvel */
+            border-left: 4px solid var(--marvel-red);
+            padding: 1.2rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0;
+        }
+        .highlight-box p { margin-bottom: 0; }
+
+        .formula-box {
+            background-color: var(--secondary-light); /* Fond bleu très clair */
+            border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; text-align: center;
+            border: 1px solid rgba(13, 110, 253, 0.2);
+        }
+        .formula { font-size: 1.5rem; font-weight: bold; color: var(--secondary); margin: 1rem 0; } /* Bleu */
+
+        .case-box {
+            background-color: rgba(32, 201, 151, 0.1); /* Fond vert clair */
+            border-radius: 8px; padding: 1.2rem; margin: 1.5rem 0;
+            border: 1px solid rgba(32, 201, 151, 0.3);
+        }
+        .case-title { font-weight: bold; color: var(--accent); display: block; margin-bottom: 0.5rem; } /* Vert */
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .role-card { background-color: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.05); }
+        .role-title { font-size: 1.2rem; font-weight: bold; color: var(--marvel-blue); margin-bottom: 1rem; display: flex; align-items: center; }
+        .role-title::before { content: ""; display: inline-block; width: 24px; height: 24px; margin-right: 0.5rem; background-color: #ccc; border-radius: 50%; } /* Placeholder icône */
+        .role-card ul { padding-left: 1.5rem; }
+        .role-card li { margin-bottom: 0.5rem; }
+
+        .tip-box {
+            display: flex; background-color: var(--secondary-light); /* Fond bleu très clair */
+            border-radius: 12px; padding: 1.2rem; margin: 1.5rem 0; align-items: flex-start;
+            border: 1px solid rgba(13, 110, 253, 0.2);
+        }
+        .tip-icon {
+            background-color: var(--secondary); /* Bleu */
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin-right: 1rem; flex-shrink: 0; color: white; font-weight: bold;
+        }
+        .tip-content { flex-grow: 1; }
+        .tip-content strong { display: block; margin-bottom: 0.5rem; color: var(--secondary); } /* Bleu */
+
+        .auduj-link { /* Bouton style Auduj */
+            display: inline-block; background-color: var(--marvel-red); color: white; padding: 0.8rem 1.5rem;
+            border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.3s ease;
+            margin-top: 1rem; border: none; cursor: pointer;
+        }
+        .auduj-link:hover { background-color: var(--marvel-blue); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(43, 78, 151, 0.2); }
+
+        /* Calculateur KDA */
+        .kda-calculator { background-color: rgba(32, 201, 151, 0.1); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; border: 1px solid var(--accent); }
+        .calculator-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { margin-bottom: 0.5rem; font-weight: 500; }
+        .input-group input { padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .result-display { background-color: white; padding: 1.5rem; border-radius: 8px; text-align: center; margin-top: 1rem; }
+        .kda-result { font-size: 2.5rem; font-weight: bold; color: var(--accent); } /* Vert */
+
+        /* Section CTA finale */
+        .cta-section { background: linear-gradient(135deg, var(--marvel-blue), var(--marvel-red)); border-radius: 12px; padding: 2rem; color: white; text-align: center; margin: 3rem 0 2rem 0; }
+        .cta-title { font-size: 1.8rem; margin-bottom: 1rem; }
+        .cta-text { margin-bottom: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto; }
+
+        /* --- Footer Style --- */
+        footer { background-color: var(--text); color: white; padding: 2rem 0; text-align: center; margin-top: 4rem; }
+        .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin: 1rem 0; }
+        .footer-links a { color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.2s ease; }
+        .footer-links a:hover { opacity: 1; }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .section { padding: 1.5rem; }
+            .auduj-features { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
-<body class="bg-dark-bg text-light-text">
-
-    <header class="bg-card-bg shadow-lg sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="index.html" class="text-3xl font-heading text-marvel-red">Auduj</a>
-            <div class="hidden md:flex space-x-6 items-center">
-                <a href="index.html" class="hover:text-marvel-yellow transition duration-300">Accueil</a>
-                <a href="how-it-works.html" class="hover:text-marvel-yellow transition duration-300">Comment Ça Marche ?</a>
-                <a href="features.html" class="hover:text-marvel-yellow transition duration-300">Fonctionnalités</a>
-                <a href="guides.html" class="text-marvel-yellow font-semibold transition duration-300">Guides</a>
-                <div id="user-info" class="items-center space-x-4 hidden"> <span id="user-greeting" class="text-sm text-gray-300"></span> <button id="logout-button" class="btn-logout"> <i class="fas fa-sign-out-alt mr-1"></i> Déconnexion </button> </div>
-                 <a href="login.html" id="login-button-header" class="btn-marvel btn-blue hidden">Connexion / Tableau de Bord</a>
-            </div>
-            <div class="md:hidden"> <button id="mobile-menu-button" class="text-light-text focus:outline-none"> <i class="fas fa-bars fa-lg"></i> </button> </div>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-card-bg">
-             <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Accueil</a>
-            <a href="how-it-works.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Comment Ça Marche ?</a>
-            <a href="features.html" class="block px-4 py-2 text-sm hover:bg-gray-700">Fonctionnalités</a>
-            <a href="guides.html" class="block px-4 py-2 text-sm bg-gray-700 text-marvel-yellow font-semibold">Guides</a>
-            <a href="login.html" id="mobile-login-link" class="block px-4 py-2 text-sm font-semibold text-marvel-blue hover:bg-gray-700 hidden">Connexion / Tableau de Bord</a>
-            <span id="mobile-user-greeting" class="block px-4 py-2 text-sm text-gray-400 hidden"></span>
-            <button id="mobile-logout-button" class="w-full text-left block px-4 py-2 text-sm text-marvel-red hover:bg-gray-700 hidden">Déconnexion</button>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Comprendre et Améliorer Votre KDA sur Marvel Rivals</h1>
+            <p class="subtitle">Un guide complet sur le KDA pour progresser et optimiser vos performances dans Marvel Rivals</p>
         </div>
     </header>
 
-    <main class="container mx-auto px-6 py-12 md:py-20 max-w-4xl">
-        <article class="article-content">
-            <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Comprendre et Améliorer Votre KDA sur Marvel Rivals</h1>
-
-            <p>Le KDA (Kills/Deaths/Assists) est l'une des statistiques les plus regardées dans les jeux de tir compétitifs comme Marvel Rivals. Un bon KDA est souvent synonyme de performance, mais que signifie-t-il vraiment ? Et surtout, comment l'utiliser pour <strong>réellement</strong> progresser ?</p>
-            <p>Ce guide vous aidera à décrypter votre KDA, à comprendre son importance (et ses limites), et à utiliser les données que vous suivez dans <strong>Auduj</strong> pour l'améliorer de manière significative.</p>
-
-            <h2>1. Qu'est-ce que le KDA et Comment est-il Calculé ?</h2>
-            <p>Le KDA est un ratio qui mesure votre efficacité au combat en comparant vos contributions offensives (Kills et Assists) à vos morts (Deaths).</p> <ul> <li><strong>Kills (K) :</strong> Le nombre d'ennemis que vous avez éliminés personnellement.</li> <li><strong>Deaths (D) :</strong> Le nombre de fois où vous avez été éliminé.</li> <li><strong>Assists (A) :</strong> Le nombre de fois où vous avez contribué à l'élimination d'un ennemi sans porter le coup fatal.</li> </ul> <p>La formule la plus courante pour le KDA est :</p> <blockquote><p><strong>KDA = (Kills + Assists) / Deaths</strong></p></blockquote> <h3>Cas Particulier : 0 Mort (Deaths = 0)</h3> <p>Si vous terminez une partie sans mourir (bravo !), la division par zéro est impossible. Dans ce cas :</p> <ul> <li>Certains considèrent le KDA comme "Parfait" ou "Infini".</li> <li>Pour le calcul dans Auduj et pour pouvoir le comparer, on utilise souvent la formule <code>(Kills + Assists) / 1</code>. Un KDA de 15/0/10 deviendrait donc (15+10)/1 = 25.</li> </ul> <p><strong>Important :</strong> Ne confondez pas le KDA avec le simple ratio K/D (Kills / Deaths).</p>
-
-
-            <h2>2. Interpréter Votre KDA : Plus qu'un Simple Chiffre</h2>
-            <p>Avoir un KDA élevé, c'est bien, mais ce chiffre seul ne raconte pas toute l'histoire. <strong>Le contexte est primordial !</strong></p> <ul> <li><strong>Votre Rôle/Héros :</strong> <ul> <li>Un <strong>Vanguard</strong> aura souvent plus de morts et moins de kills qu'un <strong>Duelist</strong>.</li> <li>Un <strong>Strategist</strong> aura généralement beaucoup d'assists.</li> <li>Comparez votre KDA à celui d'autres joueurs ayant le <strong>même rôle</strong> ou jouant le <strong>même héros</strong>.</li> </ul> </li> <li><strong>Le Mode de Jeu :</strong> Les objectifs peuvent nécessiter des sacrifices.</li> <li><strong>La Composition d'Équipe :</strong> La synergie influence les stats.</li> <li><strong>Le Résultat du Match :</strong> Le KDA est souvent meilleur en cas de victoire, mais pas toujours.</li> </ul> <h3>Qu'est-ce qu'un "bon" KDA alors ?</h3> <p>C'est un KDA qui reflète votre capacité à être <strong>efficace</strong> dans votre rôle et à avoir un <strong>impact positif</strong>, tout en minimisant les morts inutiles.</p>
-
-            <h2>3. Comment Utiliser Auduj pour Analyser Votre KDA</h2>
-            <p>C'est là qu'Auduj devient votre meilleur allié ! En saisissant vos données après chaque partie, vous pouvez :</p>
+    <div class="container">
+        <div class="toc">
+            <h2>Sommaire</h2>
             <ul>
-                <li><strong>Suivre l'Évolution Générale :</strong> Regardez le graphique "Progression KDA" dans l'onglet "Progression" de votre <a href="dashboard.html" class="text-marvel-blue hover:underline">tableau de bord</a>. Est-ce que votre KDA moyen a tendance à monter, stagner ou baisser ?</li>
-                <li><strong>Analyser par Héros :</strong> Consultez le tableau "Par Héros".
-                    <ul>
-                        <li>Quels sont les héros avec lesquels vous avez le meilleur/pire KDA moyen ?</li>
-                        <li>Comparez le KDA moyen au Winrate pour ce héros.</li>
-                        <li>Utilisez le filtre sur les graphiques de progression pour isoler la tendance KDA d'un héros spécifique.</li>
-                    </ul>
-                </li>
-                <li><strong>Examiner les Parties Spécifiques :</strong> Dans l'onglet "Historique Parties", repérez les matchs avec un KDA particulier. Cliquez sur la ligne pour ouvrir la <strong>fenêtre de détails</strong>. Revoyez toutes les stats et vos notes pour comprendre le contexte !</li>
+                <li><a href="#intro">Introduction</a></li>
+                <li><a href="#what-is-kda">Qu'est-ce que le KDA et Comment est-il Calculé ?</a></li>
+                <li><a href="#interpret-kda">Interpréter Votre KDA : Plus qu'un Simple Chiffre</a></li>
+                <li><a href="#auduj-analysis">Comment Utiliser Auduj pour Analyser Votre KDA</a></li>
+                <li><a href="#strategies">Stratégies Concrètes pour Améliorer Votre KDA</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
             </ul>
-            <div class="text-center">
-                 <a href="dashboard.html#progression" class="article-cta">
-                    <i class="fas fa-chart-line mr-2"></i>Voir mes Graphiques de Progression KDA
-                 </a>
+        </div>
+
+        <section id="intro" class="section">
+             <p>Le KDA (Kills/Deaths/Assists) est l'une des statistiques les plus regardées dans les jeux de tir compétitifs comme Marvel Rivals. Un bon KDA est souvent synonyme de performance, mais que signifie-t-il vraiment ? Et surtout, comment l'utiliser pour <strong>réellement</strong> progresser ?</p>
+            <p>Ce guide vous aidera à décrypter votre KDA, à comprendre son importance (et ses limites), et à utiliser les données que vous suivez dans <strong>Auduj</strong> pour l'améliorer de manière significative.</p>
+        </section>
+
+        <section id="what-is-kda" class="section">
+            <h2>1. Qu'est-ce que le KDA et Comment est-il Calculé ?</h2>
+             <p>Le KDA est un ratio qui mesure votre efficacité au combat en comparant vos contributions offensives (Kills et Assists) à vos morts (Deaths).</p>
+             <div class="stats-grid">
+                 <div class="role-card"> <div class="role-title" style="color: var(--marvel-red);">Kills (K)</div> <p>Le nombre d'ennemis que vous avez éliminés personnellement.</p> </div>
+                 <div class="role-card"> <div class="role-title" style="color: var(--text-light);">Deaths (D)</div> <p>Le nombre de fois où vous avez été éliminé.</p> </div>
+                 <div class="role-card"> <div class="role-title" style="color: var(--accent);">Assists (A)</div> <p>Le nombre de fois où vous avez contribué à l'élimination d'un ennemi sans porter le coup fatal.</p> </div>
             </div>
+            <p>La formule la plus courante pour le KDA est :</p>
+            <div class="formula-box"> <p class="formula">KDA = (Kills + Assists) / Deaths</p> </div>
+             <div class="case-box">
+                <span class="case-title">Cas Particulier : 0 Mort (Deaths = 0)</span>
+                <p>Si vous terminez une partie sans mourir (bravo !), la division par zéro est impossible. Dans ce cas :</p>
+                <ul>
+                    <li>Certains considèrent le KDA comme "Parfait" ou "Infini".</li>
+                    <li>Pour le calcul dans Auduj et pour pouvoir le comparer, on utilise souvent la formule <code>(Kills + Assists) / 1</code>. Un KDA de 15/0/10 deviendrait donc (15+10)/1 = 25.</li>
+                </ul>
+            </div>
+            <div class="highlight-box"> <p><strong>Important :</strong> Ne confondez pas le KDA avec le simple ratio K/D (Kills / Deaths).</p> </div>
+             <div class="kda-calculator">
+                <h3>Calculateur de KDA</h3>
+                <div class="calculator-inputs">
+                    <div class="input-group"> <label for="kills">Kills</label> <input type="number" id="kills" min="0" placeholder="Ex: 15"> </div>
+                    <div class="input-group"> <label for="deaths">Deaths</label> <input type="number" id="deaths" min="0" placeholder="Ex: 8"> </div>
+                    <div class="input-group"> <label for="assists">Assists</label> <input type="number" id="assists" min="0" placeholder="Ex: 12"> </div>
+                </div>
+                <button class="auduj-link !bg-accent-green hover:!bg-green-700" onclick="calculateKDA()">Calculer mon KDA</button> <div class="result-display"> <p>Votre KDA est :</p> <div class="kda-result" id="kda-result">--</div> </div>
+            </div>
+        </section>
 
+        <section id="interpret-kda" class="section">
+            <h2>2. Interpréter Votre KDA : Plus qu'un Simple Chiffre</h2>
+             <p>Avoir un KDA élevé, c'est bien, mais ce chiffre seul ne raconte pas toute l'histoire. Le contexte est primordial !</p>
+             <div class="stats-grid">
+                 <div class="role-card">
+                     <div class="role-title">Votre Rôle/Héros</div>
+                     <ul><li>Un Vanguard aura souvent plus de morts et moins de kills qu'un Duelist.</li><li>Un Strategist aura généralement beaucoup d'assists.</li><li>Comparez votre KDA à celui d'autres joueurs ayant le même rôle ou jouant le même héros.</li></ul>
+                 </div>
+                 <div class="role-card">
+                     <div class="role-title">Facteurs Contextuels</div>
+                     <ul><li>Le Mode de Jeu : Les objectifs peuvent nécessiter des sacrifices.</li><li>La Composition d'Équipe : La synergie influence les stats.</li><li>Le Résultat du Match : Le KDA est souvent meilleur en cas de victoire, mais pas toujours.</li></ul>
+                 </div>
+            </div>
+            <h3>Qu'est-ce qu'un "bon" KDA alors ?</h3>
+            <p>C'est un KDA qui reflète votre capacité à être efficace dans votre rôle et à avoir un impact positif, tout en minimisant les morts inutiles.</p>
+        </section>
 
+        <section id="auduj-analysis" class="section">
+            <h2>3. Comment Utiliser Auduj pour Analyser Votre KDA</h2>
+             <p>C'est là qu'Auduj devient votre meilleur allié ! En saisissant vos données après chaque partie, vous pouvez :</p>
+            <div class="auduj-features">
+                 <div class="feature-card"> <div class="feature-title">Suivre l'Évolution Générale</div> <p>Regardez le graphique "Progression KDA" dans l'onglet "Progression" de votre tableau de bord. Est-ce que votre KDA moyen a tendance à monter, stagner ou baisser ?</p> </div>
+                 <div class="feature-card"> <div class="feature-title">Analyser par Héros</div> <ul> <li>Quels sont les héros avec lesquels vous avez le meilleur/pire KDA moyen ?</li> <li>Comparez le KDA moyen au Winrate pour ce héros.</li> <li>Utilisez le filtre sur les graphiques de progression pour isoler la tendance KDA d'un héros spécifique.</li> </ul> </div>
+                 <div class="feature-card"> <div class="feature-title">Examiner les Parties Spécifiques</div> <p>Dans l'onglet "Historique Parties", repérez les matchs avec un KDA particulier. Cliquez sur la ligne pour ouvrir la fenêtre de détails. Revoyez toutes les stats et vos notes pour comprendre le contexte !</p> </div>
+            </div>
+            <div class="text-center mt-6">
+                <a href="dashboard.html" class="auduj-link">Voir mon Tableau de Bord Auduj</a>
+            </div>
+        </section>
+
+        <section id="strategies" class="section">
             <h2>4. Stratégies Concrètes pour Améliorer Votre KDA (et Votre Impact)</h2>
-             <p>Améliorer son KDA ne veut pas dire jouer uniquement pour les kills. Il s'agit d'améliorer son efficacité globale.</p> <h3>Objectif N°1 : Réduire les Morts !</h3> <ul> <li><strong>Positionnement :</strong> Apprenez où vous placer.</li> <li><strong>Gestion des Cooldowns :</strong> Gardez vos escapes/défenses.</li> <li><strong>Savoir se Retirer :</strong> Ne restez pas dans un combat perdu.</li> <li><strong>Communication :</strong> Demandez de l'aide.</li> </ul> <h3>Objectif N°2 : Maximiser les Kills et Assists !</h3> <ul> <li><strong>Précision :</strong> Travaillez votre visée (suivez votre % dans Auduj !).</li> <li><strong>Focus Cible :</strong> Concentrez vos tirs.</li> <li><strong>Teamplay :</strong> Participez aux combats groupés.</li> <li><strong>Combos & Team-Ups :</strong> Coordonnez vos capacités.</li> </ul> <h3>Objectif N°3 : Jouer son Rôle !</h3> <p>Ne sacrifiez pas l'objectif pour votre KDA personnel.</p>
+             <p>Améliorer son KDA ne veut pas dire jouer uniquement pour les kills. Il s'agit d'améliorer son efficacité globale.</p>
+             <div class="objectives-list">
+                 <div class="objective"> <h3>Objectif N°1 : Réduire les Morts !</h3> <ul> <li><strong>Positionnement :</strong> Apprenez où vous placer.</li> <li><strong>Gestion des Cooldowns :</strong> Gardez vos escapes/défenses.</li> <li><strong>Savoir se Retirer :</strong> Ne restez pas dans un combat perdu.</li> <li><strong>Communication :</strong> Demandez de l'aide.</li> </ul> </div>
+                 <div class="objective"> <h3>Objectif N°2 : Maximiser les Kills et Assists !</h3> <ul> <li><strong>Précision :</strong> Travaillez votre visée (suivez votre % dans Auduj !).</li> <li><strong>Focus Cible :</strong> Concentrez vos tirs.</li> <li><strong>Teamplay :</strong> Participez aux combats groupés.</li> <li><strong>Combos & Team-Ups :</strong> Coordonnez vos capacités.</li> </ul> </div>
+                 <div class="objective"> <h3>Objectif N°3 : Jouer son Rôle !</h3> <p>Ne sacrifiez pas l'objectif pour votre KDA personnel.</p> </div>
+            </div>
+        </section>
 
+        <section id="conclusion" class="section">
             <h2>Conclusion</h2>
-            <p>Le KDA est une métrique intéressante, mais elle doit être analysée avec intelligence et replacée dans son contexte. C'est un <strong>outil</strong> pour évaluer une partie de votre performance, pas une fin en soi.</p>
-            <p>En utilisant <strong>Auduj</strong> pour suivre régulièrement votre KDA et les autres statistiques détaillées, partie après partie, héros par héros, vous obtiendrez des informations précieuses et personnalisées pour identifier vos points faibles et mesurer vos progrès.</p>
-            <p>Alors, n'attendez plus : lancez Marvel Rivals, faites de votre mieux, puis venez <strong>enregistrer vos parties dans Auduj</strong> pour devenir un meilleur joueur ! Bonne chance sur le champ de bataille !</p>
+             <p>Le KDA est une métrique intéressante, mais elle doit être analysée avec intelligence et replacée dans son contexte. C'est un outil pour évaluer une partie de votre performance, pas une fin en soi.</p>
+            <p>En utilisant Auduj pour suivre régulièrement votre KDA et les autres statistiques détaillées, partie après partie, héros par héros, vous obtiendrez des informations précieuses et personnalisées pour identifier vos points faibles et mesurer vos progrès.</p>
+            <div class="cta-section">
+                <h3 class="cta-title">Prêt à améliorer votre jeu ?</h3>
+                <p class="cta-text">Alors, n'attendez plus : lancez Marvel Rivals, faites de votre mieux, puis venez enregistrer vos parties dans Auduj pour devenir un meilleur joueur ! Bonne chance sur le champ de bataille !</p>
+                <a href="dashboard.html" class="auduj-link">Accéder à mon Dashboard</a>
+                 <a href="guides.html" class="auduj-link !bg-gray-600 hover:!bg-gray-700 ml-4">Retour aux Guides</a>
+            </div>
+        </section>
+    </div>
 
-             <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="dashboard.html" class="btn-marvel btn-red w-full sm:w-auto">
-                    <i class="fas fa-plus-circle mr-2"></i> Enregistrer ma Dernière Partie
-                </a>
-                 <a href="guides.html" class="btn-marvel btn-blue w-full sm:w-auto">
-                    <i class="fas fa-arrow-left mr-2"></i> Retour aux Guides
-                </a>
-             </div>
-
-        </article>
-    </main>
-
-    <footer class="bg-card-bg text-gray-400 py-8 mt-16">
-        <div class="container mx-auto px-6 text-center">
-            <p class="mb-4">&copy; 2025 Auduj - Tous droits réservés.</p>
-            <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 Auduj - Améliorez vos performances sur Marvel Rivals</p>
+             <p class="text-xs mt-2">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
+            <div class="footer-links">
+                <a href="index.html">Accueil</a>
+                <a href="guides.html">Guides</a>
+                <a href="features.html">Fonctionnalités</a>
+            </div>
         </div>
     </footer>
 
-    <script src="assets/js/script.js"></script>
     <script>
-        // Script menu mobile (intégré)
-        const mobileMenuButton = document.getElementById('mobile-menu-button'); /* ... etc ... */
+        function calculateKDA() {
+            const killsInput = document.getElementById('kills');
+            const deathsInput = document.getElementById('deaths');
+            const assistsInput = document.getElementById('assists');
+            const resultDisplay = document.getElementById('kda-result');
+            if (!killsInput || !deathsInput || !assistsInput || !resultDisplay) return;
+            const kills = parseFloat(killsInput.value) || 0;
+            const deaths = parseFloat(deathsInput.value) || 0;
+            const assists = parseFloat(assistsInput.value) || 0;
+            let kda;
+            if (deaths === 0) { kda = (kills > 0 || assists > 0) ? "Parfait (∞)" : "0.00"; }
+            else { kda = ((kills + assists) / deaths).toFixed(2); }
+            resultDisplay.textContent = kda;
+        }
     </script>
 </body>
 </html>
