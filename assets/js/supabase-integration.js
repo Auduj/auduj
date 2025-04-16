@@ -938,7 +938,24 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
 
     // Formulaire Saisie Partie
     const gameEntryForm = document.getElementById('game-entry-form');
-    if (gameEntryForm) { gameEntryForm.addEventListener('submit', (e) => { e.preventDefault(); const formData = new FormData(gameEntryForm); const gameData = Object.fromEntries(formData.entries()); saveGameEntry(gameData); }); }
+    if (gameEntryForm) {
+        console.log('[DEBUG] Attempting to attach submit listener to #game-entry-form');
+        ('submit', (e) => {
+            console.log('[DEBUG] SubmigameEntryForm.addEventListenert event triggered on #game-entry-form!'); // Log crucial ici
+            e.preventDefault();
+            console.log('[DEBUG] preventDefault called.');
+            const formData = new FormData(gameEntryForm);
+            const gameData = Object.fromEntries(formData.entries());
+            console.log('[DEBUG] Form data gathered:', gameData);
+            saveGameEntry(gameData); // Appelle la fonction mise à jour
+        });
+         console.log('[DEBUG] Submit listener ATTACHED to #game-entry-form.');
+    } else {
+        // Log si le formulaire n'est pas trouvé au moment d'attacher l'écouteur
+        if (document.getElementById('dashboard-content') && !document.getElementById('dashboard-content').classList.contains('hidden')) {
+             console.error('[DEBUG] ERREUR: Formulaire #game-entry-form non trouvé sur le dashboard !');
+        }
+    }
 
     // Filtre des graphiques (Sauvegarde dans localStorage)
     if (chartHeroFilter) {
