@@ -32,16 +32,16 @@
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
         /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR */
         .form-input-dash {
-            @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-white focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm;
+            @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; /* CORRIGÉ: placeholder-gray-500 */
         }
-        /* Ajustement label pour contraste sur fond sombre global */
+        /* Labels remis en couleur claire pour lisibilité sur fond sombre */
         .form-label-dash {
-            @apply block mb-1.5 text-xs font-medium text-black;
+            @apply block mb-1.5 text-xs font-medium text-gray-300; /* CORRIGÉ: text-gray-300 */
         }
         /* Ajustement select pour fond blanc */
         select.form-input-dash {
             @apply appearance-none; /* Retire apparence native */
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* Flèche grise */
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
@@ -117,8 +117,7 @@
                             <label for="result" class="form-label-dash">Résultat</label>
                             <select id="result" name="result" class="form-input-dash" required>
                                 <option value="">Choisir...</option>
-                                <option value="win" class="text-win">Victoire</option>
-                                <option value="loss" class="text-loss">Défaite</option>
+                                <option value="win">Victoire</option> <option value="loss">Défaite</option>
                                 <option value="draw">Égalité</option>
                             </select>
                         </div>
