@@ -30,11 +30,11 @@
         .btn-red { @apply bg-marvel-red hover:bg-red-700; }
         .btn-blue { @apply bg-marvel-blue hover:bg-blue-700; }
         .btn-logout { @apply bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm; }
-        /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR */
+        /* Style des inputs du dashboard : FOND BLANC / TEXTE NOIR (CORRIGÉ) */
         .form-input-dash {
-            @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; /* CORRIGÉ: placeholder-gray-500 */
+            @apply w-full px-3 py-2 rounded-md bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 ease-in-out text-sm; /* CORRIGÉ: placeholder-gray-500, border-gray-300 */
         }
-        /* Labels remis en couleur claire pour lisibilité sur fond sombre */
+        /* Labels remis en couleur claire pour lisibilité sur fond sombre (CORRIGÉ) */
         .form-label-dash {
             @apply block mb-1.5 text-xs font-medium text-gray-300; /* CORRIGÉ: text-gray-300 */
         }
@@ -117,7 +117,8 @@
                             <label for="result" class="form-label-dash">Résultat</label>
                             <select id="result" name="result" class="form-input-dash" required>
                                 <option value="">Choisir...</option>
-                                <option value="win">Victoire</option> <option value="loss">Défaite</option>
+                                <option value="win">Victoire</option>
+                                <option value="loss">Défaite</option>
                                 <option value="draw">Égalité</option>
                             </select>
                         </div>
