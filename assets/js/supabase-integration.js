@@ -89,8 +89,8 @@ async function handleSignUp(email, password, username) {
         });
         if (error) throw error; // Lève une exception si Supabase renvoie une erreur
         console.log('Inscription réussie:', data);
-        alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte (si l\'option est activée dans Supabase).');
-        window.location.href = 'login.html'; // Redirige vers la page de connexion après inscription
+       //alert('Inscription réussie ! Veuillez vérifier votre email pour confirmer votre compte (si l\'option est activée dans Supabase).');
+        window.location.href = 'index.html'; // Redirige vers la page de connexion après inscription
 
     } catch (error) {
         // Gérer les erreurs (doublon d'email, mot de passe faible, etc.)
