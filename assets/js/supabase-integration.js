@@ -699,13 +699,45 @@ function displayDashboardData(gamesToDisplay) {
     console.log("Affichage des données du dashboard...");
     if (!gamesToDisplay) {
         console.warn("Aucune donnée à afficher.");
+        // Vide l'historique
+        if (historyTableBody) {
+            historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+        }
         return;
     }
 
      // --- Calculs et Affichage Stats Globales ---
-     const totalGames = gamesToDisplay.length;
-     let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
-     const heroCounts = {};
+    const totalGames = gamesToDisplay.length;
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
+    const heroCounts = {};
+
+    // --- Affichage de l'historique des parties ---
+    if (historyTableBody) {
+        historyTableBody.innerHTML = '';
+        if (totalGames === 0) {
+            historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+        } else {
+            // Tri décroissant par date (plus récent d'abord)
+            const sortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
+            sortedGames.forEach(game => {
+                const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
+                const hero = game.heroes?.name || '--';
+                const map = game.maps?.name || '--';
+                const kda = `${game.kills ?? 0} / ${game.deaths ?? 0} / ${game.assists ?? 0}`;
+                const result = game.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (game.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
+                const notes = game.notes ? escapeHTML(game.notes) : '';
+                const row = `<tr>
+                    <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(date)}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(hero)}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(map)}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300 text-center">${escapeHTML(kda)}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300 text-center">${result}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
+                </tr>`;
+                historyTableBody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+    }
      gamesToDisplay.forEach(game => {
          totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
          if (game.result === 'win') wins++;
@@ -720,7 +752,6 @@ function displayDashboardData(gamesToDisplay) {
      const winRateElement = document.getElementById('stat-winrate');
      const totalGamesElement = document.getElementById('stat-total-games');
      const mainHeroElement = document.getElementById('stat-main-hero');
-     if (kdaElement) kdaElement.textContent = kda;
      if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
      if (totalGamesElement) totalGamesElement.textContent = totalGames;
      if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
@@ -728,20 +759,28 @@ function displayDashboardData(gamesToDisplay) {
      // --- Affichage Historique ---
      if (historyTableBody) {
          historyTableBody.innerHTML = '';
-         const gamesToShow = gamesToDisplay.slice(0, 15); // Afficher les 15 dernières des données fournies
-         if (gamesToShow.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>'; }
-         else { gamesToShow.forEach(game => {
-             const winLossClass = game.result === 'win' ? 'text-win' : game.result === 'loss' ? 'text-loss' : 'text-gray-300';
-             const row = `
-                 <tr data-game-id="${game.id}">
-                     <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-400">${new Date(game.played_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</td>
-                     <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-light-text">${game.heroes?.name || '?'}</td>
-                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.maps?.name || '?'}</td>
-                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${game.kills || 0}/${game.deaths || 0}/${game.assists || 0}</td>
-                     <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold ${winLossClass}">${game.result || '?'}</td>
-                     <td class="px-3 py-2 text-xs text-gray-400 max-w-xs truncate" title="${game.notes || ''}">${game.notes || ''}</td>
+         if (gamesToDisplay.length === 0) {
+             historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+         } else {
+             // Tri décroissant par date (plus récent d'abord)
+             const sortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
+             sortedGames.forEach(game => {
+                 const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
+                 const hero = game.heroes?.name || '--';
+                 const map = game.maps?.name || '--';
+                 const kda = `${game.kills ?? 0} / ${game.deaths ?? 0} / ${game.assists ?? 0}`;
+                 const result = game.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (game.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
+                 const notes = game.notes ? escapeHTML(game.notes) : '';
+                 const row = `<tr>
+                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(date)}</td>
+                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(hero)}</td>
+                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(map)}</td>
+                     <td class="px-2 py-1 text-sm text-gray-400 text-center">${escapeHTML(kda)}</td>
+                     <td class="px-2 py-1 text-sm text-gray-400 text-center">${result}</td>
+                     <td class="px-2 py-1 text-sm text-gray-400">${notes}</td>
                  </tr>`;
-             historyTableBody.innerHTML += row; });
+                 historyTableBody.insertAdjacentHTML('beforeend', row);
+             });
          }
      }
 
