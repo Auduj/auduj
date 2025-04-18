@@ -1105,7 +1105,10 @@ saveGameEntry(gameData);
 
 }); // Fin DOMContentLoaded
 
-// --- Extraction OCR automatique pour stats partie ---
+// --- CONFIG ---
+const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
+
+// --- Extraction OCR automatique via API Render ---
 if (document.getElementById('extract-stats-btn')) {
   document.getElementById('extract-stats-btn').addEventListener('click', async function() {
     const fileInput = document.getElementById('screenshot-upload');
@@ -1115,45 +1118,57 @@ if (document.getElementById('extract-stats-btn')) {
       feedback.textContent = "Merci de sélectionner une capture d'écran.";
       return;
     }
-    feedback.textContent = 'Analyse de la capture en cours...';
-    const image = fileInput.files[0];
-    const { data: { text } } = await Tesseract.recognize(image, 'fra+eng', {
-      logger: m => feedback.textContent = 'OCR : ' + m.status + (m.progress ? ` (${Math.round(m.progress*100)}%)` : '')
-    });
-    // On prend la première ligne non vide comme celle du joueur (ligne surlignée)
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) {
-      feedback.textContent = "Aucune ligne détectée. Vérifiez la qualité de la capture.";
-      return;
+    feedback.textContent = 'Envoi à l’IA sur Render...';
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+    try {
+      const response = await fetch(RENDER_OCR_API_URL, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      if (!data.lines || !data.lines.length) {
+        feedback.innerHTML = '<span class="text-marvel-yellow">Aucune ligne détectée par l’IA. Vérifiez la capture.</span>';
+        return;
+      }
+      // On cherche la ligne qui a le plus de chiffres (probablement la ligne du joueur)
+      let bestLine = '';
+      let maxDigits = 0;
+      for (const l of data.lines) {
+        const n = (l.match(/\d+/g) || []).length;
+        if (n > maxDigits) {
+          maxDigits = n;
+          bestLine = l;
+        }
+      }
+      if (!bestLine || maxDigits < 6) {
+        feedback.innerHTML = '<span class="text-marvel-yellow">Impossible de trouver une ligne de stats. Vérifiez la capture.<br><code>' + data.lines.join('<br>') + '</code></span>';
+        return;
+      }
+      // Extraction des stats sur la meilleure ligne trouvée
+      const numbers = bestLine.match(/\d+/g);
+      const accuracyMatch = bestLine.match(/(\d{1,3}) ?%/);
+      // Mapping :
+      // numbers[0] = kills (épée)
+      // numbers[1] = deaths (coeur)
+      // numbers[2] = assists (mains)
+      // numbers[3] = médailles (non utilisé)
+      // numbers[4] = last kills (éliminations)
+      // numbers[5] = dégâts
+      // numbers[6] = dégâts bloqués
+      // numbers[7] = soins
+      // numbers[8] = précision (parfois, sinon accuracyMatch)
+      document.getElementById('kills').value = numbers[0] || '';
+      document.getElementById('deaths').value = numbers[1] || '';
+      document.getElementById('assists').value = numbers[2] || '';
+      if(document.getElementById('last_kills')) document.getElementById('last_kills').value = numbers[4] || '';
+      if(document.getElementById('damage_dealt')) document.getElementById('damage_dealt').value = numbers[5] || '';
+      if(document.getElementById('damage_blocked')) document.getElementById('damage_blocked').value = numbers[6] || '';
+      if(document.getElementById('healing_done')) document.getElementById('healing_done').value = numbers[7] || '';
+      if(document.getElementById('accuracy')) document.getElementById('accuracy').value = accuracyMatch ? accuracyMatch[1] : (numbers[8] || '');
+      feedback.innerHTML = '<span class="text-green-400">Champs remplis automatiquement à partir de l’IA ! Vérifiez et corrigez si besoin.</span>';
+    } catch (e) {
+      feedback.innerHTML = '<span class="text-marvel-yellow">Erreur lors de l’appel à l’API OCR IA : ' + e.message + '</span>';
     }
-    const playerLine = lines[0]; // On suppose que la surbrillance est la première ligne OCR
-    // Extraction des valeurs numériques
-    const numbers = playerLine.match(/\d+/g);
-    // Extraction de la précision (valeur en pourcentage, ex: 32%)
-    const accuracyMatch = playerLine.match(/(\d{1,3}) ?%/);
-    if (!numbers || numbers.length < 9) {
-      feedback.innerHTML = '<span class="text-marvel-yellow">Impossible de lire correctement les stats. Vérifiez la capture ou lisez la ligne extraite :<br><code>' + playerLine + '</code></span>';
-      return;
-    }
-    // Mapping :
-    // numbers[0] = kills (épée)
-    // numbers[1] = deaths (coeur)
-    // numbers[2] = assists (mains)
-    // numbers[3] = médailles (non utilisé)
-    // numbers[4] = last kills (éliminations)
-    // numbers[5] = dégâts
-    // numbers[6] = dégâts bloqués
-    // numbers[7] = soins
-    // numbers[8] = précision (parfois, sinon accuracyMatch)
-
-    document.getElementById('kills').value = numbers[0] || '';
-    document.getElementById('deaths').value = numbers[1] || '';
-    document.getElementById('assists').value = numbers[2] || '';
-    if(document.getElementById('last_kills')) document.getElementById('last_kills').value = numbers[4] || '';
-    if(document.getElementById('damage_dealt')) document.getElementById('damage_dealt').value = numbers[5] || '';
-    if(document.getElementById('damage_blocked')) document.getElementById('damage_blocked').value = numbers[6] || '';
-    if(document.getElementById('healing_done')) document.getElementById('healing_done').value = numbers[7] || '';
-    if(document.getElementById('accuracy')) document.getElementById('accuracy').value = accuracyMatch ? accuracyMatch[1] : (numbers[8] || '');
-    feedback.innerHTML = '<span class="text-green-400">Champs remplis automatiquement ! Vérifiez et corrigez si besoin.</span>';
   });
 }
