@@ -936,31 +936,57 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
     if (mobileLogoutButton) { mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
 
-    // Formulaire Saisie Partie (CORRIGÉ)
+    // Formulaire Saisie Partie (avec gestion visuelle de l'état de session)
     const gameEntryForm = document.getElementById('game-entry-form');
     if (gameEntryForm) {
-        console.log('Attempting to attach submit listener to #game-entry-form');
-        // ↓↓↓ CORRECTION : Ajout de gameEntryForm.addEventListener ↓↓↓
-        gameEntryForm.addEventListener('submit', (e) => {
-            console.log('Submit event triggered on #game-entry-form!'); // Log pour confirmer
-            e.preventDefault(); // Empêcher la soumission par défaut
-            console.log('preventDefault called.');
-            const formData = new FormData(gameEntryForm);
-            const gameData = Object.fromEntries(formData.entries());
-            console.log('Form data gathered:', gameData);
-            saveGameEntry(gameData); // Appeler la fonction de sauvegarde
+        const submitBtn = gameEntryForm.querySelector('[type="submit"]');
+        // Crée ou récupère l'alerte visuelle
+        let sessionAlert = document.getElementById('session-alert');
+        if (!sessionAlert) {
+            sessionAlert = document.createElement('div');
+            sessionAlert.id = 'session-alert';
+            sessionAlert.style.display = 'none';
+            sessionAlert.style.background = '#f56565'; // Rouge doux
+            sessionAlert.style.color = '#fff';
+            sessionAlert.style.padding = '0.75em 1em';
+            sessionAlert.style.borderRadius = '0.5em';
+            sessionAlert.style.marginTop = '1em';
+            sessionAlert.style.fontWeight = 'bold';
+            sessionAlert.style.textAlign = 'center';
+            sessionAlert.style.fontSize = '1em';
+            gameEntryForm.parentNode.insertBefore(sessionAlert, gameEntryForm.nextSibling);
+        }
+        if (submitBtn) submitBtn.disabled = true; // Désactive tant que l'auth n'est pas prête
+
+        getUserProfileId().then(userId => {
+            if (userId) {
+                if (submitBtn) submitBtn.disabled = false;
+                sessionAlert.style.display = 'none';
+                // On attache le listener ici, donc il ne sera actif QUE si l'utilisateur est loggé
+                gameEntryForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(gameEntryForm);
+                    const gameData = Object.fromEntries(formData.entries());
+                    saveGameEntry(gameData);
+                });
+                console.log('Submit listener ATTACHED to #game-entry-form (user logged in).');
+            } else {
+                if (submitBtn) submitBtn.disabled = true;
+                sessionAlert.textContent = "Veuillez patienter, restauration de la session utilisateur... Si le formulaire reste désactivé, veuillez vous reconnecter.";
+                sessionAlert.style.display = 'block';
+                console.warn("Impossible d'attacher le submit: utilisateur non authentifié.");
+            }
         });
-         console.log('Submit listener ATTACHED to #game-entry-form.');
     } else {
         if (document.getElementById('dashboard-content') && !document.getElementById('dashboard-content').classList.contains('hidden')) {
-             console.error('ERREUR: Formulaire #game-entry-form non trouvé sur le dashboard !');
+            console.error('ERREUR: Formulaire #game-entry-form non trouvé sur le dashboard !');
         }
     }
 
     // Filtre des graphiques (Sauvegarde dans localStorage)
     if (chartHeroFilter) {
         chartHeroFilter.addEventListener('change', (e) => {
-            selectedChartHeroId = e.target.value;
+            // ...
             // SAUVEGARDER dans localStorage
             try {
                 localStorage.setItem('auduj_chartHeroFilter', selectedChartHeroId);
