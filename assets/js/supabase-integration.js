@@ -719,14 +719,14 @@ function displayDashboardData(gamesToDisplay) {
         } else {
             // Tri décroissant par date (plus récent d'abord)
             const sortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
-            sortedGames.forEach(game => {
+            sortedGames.forEach((game, idx) => {
                 const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
                 const hero = game.heroes?.name || '--';
                 const map = game.maps?.name || '--';
                 const kda = `${game.kills ?? 0} / ${game.deaths ?? 0} / ${game.assists ?? 0}`;
                 const result = game.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (game.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
                 const notes = game.notes ? escapeHTML(game.notes) : '';
-                const row = `<tr>
+                const row = `<tr data-game-idx="${idx}">
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(date)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(hero)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(map)}</td>
@@ -735,6 +735,12 @@ function displayDashboardData(gamesToDisplay) {
                     <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
                 </tr>`;
                 historyTableBody.insertAdjacentHTML('beforeend', row);
+            });
+            // Ajout des écouteurs après le rendu
+            const trList = historyTableBody.querySelectorAll('tr[data-game-idx]');
+            trList.forEach(tr => {
+                const idx = parseInt(tr.getAttribute('data-game-idx'), 10);
+                tr.addEventListener('click', () => showGameDetails(sortedGames[idx]));
             });
         }
     }
@@ -781,6 +787,11 @@ function displayDashboardData(gamesToDisplay) {
                  </tr>`;
                  historyTableBody.insertAdjacentHTML('beforeend', row);
              });
+             // Ajout des écouteurs après le rendu
+             const trList = historyTableBody.querySelectorAll('tr');
+             trList.forEach((tr, idx) => {
+                tr.addEventListener('click', () => showGameDetails(sortedGames[idx]));
+            });
          }
      }
 
