@@ -1105,3 +1105,59 @@ saveGameEntry(gameData);
 
 }); // Fin DOMContentLoaded
 
+// --- Extraction OCR automatique pour stats partie ---
+if (document.getElementById('extract-stats-btn')) {
+  document.getElementById('extract-stats-btn').addEventListener('click', async function() {
+    const fileInput = document.getElementById('screenshot-upload');
+    const feedback = document.getElementById('ocr-feedback');
+    feedback.textContent = '';
+    if (!fileInput.files.length) {
+      feedback.textContent = "Merci de sélectionner une capture d'écran.";
+      return;
+    }
+    feedback.textContent = 'Analyse de la capture en cours...';
+    const image = fileInput.files[0];
+    const { data: { text } } = await Tesseract.recognize(image, 'fra+eng', {
+      logger: m => feedback.textContent = 'OCR : ' + m.status + (m.progress ? ` (${Math.round(m.progress*100)}%)` : '')
+    });
+    // Affiche toutes les lignes extraites pour que l'utilisateur choisisse la sienne
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      feedback.textContent = "Aucune ligne détectée. Vérifiez la qualité de la capture.";
+      return;
+    }
+    // Génère le sélecteur de ligne
+    feedback.innerHTML = '<span>Sélectionnez votre ligne de stats :</span><br>';
+    const select = document.createElement('select');
+    select.className = 'w-full bg-gray-700 text-gray-100 p-1 mt-2 rounded';
+    lines.forEach((line, idx) => {
+      const option = document.createElement('option');
+      option.value = idx;
+      option.textContent = line;
+      select.appendChild(option);
+    });
+    feedback.appendChild(select);
+    const fillBtn = document.createElement('button');
+    fillBtn.textContent = 'Remplir ces stats';
+    fillBtn.className = 'btn-marvel btn-blue mt-2 w-full';
+    feedback.appendChild(fillBtn);
+    fillBtn.onclick = function() {
+      const chosenLine = lines[select.value];
+      // Extraction naïve des stats (adapte si besoin)
+      const numbers = chosenLine.match(/\d+/g);
+      if (!numbers || numbers.length < 6) {
+        feedback.innerHTML += '<br><span class="text-marvel-yellow">Impossible de lire correctement les stats. Vérifiez la ligne choisie.</span>';
+        return;
+      }
+      // Adapter l’index selon le format de la capture !
+      document.getElementById('kills').value = numbers[0] || '';
+      document.getElementById('deaths').value = numbers[2] || '';
+      document.getElementById('assists').value = numbers[3] || '';
+      document.getElementById('damage_dealt').value = numbers[6] || '';
+      document.getElementById('damage_blocked').value = numbers[7] || '';
+      document.getElementById('healing_done').value = numbers[8] || '';
+      document.getElementById('accuracy').value = numbers[numbers.length-1] || '';
+      feedback.innerHTML += '<br><span class="text-green-400">Champs remplis automatiquement ! Vérifiez et corrigez si besoin.</span>';
+    };
+  });
+}
