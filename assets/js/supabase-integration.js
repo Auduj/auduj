@@ -1108,7 +1108,8 @@ saveGameEntry(gameData);
 // --- CONFIG ---
 const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
 
-// --- Extraction OCR automatique via API Render ---
+// --- Extraction OCR automatique via API Render (DÉSACTIVÉE TEMPORAIREMENT) ---
+/*
 if (document.getElementById('extract-stats-btn')) {
   document.getElementById('extract-stats-btn').addEventListener('click', async function() {
     const fileInput = document.getElementById('screenshot-upload');
@@ -1126,6 +1127,7 @@ if (document.getElementById('extract-stats-btn')) {
         method: 'POST',
         body: formData
       });
+*/
       const data = await response.json();
       if (!data.lines || !data.lines.length) {
         feedback.innerHTML = '<span class="text-marvel-yellow">Aucune ligne détectée par l’IA. Vérifiez la capture.</span>';
