@@ -1120,44 +1120,40 @@ if (document.getElementById('extract-stats-btn')) {
     const { data: { text } } = await Tesseract.recognize(image, 'fra+eng', {
       logger: m => feedback.textContent = 'OCR : ' + m.status + (m.progress ? ` (${Math.round(m.progress*100)}%)` : '')
     });
-    // Affiche toutes les lignes extraites pour que l'utilisateur choisisse la sienne
+    // On prend la première ligne non vide comme celle du joueur (ligne surlignée)
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     if (lines.length === 0) {
       feedback.textContent = "Aucune ligne détectée. Vérifiez la qualité de la capture.";
       return;
     }
-    // Génère le sélecteur de ligne
-    feedback.innerHTML = '<span>Sélectionnez votre ligne de stats :</span><br>';
-    const select = document.createElement('select');
-    select.className = 'w-full bg-gray-700 text-gray-100 p-1 mt-2 rounded';
-    lines.forEach((line, idx) => {
-      const option = document.createElement('option');
-      option.value = idx;
-      option.textContent = line;
-      select.appendChild(option);
-    });
-    feedback.appendChild(select);
-    const fillBtn = document.createElement('button');
-    fillBtn.textContent = 'Remplir ces stats';
-    fillBtn.className = 'btn-marvel btn-blue mt-2 w-full';
-    feedback.appendChild(fillBtn);
-    fillBtn.onclick = function() {
-      const chosenLine = lines[select.value];
-      // Extraction naïve des stats (adapte si besoin)
-      const numbers = chosenLine.match(/\d+/g);
-      if (!numbers || numbers.length < 6) {
-        feedback.innerHTML += '<br><span class="text-marvel-yellow">Impossible de lire correctement les stats. Vérifiez la ligne choisie.</span>';
-        return;
-      }
-      // Adapter l’index selon le format de la capture !
-      document.getElementById('kills').value = numbers[0] || '';
-      document.getElementById('deaths').value = numbers[2] || '';
-      document.getElementById('assists').value = numbers[3] || '';
-      document.getElementById('damage_dealt').value = numbers[6] || '';
-      document.getElementById('damage_blocked').value = numbers[7] || '';
-      document.getElementById('healing_done').value = numbers[8] || '';
-      document.getElementById('accuracy').value = numbers[numbers.length-1] || '';
-      feedback.innerHTML += '<br><span class="text-green-400">Champs remplis automatiquement ! Vérifiez et corrigez si besoin.</span>';
-    };
+    const playerLine = lines[0]; // On suppose que la surbrillance est la première ligne OCR
+    // Extraction des valeurs numériques
+    const numbers = playerLine.match(/\d+/g);
+    // Extraction de la précision (valeur en pourcentage, ex: 32%)
+    const accuracyMatch = playerLine.match(/(\d{1,3}) ?%/);
+    if (!numbers || numbers.length < 9) {
+      feedback.innerHTML = '<span class="text-marvel-yellow">Impossible de lire correctement les stats. Vérifiez la capture ou lisez la ligne extraite :<br><code>' + playerLine + '</code></span>';
+      return;
+    }
+    // Mapping :
+    // numbers[0] = kills (épée)
+    // numbers[1] = deaths (coeur)
+    // numbers[2] = assists (mains)
+    // numbers[3] = médailles (non utilisé)
+    // numbers[4] = last kills (éliminations)
+    // numbers[5] = dégâts
+    // numbers[6] = dégâts bloqués
+    // numbers[7] = soins
+    // numbers[8] = précision (parfois, sinon accuracyMatch)
+
+    document.getElementById('kills').value = numbers[0] || '';
+    document.getElementById('deaths').value = numbers[1] || '';
+    document.getElementById('assists').value = numbers[2] || '';
+    if(document.getElementById('last_kills')) document.getElementById('last_kills').value = numbers[4] || '';
+    if(document.getElementById('damage_dealt')) document.getElementById('damage_dealt').value = numbers[5] || '';
+    if(document.getElementById('damage_blocked')) document.getElementById('damage_blocked').value = numbers[6] || '';
+    if(document.getElementById('healing_done')) document.getElementById('healing_done').value = numbers[7] || '';
+    if(document.getElementById('accuracy')) document.getElementById('accuracy').value = accuracyMatch ? accuracyMatch[1] : (numbers[8] || '');
+    feedback.innerHTML = '<span class="text-green-400">Champs remplis automatiquement ! Vérifiez et corrigez si besoin.</span>';
   });
 }
