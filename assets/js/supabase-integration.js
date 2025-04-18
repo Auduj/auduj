@@ -11,11 +11,17 @@
  */
 
 // --- Configuration ---
+// ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
+// Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
 // REMPLACEZ par vos propres URL et Clé Anon Supabase !
 const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co'; // Vos clés réelles
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE'; // Vos clés réelles
 
 let _supabase; // Variable pour le client Supabase
+const IS_PROD = window.location.hostname !== 'localhost'; // Désactive les logs en prod
+function audujLog(...args) { if (!IS_PROD) console.log(...args); }
+function audujWarn(...args) { if (!IS_PROD) console.warn(...args); }
+function audujError(...args) { if (!IS_PROD) console.error(...args); }
 let progressionChartInstance = null; // Instance pour le graphique KDA
 let accuracyChartInstance = null;    // Instance pour le graphique Précision
 let allUserGames = []; // Stocker toutes les parties récupérées (cache ou fetch)
@@ -471,6 +477,24 @@ function updateCharts() {
 
 
 // --- Fonctions pour les Tableaux d'Analyse Détaillée ---
+// Fonction d'échappement XSS pour innerHTML
+function escapeHTML(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+// Utilitaire pour échapper chaque cellule d'une ligne HTML générée dynamiquement
+function escapeRow(row) {
+    // Cette fonction suppose que row est une string HTML avec des balises <td>...</td>
+    // On va échapper le contenu entre chaque <td>...</td>
+    return row.replace(/(<td.*?>)(.*?)(<\/td>)/g, (match, open, content, close) => {
+        return open + escapeHTML(content) + close;
+    });
+}
+
 
 /**
  * Calcule et affiche les statistiques agrégées par héros, incluant toutes les moyennes demandées.
@@ -533,7 +557,7 @@ function renderHeroStatsTable(gamesData) {
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgHealing.toLocaleString('fr-FR')}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgBlocked.toLocaleString('fr-FR')}</td> <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-right">${hero.avgAccuracy.toLocaleString('fr-FR', {minimumFractionDigits: 1, maximumFractionDigits: 1})}%</td> </tr>
             `;
-            tableBody.innerHTML += row;
+            tableBody.insertAdjacentHTML('beforeend', escapeRow(row));
         });
     }
 }
@@ -576,7 +600,7 @@ function renderMapStatsTable(gamesData) {
                     <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-300 text-center">${map.played}</td>
                     <td class="px-4 py-2 whitespace-nowrap text-sm ${winRateClass} text-center">${map.winRate}%</td>
                 </tr>`;
-            tableBody.innerHTML += row;
+            tableBody.insertAdjacentHTML('beforeend', escapeRow(row));
         });
     }
 }
@@ -967,7 +991,12 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
                     e.preventDefault();
                     const formData = new FormData(gameEntryForm);
                     const gameData = Object.fromEntries(formData.entries());
-                    saveGameEntry(gameData);
+// Validation stricte avant soumission
+if (!gameData.hero || !gameData.map || !gameData.result) {
+    alert('Tous les champs obligatoires doivent être remplis.');
+    return;
+}
+saveGameEntry(gameData);
                 });
                 console.log('Submit listener ATTACHED to #game-entry-form (user logged in).');
             } else {

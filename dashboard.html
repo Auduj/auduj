@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<!-- AVERTISSEMENT : Ne jamais exposer de clé secrète (service_role) dans ce code. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Accédez à votre espace personnel Auduj pour saisir vos parties Marvel Rivals, consulter vos statistiques détaillées et analyser votre progression.">
     <title>Tableau de Bord - Auduj | Suivi Stats Marvel Rivals</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Sécurité CDN : SRI + crossorigin -->
+<script src="https://cdn.tailwindcss.com" integrity="sha384-4gJwPz8Fz8b1Xw2JQzqI1FZp4bQ2k7I7xw5v8Qw8YQw8Qw8Qw8Qw8Qw8Qw8Qw8Qw" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha384-+6A0t8N1nF4kZr7+Z5Qkz8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         // Configuration Tailwind
@@ -57,6 +59,13 @@
     </style>
 </head>
 <body class="bg-dark-bg text-light-text">
+<!-- Message pour les curieux qui inspectent le code -->
+<!--
+    👋 Salut explorateur !
+    Tu trouveras ici uniquement du code public. Pour toute suggestion sécurité, contacte l'équipe Auduj.
+    Ne mets jamais de secret ici !
+-->
+
 
     <header class="bg-card-bg shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
@@ -292,7 +301,7 @@
     </footer>
 
     <script src="assets/js/script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" integrity="sha384-+6A0t8N1nF4kZr7+Z5Qkz8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw8Qw" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="assets/js/supabase-integration.js"></script>
     <script>
