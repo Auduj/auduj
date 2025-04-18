@@ -695,14 +695,20 @@ async function fetchAndRefreshDashboard() { // Anciennement fetchAndDisplayUserS
  * Affiche toutes les sections du dashboard en utilisant les données fournies.
  * @param {Array} gamesToDisplay - Les données des parties (du cache ou fraîches).
  */
-function displayDashboardData(gamesToDisplay) {
+// Nombre initial de parties à afficher par lot
+const HISTORY_BATCH_SIZE = 10;
+let displayedHistoryCount = 0;
+let lastSortedGames = [];
+let showMoreButton = null;
+
+function displayDashboardData(gamesToDisplay, forceReset = false) {
     console.log("Affichage des données du dashboard...");
     if (!gamesToDisplay) {
         console.warn("Aucune donnée à afficher.");
-        // Vide l'historique
         if (historyTableBody) {
             historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
         }
+        if (showMoreButton) showMoreButton.style.display = 'none';
         return;
     }
 
@@ -711,15 +717,22 @@ function displayDashboardData(gamesToDisplay) {
     let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
     const heroCounts = {};
 
-    // --- Affichage de l'historique des parties ---
+    // --- Affichage de l'historique des parties (avec Show More) ---
     if (historyTableBody) {
-        historyTableBody.innerHTML = '';
+        if (forceReset || lastSortedGames.length !== gamesToDisplay.length) {
+            displayedHistoryCount = 0;
+            lastSortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
+            historyTableBody.innerHTML = '';
+        }
         if (totalGames === 0) {
             historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+            if (showMoreButton) showMoreButton.style.display = 'none';
         } else {
-            // Tri décroissant par date (plus récent d'abord)
-            const sortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
-            sortedGames.forEach((game, idx) => {
+            // Afficher le prochain lot de parties
+            const startIdx = displayedHistoryCount;
+            const endIdx = Math.min(displayedHistoryCount + HISTORY_BATCH_SIZE, lastSortedGames.length);
+            for (let idx = startIdx; idx < endIdx; idx++) {
+                const game = lastSortedGames[idx];
                 const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
                 const hero = game.heroes?.name || '--';
                 const map = game.maps?.name || '--';
@@ -735,13 +748,25 @@ function displayDashboardData(gamesToDisplay) {
                     <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
                 </tr>`;
                 historyTableBody.insertAdjacentHTML('beforeend', row);
-            });
+            }
             // Ajout des écouteurs après le rendu
             const trList = historyTableBody.querySelectorAll('tr[data-game-idx]');
             trList.forEach(tr => {
                 const idx = parseInt(tr.getAttribute('data-game-idx'), 10);
-                tr.addEventListener('click', () => showGameDetails(sortedGames[idx]));
+                tr.onclick = () => showGameDetails(lastSortedGames[idx]);
             });
+            displayedHistoryCount = endIdx;
+            // Gérer le bouton Show More
+            if (!showMoreButton) {
+                showMoreButton = document.createElement('button');
+                showMoreButton.textContent = 'Afficher plus';
+                showMoreButton.className = 'mt-4 mb-2 px-4 py-2 rounded bg-marvel-blue hover:bg-blue-700 text-white font-semibold shadow-md block mx-auto';
+                showMoreButton.onclick = function() {
+                    displayDashboardData(gamesToDisplay);
+                };
+                historyTableBody.parentNode.appendChild(showMoreButton);
+            }
+            showMoreButton.style.display = (displayedHistoryCount < lastSortedGames.length) ? 'block' : 'none';
         }
     }
      gamesToDisplay.forEach(game => {
@@ -755,45 +780,13 @@ function displayDashboardData(gamesToDisplay) {
      for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
 
      const kdaElement = document.getElementById('stat-kda');
-     const winRateElement = document.getElementById('stat-winrate');
-     const totalGamesElement = document.getElementById('stat-total-games');
-     const mainHeroElement = document.getElementById('stat-main-hero');
-     if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
-     if (totalGamesElement) totalGamesElement.textContent = totalGames;
-     if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
-
-     // --- Affichage Historique ---
-     if (historyTableBody) {
-         historyTableBody.innerHTML = '';
-         if (gamesToDisplay.length === 0) {
-             historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
-         } else {
-             // Tri décroissant par date (plus récent d'abord)
-             const sortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
-             sortedGames.forEach(game => {
-                 const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
-                 const hero = game.heroes?.name || '--';
-                 const map = game.maps?.name || '--';
-                 const kda = `${game.kills ?? 0} / ${game.deaths ?? 0} / ${game.assists ?? 0}`;
-                 const result = game.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (game.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
-                 const notes = game.notes ? escapeHTML(game.notes) : '';
-                 const row = `<tr>
-                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(date)}</td>
-                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(hero)}</td>
-                     <td class="px-2 py-1 text-sm text-gray-400">${escapeHTML(map)}</td>
-                     <td class="px-2 py-1 text-sm text-gray-400 text-center">${escapeHTML(kda)}</td>
-                     <td class="px-2 py-1 text-sm text-gray-400 text-center">${result}</td>
-                     <td class="px-2 py-1 text-sm text-gray-400">${notes}</td>
-                 </tr>`;
-                 historyTableBody.insertAdjacentHTML('beforeend', row);
-             });
-             // Ajout des écouteurs après le rendu
-             const trList = historyTableBody.querySelectorAll('tr');
-             trList.forEach((tr, idx) => {
-                tr.addEventListener('click', () => showGameDetails(sortedGames[idx]));
-            });
-         }
-     }
+    const winRateElement = document.getElementById('stat-winrate');
+    const totalGamesElement = document.getElementById('stat-total-games');
+    const mainHeroElement = document.getElementById('stat-main-hero');
+    if (kdaElement) kdaElement.textContent = kda;
+    if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
+    if (totalGamesElement) totalGamesElement.textContent = totalGames;
+    if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
      // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
      // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
