@@ -1074,7 +1074,58 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     table.classList.add('hidden');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
 
+    try {
+        // Remplacez par l'URL réelle de l'API Marvel Rivals
+        const endpoint = `https://marvelrivalapis.com/api/match-history/${encodeURIComponent(username)}`;
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+                'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087', // Remplacer par la vraie clé API ou variable d'env côté serveur
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
+        }
+        const data = await response.json();
+
+        if (!data || !Array.isArray(data.matches) || data.matches.length === 0) {
+            loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>';
+            return;
+        }
+
+        // Affichage des résultats dans le tableau
+        tbody.innerHTML = '';
+        data.matches.forEach(match => {
+            const date = match.date ? new Date(match.date).toLocaleDateString('fr-FR') : '-';
+            const hero = match.hero || '-';
+            const map = match.map || '-';
+            const kda = match.kills !== undefined && match.deaths !== undefined && match.assists !== undefined
+                ? `${match.kills}/${match.deaths}/${match.assists}` : '-';
+            const result = match.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' :
+                           match.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' :
+                           (match.result || '-');
+            const row = `<tr>
+                <td class="px-3 py-2">${date}</td>
+                <td class="px-3 py-2">${escapeHTML(hero)}</td>
+                <td class="px-3 py-2">${escapeHTML(map)}</td>
+                <td class="px-3 py-2">${kda}</td>
+                <td class="px-3 py-2">${result}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'historique Marvel Rivals:', error);
+        loadingDiv.textContent = "Erreur lors de la récupération de l'historique Marvel Rivals.";
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>';
+        table.classList.remove('hidden');
+    }
 }
+
 
 
 //}
