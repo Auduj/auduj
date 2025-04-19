@@ -131,6 +131,11 @@
         <span class="text-gray-400 font-medium">Ou upload un screen</span>
         <input type="file" accept="image/*" id="screenshotInput" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-marvel-yellow file:text-marvel-red hover:file:bg-yellow-200" />
     </div>
+    <!-- Preview de l'image uploadée -->
+    <div id="screenshotPreviewContainer" class="mt-2 hidden">
+        <span class="text-xs text-gray-400">Prévisualisation du screen :</span>
+        <img id="screenshotPreview" src="" alt="Preview Screenshot" class="max-h-48 rounded border mt-1 mx-auto" />
+    </div>
 </div>
 <!-- Tableau OCR caché par défaut -->
 <div id="ocr-result-container" class="hidden mt-6">
@@ -156,59 +161,61 @@
 <!-- Tesseract.js via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-document.getElementById('screenshotInput').addEventListener('change', async (event) => {
+// Ajout preview image et OCR amélioré
+const screenshotInput = document.getElementById('screenshotInput');
+const previewContainer = document.getElementById('screenshotPreviewContainer');
+const previewImg = document.getElementById('screenshotPreview');
+
+screenshotInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    // Affiche la preview de l'image
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewContainer.classList.remove('hidden');
+
     // OCR avec Tesseract.js
     const { data: { text } } = await Tesseract.recognize(file, 'fra');
-    console.log(text); // Pour debug, copie-colle ici si besoin
+    console.log('[OCR brut]', text);
 
-    // Recherche de la ligne contenant "Diwaan" (adapter dynamiquement si besoin)
-    const targetName = "Diwaan";
-    const lines = text.split('\n');
-    const playerLine = lines.find(line => line.includes(targetName));
+    // Découper le texte OCR en lignes et parser les lignes avec chiffres ou %
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    // On cherche les lignes qui contiennent au moins 2 chiffres ou un % (stats)
+    const statLines = lines.filter(line => (line.match(/[0-9]/g) || []).length >= 2 || line.includes('%'));
 
-    if (!playerLine) {
-        alert("Joueur non trouvé dans le screenshot !");
+    // Si aucune ligne exploitable, prévenir l'utilisateur
+    if (statLines.length === 0) {
+        alert("Aucune ligne de stats détectée. Vérifie la qualité du screen ou sa résolution.");
+        document.getElementById('ocr-result-container').classList.add('hidden');
         return;
     }
 
-    // Découpage de la ligne (adapter selon le résultat réel de l’OCR)
-    const columns = playerLine.trim().split(/\s+/);
-
-    const playerData = {
-        name: columns[0] || '',
-        k: columns[1] || '',
-        d: columns[2] || '',
-        a: columns[3] || '',
-        solo: columns[4] || '',
-        elims: columns[5] || '',
-        degats: columns[6] || '',
-        degats_bloques: columns[7] || '',
-        soins: columns[8] || '',
-        precision: columns[9] || ''
-    };
-
-    // Affichage dans le tableau OCR
-    const container = document.getElementById('ocr-result-container');
-    container.classList.remove('hidden');
+    // On tente d'extraire les colonnes de chaque ligne stats (robuste même si certains champs sont absents)
     const tbody = document.querySelector('#dashboardTable tbody');
     tbody.innerHTML = '';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${playerData.name}</td>
-        <td>${playerData.k}</td>
-        <td>${playerData.d}</td>
-        <td>${playerData.a}</td>
-        <td>${playerData.solo}</td>
-        <td>${playerData.elims}</td>
-        <td>${playerData.degats}</td>
-        <td>${playerData.degats_bloques}</td>
-        <td>${playerData.soins}</td>
-        <td>${playerData.precision}</td>
-    `;
-    tbody.appendChild(tr);
+    let foundKDA = false;
+
+    statLines.forEach(line => {
+        // Découpage flexible (séparateur espace/tab)
+        const columns = line.split(/\s+/);
+        // On cherche s'il y a des valeurs qui ressemblent à K/D/A (ex: 12 5 9 ou 12/5/9)
+        let k = '', d = '', a = '';
+        const kdaMatch = line.match(/(\d{1,2})\s*[\/\-\|\s]\s*(\d{1,2})\s*[\/\-\|\s]\s*(\d{1,2})/);
+        if (kdaMatch) {
+            [ , k, d, a ] = kdaMatch;
+            foundKDA = true;
+        }
+        tbody.innerHTML += `<tr>` + columns.map(val => `<td>${val}</td>`).join('') + `</tr>`;
+    });
+
+    // Affiche le tableau
+    document.getElementById('ocr-result-container').classList.remove('hidden');
+
+    // Message d'alerte si KDA non détecté
+    if (!foundKDA) {
+        alert("Le K/D/A n'a pas pu être extrait automatiquement (affiché en images sur le screen ?). Merci de compléter manuellement ces valeurs si besoin.");
+    }
 });
 </script>
                 <form id="game-entry-form" action="#" method="POST" class="space-y-6">
