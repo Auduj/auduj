@@ -1089,7 +1089,9 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
         }
         const data = await response.json();
+        console.log('[Marvel Rivals API] Réponse brute :', data);
         const matches = Array.isArray(data.match_history) ? data.match_history : [];
+        console.log('[Marvel Rivals API] match_history :', matches);
 
         if (matches.length === 0) {
             loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
