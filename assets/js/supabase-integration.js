@@ -798,9 +798,9 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(map)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300 text-center">${escapeHTML(kda)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300">${result}</td>
-                    <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(notes)}</td>
                 </tr>`;
-                historyTableBody.insertAdjacentHTML('beforeend', escapeRow(row));
+                historyTableBody.insertAdjacentHTML('beforeend', row);
             }
             displayedHistoryCount = endIdx;
             // Gérer le bouton Show More
