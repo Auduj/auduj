@@ -1126,7 +1126,16 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         // 3. Affichage du tableau avec toutes les stats possibles
         tbody.innerHTML = '';
         allMatches.forEach(match => {
-            console.log('[Marvel Rivals API] Match objet:', match);
+            console.group('[Marvel Rivals API] Exploration match');
+            console.dir(match, {depth: null});
+            console.table(match);
+            if (match.match_player) {
+                console.log('match_player:', match.match_player);
+                if (match.match_player.player_hero) {
+                    console.log('player_hero:', match.match_player.player_hero);
+                }
+            }
+            console.groupEnd();
             const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
             // HERO
             const heroName = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
