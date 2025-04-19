@@ -670,6 +670,14 @@ async function fetchAndRefreshDashboard() { // Anciennement fetchAndDisplayUserS
 
         if (error) throw error;
         console.log('Données fraîches reçues:', games);
+        // Ajout d'un log détaillé pour inspection
+        if (Array.isArray(games)) {
+            games.forEach((g, i) => {
+                console.log(`Partie #${i+1}:`, g);
+            });
+        } else {
+            console.warn('Format inattendu pour games:', games);
+        }
         allUserGames = games; // Mettre à jour le cache global en mémoire
 
         // Sauvegarder les données fraîches dans localStorage
@@ -713,9 +721,50 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
     }
 
      // --- Calculs et Affichage Stats Globales ---
-    const totalGames = gamesToDisplay.length;
-    let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
-    const heroCounts = {};
+    gamesToDisplay.forEach(game => {
+        totalKills += game.kills || 0;
+        totalDeaths += game.deaths || 0;
+        totalAssists += game.assists || 0;
+        if (game.result === 'win') wins++;
+        if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
+    });
+    const winRate = gamesToDisplay.length > 0 ? Math.round((wins / gamesToDisplay.length) * 100) : 0;
+    const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
+    let mostPlayedHero = 'N/A', maxHeroCount = 0;
+    for (const hero in heroCounts) {
+        if (heroCounts[hero] > maxHeroCount) {
+            maxHeroCount = heroCounts[hero];
+            mostPlayedHero = hero;
+        }
+    }
+    const kdaElement = document.getElementById('stat-kda');
+    const winRateElement = document.getElementById('stat-winrate');
+    const totalGamesElement = document.getElementById('stat-total-games');
+    const mainHeroElement = document.getElementById('stat-main-hero');
+    if (kdaElement) kdaElement.textContent = kda;
+    if (winRateElement) {
+        winRateElement.textContent = `${winRate}%`;
+        winRateElement.className = 'stat-value';
+        if(gamesToDisplay.length > 0) { winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
+    }
+    if (totalGamesElement) totalGamesElement.textContent = gamesToDisplay.length;
+    if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
+
+    // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
+    // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
+    updateCharts();
+
+    // --- Calcul et Affichage Stats Détaillées ---
+    if (gamesToDisplay.length > 0) {
+        renderHeroStatsTable(gamesToDisplay);
+        renderMapStatsTable(gamesToDisplay);
+    } else {
+        // Vider les tableaux si aucune partie
+        const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
+        const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
+        if(heroTableBody) heroTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
+        if(mapTableBody) mapTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
+    }
 
     // --- Affichage de l'historique des parties (avec Show More) ---
     if (historyTableBody) {
@@ -724,7 +773,7 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
             lastSortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
             historyTableBody.innerHTML = '';
         }
-        if (totalGames === 0) {
+        if (gamesToDisplay.length === 0) {
             historyTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>`;
             if (showMoreButton) showMoreButton.style.display = 'none';
         } else {
@@ -744,6 +793,11 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(hero)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(map)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300 text-center">${escapeHTML(kda)}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${result}</td>
+                    <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
+                </tr>`;
+                historyTableBody.insertAdjacentHTML('beforeend', escapeRow(row));
+            }
             displayedHistoryCount = endIdx;
             // Gérer le bouton Show More
             if (!showMoreButton) {
@@ -757,57 +811,6 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
             }
             showMoreButton.style.display = (displayedHistoryCount < lastSortedGames.length) ? 'block' : 'none';
         }
-    }
-
-    // Calculs agrégés et affichage des stats globales
-    let totalGames = gamesToDisplay.length;
-    let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
-    const heroCounts = {};
-
-    gamesToDisplay.forEach(game => {
-        totalKills += game.kills || 0;
-        totalDeaths += game.deaths || 0;
-        totalAssists += game.assists || 0;
-        if (game.result === 'win') wins++;
-        if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
-    });
-    const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-    const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
-    let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
-    for (const hero in heroCounts) {
-        if (heroCounts[hero] > maxHeroCount) {
-            maxHeroCount = heroCounts[hero];
-            mostPlayedHero = hero;
-        }
-    }
-
-    const kdaElement = document.getElementById('stat-kda');
-    const winRateElement = document.getElementById('stat-winrate');
-    const totalGamesElement = document.getElementById('stat-total-games');
-    const mainHeroElement = document.getElementById('stat-main-hero');
-    if (kdaElement) kdaElement.textContent = kda;
-    if (winRateElement) {
-        winRateElement.textContent = `${winRate}%`;
-        winRateElement.className = 'stat-value';
-        if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss');
-    }
-    if (totalGamesElement) totalGamesElement.textContent = totalGames;
-    if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
-
-    // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
-    // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
-    updateCharts();
-
-    // --- Calcul et Affichage Stats Détaillées ---
-    if (gamesToDisplay.length > 0) {
-        renderHeroStatsTable(gamesToDisplay);
-        renderMapStatsTable(gamesToDisplay);
-    } else {
-        // Vider les tableaux si aucune partie
-        const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-        const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-        if(heroTableBody) heroTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
-        if(mapTableBody) mapTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
     }
 }
 
@@ -1194,7 +1197,6 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         table.classList.remove('hidden');
     }
 }
-
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
