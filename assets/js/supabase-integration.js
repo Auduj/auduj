@@ -744,17 +744,6 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(hero)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300">${escapeHTML(map)}</td>
                     <td class="px-2 py-1 text-sm text-gray-300 text-center">${escapeHTML(kda)}</td>
-                    <td class="px-2 py-1 text-sm text-gray-300 text-center">${result}</td>
-                    <td class="px-2 py-1 text-sm text-gray-300">${notes}</td>
-                </tr>`;
-                historyTableBody.insertAdjacentHTML('beforeend', row);
-            }
-            // Ajout des écouteurs après le rendu
-            const trList = historyTableBody.querySelectorAll('tr[data-game-idx]');
-            trList.forEach(tr => {
-                const idx = parseInt(tr.getAttribute('data-game-idx'), 10);
-                tr.onclick = () => showGameDetails(lastSortedGames[idx]);
-            });
             displayedHistoryCount = endIdx;
             // Gérer le bouton Show More
             if (!showMoreButton) {
@@ -769,49 +758,63 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
             showMoreButton.style.display = (displayedHistoryCount < lastSortedGames.length) ? 'block' : 'none';
         }
     }
-     gamesToDisplay.forEach(game => {
-         totalKills += game.kills || 0; totalDeaths += game.deaths || 0; totalAssists += game.assists || 0;
-         if (game.result === 'win') wins++;
-         if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
-     });
-     const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-     const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
-     let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
-     for (const hero in heroCounts) { if (heroCounts[hero] > maxHeroCount) { maxHeroCount = heroCounts[hero]; mostPlayedHero = hero; } }
 
-     const kdaElement = document.getElementById('stat-kda');
+    // Calculs agrégés et affichage des stats globales
+    let totalGames = gamesToDisplay.length;
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
+    const heroCounts = {};
+
+    gamesToDisplay.forEach(game => {
+        totalKills += game.kills || 0;
+        totalDeaths += game.deaths || 0;
+        totalAssists += game.assists || 0;
+        if (game.result === 'win') wins++;
+        if (game.heroes?.name) heroCounts[game.heroes.name] = (heroCounts[game.heroes.name] || 0) + 1;
+    });
+    const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+    const kda = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : (totalKills + totalAssists).toFixed(2);
+    let mostPlayedHero = 'N/A'; let maxHeroCount = 0;
+    for (const hero in heroCounts) {
+        if (heroCounts[hero] > maxHeroCount) {
+            maxHeroCount = heroCounts[hero];
+            mostPlayedHero = hero;
+        }
+    }
+
+    const kdaElement = document.getElementById('stat-kda');
     const winRateElement = document.getElementById('stat-winrate');
     const totalGamesElement = document.getElementById('stat-total-games');
     const mainHeroElement = document.getElementById('stat-main-hero');
     if (kdaElement) kdaElement.textContent = kda;
-    if (winRateElement) { winRateElement.textContent = `${winRate}%`; winRateElement.className = 'stat-value'; if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss'); }
+    if (winRateElement) {
+        winRateElement.textContent = `${winRate}%`;
+        winRateElement.className = 'stat-value';
+        if(totalGames > 0) winRateElement.classList.add(winRate >= 50 ? 'text-win' : 'text-loss');
+    }
     if (totalGamesElement) totalGamesElement.textContent = totalGames;
     if (mainHeroElement) mainHeroElement.textContent = mostPlayedHero;
 
-     // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
-     // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
-     updateCharts();
+    // --- Génération des Graphiques (via updateCharts qui utilise le filtre et allUserGames) ---
+    // Note: updateCharts utilisera les données globales `allUserGames` qui peuvent être celles du cache ou les fraîches
+    updateCharts();
 
-     // --- Calcul et Affichage Stats Détaillées ---
-     if (gamesToDisplay.length > 0) {
-         renderHeroStatsTable(gamesToDisplay);
-         renderMapStatsTable(gamesToDisplay);
-     } else {
-         // Vider les tableaux si aucune partie
-          const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
-          const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-          if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
-          if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
-     }
-}
+    // --- Calcul et Affichage Stats Détaillées ---
+    if (gamesToDisplay.length > 0) {
+        renderHeroStatsTable(gamesToDisplay);
+        renderMapStatsTable(gamesToDisplay);
+    } else {
+        // Vider les tableaux si aucune partie
+        const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
+        const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
+        if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+        if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+    }
 
-
-// --- Gestion de l'État d'Authentification et UI ---
-/**
- * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
- * @param {object|null} user L'objet utilisateur Supabase ou null.
- */
-async function updateUserUI(user) {
+    /**
+     * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
+     * @param {object|null} user L'objet utilisateur Supabase ou null.
+     */
+    async function updateUserUI(user) {
     console.log("Updating UI for user:", user ? user.email : 'null');
     const userInfoDiv = document.getElementById('user-info');
     const userGreetingSpan = document.getElementById('user-greeting');
@@ -860,15 +863,15 @@ async function updateUserUI(user) {
         // Cacher le contenu du dashboard
         if (dashboardContent) dashboardContent.classList.add('hidden');
 
-         // Effacer les graphiques et vider données globales
-         if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
-         if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
-         allUserGames = []; // Vider les données en mémoire
-         // Optionnel: Effacer le contenu des canvas
-         const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
-         const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
-         if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
-         if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
+        // Effacer les graphiques et vider données globales
+        if (progressionChartInstance) { progressionChartInstance.destroy(); progressionChartInstance = null; }
+        if (accuracyChartInstance) { accuracyChartInstance.destroy(); accuracyChartInstance = null; }
+        allUserGames = []; // Vider les données en mémoire
+        // Optionnel: Effacer le contenu des canvas
+        const kdaCanvas = document.getElementById('progressionChart')?.getContext('2d');
+        const accCanvas = document.getElementById('accuracyChart')?.getContext('2d');
+        if(kdaCanvas) kdaCanvas.clearRect(0,0, kdaCanvas.canvas.width, kdaCanvas.canvas.height);
+        if(accCanvas) accCanvas.clearRect(0,0, accCanvas.canvas.width, accCanvas.canvas.height);
     }
 }
 
