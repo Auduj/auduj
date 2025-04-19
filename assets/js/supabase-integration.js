@@ -720,7 +720,11 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
         return;
     }
 
-     // --- Calculs et Affichage Stats Globales ---
+     // --- Déclaration des variables agrégées ---
+    let totalKills = 0, totalDeaths = 0, totalAssists = 0, wins = 0;
+    const heroCounts = {};
+
+    // --- Calculs et Affichage Stats Globales ---
     gamesToDisplay.forEach(game => {
         totalKills += game.kills || 0;
         totalDeaths += game.deaths || 0;
