@@ -169,7 +169,7 @@ const previewImg = document.getElementById('screenshotPreview');
 function normalize(str) {
     return str
         .toLowerCase()
-        .normalize('NFD').replace(/[ 0-- -- --]/g, '') // enlève accents
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève accents
         .replace(/[^a-z0-9]/g, ' ') // remplace tout sauf lettres/chiffres par espace
         .replace(/\s+/g, ' ') // espaces multiples en simple
         .trim();
