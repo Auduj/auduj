@@ -1072,6 +1072,105 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     if (!loadingDiv || !table || !tbody) return;
     loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
     table.classList.add('hidden');
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
+
+    try {
+        // 1. Update player data (si possible, pour forcer un refresh)
+        try {
+            await fetch(`https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}/update`, {
+                method: 'GET',
+                headers: {
+                    'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
+                    'Accept': 'application/json'
+                }
+            });
+        } catch (updateErr) {
+            // Silencieux, car peut échouer si trop fréquent
+        }
+
+        // 2. Récupérer toute l'historique paginée
+        let allMatches = [];
+        let page = 1;
+        const limit = 100; // Max autorisé, pour moins d'appels
+        let hasMore = true;
+        while (hasMore) {
+            const endpoint = `https://marvelrivalsapi.com/api/v2/player/${encodeURIComponent(username)}/match-history?page=${page}&limit=${limit}`;
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: {
+                    'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
+            }
+            const data = await response.json();
+            if (Array.isArray(data.match_history)) {
+                allMatches = allMatches.concat(data.match_history);
+            }
+            // Pagination
+            hasMore = data.pagination && data.pagination.has_more;
+            page++;
+        }
+
+        if (allMatches.length === 0) {
+            loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>';
+            return;
+        }
+
+        // 3. Affichage du tableau avec toutes les stats possibles
+        tbody.innerHTML = '';
+        allMatches.forEach(match => {
+            const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
+            const hero = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
+            const heroImg = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_type ? `<img src="${match.match_player.player_hero.hero_type}" alt="${hero}" class="inline w-8 h-8 mr-1 align-middle">` : '';
+            const map = match.match_map_id ? `Map #${match.match_map_id}` : '-';
+            const mapImg = match.map_thumbnail ? `<img src="${match.map_thumbnail}" alt="map" class="inline w-8 h-8 mr-1 align-middle">` : '';
+            const duration = match.match_play_duration || (match.match_player && match.match_player.player_hero && match.match_player.player_hero.play_time && match.match_player.player_hero.play_time.formatted) || '-';
+            const kills = match.match_player && match.match_player.kills !== undefined ? match.match_player.kills : '-';
+            const deaths = match.match_player && match.match_player.deaths !== undefined ? match.match_player.deaths : '-';
+            const assists = match.match_player && match.match_player.assists !== undefined ? match.match_player.assists : '-';
+            const damage = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_hero_damage !== undefined ? match.match_player.player_hero.total_hero_damage : '-';
+            const damageTaken = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_damage_taken !== undefined ? match.match_player.player_hero.total_damage_taken : '-';
+            const healing = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_hero_heal !== undefined ? match.match_player.player_hero.total_hero_heal : '-';
+            const result = match.match_player && match.match_player.is_win && match.match_player.is_win.is_win ? '<span class="text-win font-semibold">Victoire</span>' : '<span class="text-loss font-semibold">Défaite</span>';
+            const mvp = match.mvp_uid ? match.mvp_uid : '-';
+            const svp = match.svp_uid ? match.svp_uid : '-';
+            const row = `<tr>
+                <td class="px-3 py-2">${date}</td>
+                <td class="px-3 py-2">${heroImg}${escapeHTML(hero)}</td>
+                <td class="px-3 py-2">${mapImg}${escapeHTML(map)}</td>
+                <td class="px-3 py-2">${duration}</td>
+                <td class="px-3 py-2">${kills}</td>
+                <td class="px-3 py-2">${deaths}</td>
+                <td class="px-3 py-2">${assists}</td>
+                <td class="px-3 py-2">${damage}</td>
+                <td class="px-3 py-2">${damageTaken}</td>
+                <td class="px-3 py-2">${healing}</td>
+                <td class="px-3 py-2">${result}</td>
+                <td class="px-3 py-2">${mvp}</td>
+                <td class="px-3 py-2">${svp}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'historique Marvel Rivals:', error);
+        loadingDiv.textContent = "Erreur lors de la récupération de l'historique Marvel Rivals.";
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>';
+        table.classList.remove('hidden');
+    }
+}
+
+    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
+    const table = document.getElementById('marvel-rivals-history-table');
+    const tbody = table ? table.querySelector('tbody') : null;
+    if (!loadingDiv || !table || !tbody) return;
+    loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
+    table.classList.add('hidden');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
 
     try {
