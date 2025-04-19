@@ -581,8 +581,16 @@ function renderMapStatsTable(gamesData) {
 
     // 1. Agréger
     gamesData.forEach(game => {
-        const mapName = game.maps?.name;
-        if (!mapName) return;
+        // Utilise le nom officiel de la map si possible
+        let mapName = '--';
+        if (game.maps) {
+            if (game.maps.name) {
+                mapName = game.maps.name;
+            } else if (game.maps.id) {
+                mapName = getMapNameById(game.maps.id);
+            }
+        }
+        if (!mapName || mapName === '--') return;
         if (!mapStats[mapName]) mapStats[mapName] = { played: 0, wins: 0 };
         mapStats[mapName].played++;
         if (game.result === 'win') mapStats[mapName].wins++;
@@ -796,7 +804,17 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
                 const game = lastSortedGames[idx];
                 const date = game.played_at ? new Date(game.played_at).toLocaleDateString('fr-FR') : '--';
                 const hero = game.heroes?.name || '--';
-                const map = game.maps?.name || '--';
+                // Affiche le nom officiel de la map si possible
+                let map = '--';
+                if (game.maps && (game.maps.name || game.maps.id)) {
+                    if (game.maps.name) {
+                        map = game.maps.name;
+                    } else if (typeof getMapNameById === 'function') {
+                        map = getMapNameById(game.maps.id);
+                    } else {
+                        map = game.maps.id || '--';
+                    }
+                }
                 const kda = `${game.kills ?? 0} / ${game.deaths ?? 0} / ${game.assists ?? 0}`;
                 const result = game.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (game.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
                 const notes = game.notes ? escapeHTML(game.notes) : '';
@@ -1085,6 +1103,7 @@ async function refreshMarvelRivalsSection() {
 
 
 import { getHeroData, getMapData } from './marvel-mappings.js';
+import { getMapNameById, setMapIdToNameMapping } from './map-name-utils.js';
 
 async function fetchAndDisplayMarvelRivalsHistory(username) {
     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
