@@ -1150,16 +1150,20 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             } else if (match.match_player && match.match_player.player_hero && match.match_player.player_hero.play_time && match.match_player.player_hero.play_time.formatted) {
                 duration = match.match_player.player_hero.play_time.formatted;
             }
-            // Champs avec fallback '-'
-            const kills = match.match_kills !== undefined && match.match_kills !== null ? match.match_kills : '-';
-            const deaths = match.match_deaths !== undefined && match.match_deaths !== null ? match.match_deaths : '-';
-            const assists = match.match_assists !== undefined && match.match_assists !== null ? match.match_assists : '-';
-            const damage = match.match_damage !== undefined && match.match_damage !== null ? match.match_damage : '-';
-            const damageTaken = match.match_damage_taken !== undefined && match.match_damage_taken !== null ? match.match_damage_taken : '-';
-            const healing = match.match_healing !== undefined && match.match_healing !== null ? match.match_healing : '-';
+            // Extraction robuste de toutes les stats existantes dans match_player
+            const getStat = (key) => (match.match_player && match.match_player[key] !== undefined && match.match_player[key] !== null) ? match.match_player[key] : '-';
+            const kills = getStat('kills');
+            const deaths = getStat('deaths');
+            const assists = getStat('assists');
+            const damage = getStat('damage');
+            const damageTaken = getStat('damage_taken');
+            const healing = getStat('healing');
+            const isWin = getStat('is_win');
+            const mvp = match.mvp_uid !== undefined && match.mvp_uid !== null ? match.mvp_uid : '-';
+            const svp = match.svp_uid !== undefined && match.svp_uid !== null ? match.svp_uid : '-';
+            // Ajoute d'autres stats si besoin en suivant ce modèle
+
             const result = match.match_result !== undefined && match.match_result !== null ? match.match_result : '-';
-            const mvp = match.match_mvp !== undefined && match.match_mvp !== null ? match.match_mvp : '-';
-            const svp = match.match_svp !== undefined && match.match_svp !== null ? match.match_svp : '-';
             const row = `<tr class="text-xs md:text-sm">
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${heroData.name}</td>
