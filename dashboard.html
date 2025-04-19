@@ -107,6 +107,60 @@
             <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
+            <!-- Marvel Rivals Username Section -->
+            <section id="marvel-rivals-username-section" class="mb-8 bg-card-bg p-6 rounded-lg shadow border border-gray-700 max-w-xl mx-auto">
+                <h2 class="text-xl font-heading text-marvel-yellow mb-4 flex items-center"><i class="fas fa-link mr-2"></i>Lier votre pseudo Marvel Rivals</h2>
+                <form id="marvel-rivals-username-form" class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <input type="text" id="marvel-rivals-username-input" name="marvel_rivals_username" class="px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 text-sm" placeholder="Entrez votre pseudo Marvel Rivals" required />
+                    <button type="submit" class="btn-marvel btn-blue px-6 py-2">Enregistrer</button>
+                    <span id="marvel-rivals-username-feedback" class="text-sm ml-2"></span>
+                </form>
+                <div id="marvel-rivals-username-current" class="mt-2 text-gray-400 text-sm text-center"></div>
+            </section>
+
+            <!-- TAB NAVIGATION (ajout Historique Marvel Rivals) -->
+            <div class="flex flex-wrap justify-center mb-8">
+                <button class="tab-button active" data-tab="progression">Progression</button>
+                <button class="tab-button" data-tab="par-heros">Par Héros</button>
+                <button class="tab-button" data-tab="par-map">Par Map</button>
+                <button class="tab-button" data-tab="historique">Historique Parties</button>
+                <button class="tab-button" data-tab="marvel-rivals-history">Historique Marvel Rivals</button>
+            </div>
+
+            <!-- TAB CONTENTS -->
+            <div class="tab-content" data-tab-content="progression">
+                <!-- Contenu Progression existant ici -->
+            </div>
+            <div class="tab-content hidden" data-tab-content="par-heros">
+                <!-- Contenu Par Héros existant ici -->
+            </div>
+            <div class="tab-content hidden" data-tab-content="par-map">
+                <!-- Contenu Par Map existant ici -->
+            </div>
+            <div class="tab-content hidden" data-tab-content="historique">
+                <!-- Contenu Historique Parties existant ici -->
+            </div>
+            <div class="tab-content hidden" data-tab-content="marvel-rivals-history">
+                <h2 class="text-2xl font-heading text-marvel-yellow mb-4 text-center flex items-center justify-center"><i class="fas fa-history mr-2"></i>Historique Marvel Rivals</h2>
+                <div id="marvel-rivals-history-loading" class="text-center text-gray-400 mb-4"></div>
+                <div class="overflow-x-auto">
+                  <table id="marvel-rivals-history-table" class="min-w-full bg-card-bg rounded-lg shadow border border-gray-700 text-left hidden">
+                    <thead>
+                      <tr>
+                        <th class="px-3 py-2 text-marvel-yellow">Date</th>
+                        <th class="px-3 py-2 text-marvel-yellow">Héros</th>
+                        <th class="px-3 py-2 text-marvel-yellow">Map</th>
+                        <th class="px-3 py-2 text-marvel-yellow">K/D/A</th>
+                        <th class="px-3 py-2 text-marvel-yellow">Résultat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Rempli dynamiquement par JS -->
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
                  <h2 class="text-3xl font-heading mb-8 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
                 <form id="game-entry-form" action="#" method="POST" class="space-y-6">
@@ -208,6 +262,7 @@
                         <button class="tab-button" data-tab="par-heros">Par Héros</button>
                         <button class="tab-button" data-tab="par-map">Par Map</button>
                         <button class="tab-button" data-tab="historique">Historique Parties</button>
+                        <button class="tab-button" data-tab="rivals-history">Historique Marvel Rivals</button>
                     </nav>
                 </div>
                 <div>
@@ -255,6 +310,28 @@
                                 <thead class="bg-gray-800"><tr><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th><th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th></tr></thead>
                                 <tbody class="bg-card-bg divide-y divide-gray-700">
                                     <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+
+                     <!-- Marvel Rivals Match History Tab -->
+                     <div class="tab-content hidden" data-tab-content="rivals-history">
+                        <h3 class="text-xl font-semibold mb-4 text-light-text">Historique Marvel Rivals (API)</h3>
+                        <div id="marvel-rivals-history-container" class="overflow-x-auto">
+                            <div id="marvel-rivals-history-loading" class="text-center text-gray-500 py-4">Chargement de l'historique Marvel Rivals...</div>
+                            <table id="marvel-rivals-history-table" class="min-w-full divide-y divide-gray-700 hidden">
+                                <thead class="bg-gray-800">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">K/D/A</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card-bg divide-y divide-gray-700">
+                                    <tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée à afficher.</td></tr>
                                 </tbody>
                             </table>
                         </div>

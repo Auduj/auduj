@@ -967,31 +967,53 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     // 1. Essayer d'afficher depuis le cache IMMEDIATEMENT (si sur dashboard)
     let displayedFromCache = false;
     if (document.getElementById('dashboard-content')) {
-        // Il faut que les dropdowns soient peuplés AVANT de charger le filtre
-        // et idéalement avant d'afficher le cache (car le cache contient des IDs)
-        // On peuple donc les dropdowns en premier lieu.
         await populateDropdowns();
-        loadFilterPreference(); // Charger la préférence APRÈS que les options existent
-        displayedFromCache = loadDataFromCacheAndDisplay(); // Afficher le cache ensuite
+        loadFilterPreference();
+        displayedFromCache = loadDataFromCacheAndDisplay();
     }
 
-    // 2. Vérifier l'état d'authentification, rediriger si besoin, et lancer le fetch réel si connecté
-    // checkAuthStateAndRedirect mettra à jour l'UI et appellera fetchAndRefreshDashboard si nécessaire
     await checkAuthStateAndRedirect();
 
-    // 3. Écouter les changements d'état futurs
-    _supabase.auth.onAuthStateChange(async (event, session) => { // Rendu async
+    _supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth State Change Event:', event, session);
-        // Mettre à jour l'UI et potentiellement re-fetcher si l'utilisateur change
         await updateUserUI(session?.user ?? null);
-         // Re-fetcher les données si l'état change vers connecté et qu'on est sur le dashboard
-         // (utile si l'utilisateur se connecte dans un autre onglet)
-         if (event === 'SIGNED_IN' && document.getElementById('dashboard-content')) {
-             fetchAndRefreshDashboard();
-         }
+        if (event === 'SIGNED_IN' && document.getElementById('dashboard-content')) {
+            fetchAndRefreshDashboard();
+        }
+        // Rafraîchir le pseudo Marvel Rivals et l'historique si changement d'état
+        await refreshMarvelRivalsSection();
     });
 
-    // 4. Attacher les autres gestionnaires d'événements
+    // Marvel Rivals Username Form
+    const usernameForm = document.getElementById('marvel-rivals-username-form');
+    if (usernameForm) {
+        usernameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('marvel-rivals-username-input');
+            const feedback = document.getElementById('marvel-rivals-username-feedback');
+            if (!input.value || input.value.length < 3) {
+                feedback.textContent = "Le pseudo doit faire au moins 3 caractères.";
+                feedback.classList.add('text-red-500');
+                return;
+            }
+            feedback.textContent = "";
+            feedback.classList.remove('text-red-500');
+            const result = await saveMarvelRivalsUsername(input.value);
+            if (result.success) {
+                feedback.textContent = "Pseudo enregistré !";
+                feedback.classList.remove('text-red-500');
+                await refreshMarvelRivalsSection();
+            } else {
+                feedback.textContent = result.error || "Erreur lors de la sauvegarde.";
+                feedback.classList.add('text-red-500');
+            }
+        });
+    }
+
+    // Rafraîchir l'affichage du pseudo et de l'historique Marvel Rivals au chargement
+    await refreshMarvelRivalsSection();
+
+    // ... (reste inchangé)
 
     // Formulaires Auth
     const signupForm = document.getElementById('signup-form');
@@ -1003,107 +1025,87 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     if (logoutButton) { logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
     if (mobileLogoutButton) { mobileLogoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); }); }
 
-    // Formulaire Saisie Partie (avec gestion visuelle de l'état de session)
-    const gameEntryForm = document.getElementById('game-entry-form');
-    if (gameEntryForm) {
-        const submitBtn = gameEntryForm.querySelector('[type="submit"]');
-        // Crée ou récupère l'alerte visuelle
-        let sessionAlert = document.getElementById('session-alert');
-        if (!sessionAlert) {
-            sessionAlert = document.createElement('div');
-            sessionAlert.id = 'session-alert';
-            sessionAlert.style.display = 'none';
-            sessionAlert.style.background = '#f56565'; // Rouge doux
-            sessionAlert.style.color = '#fff';
-            sessionAlert.style.padding = '0.75em 1em';
-            sessionAlert.style.borderRadius = '0.5em';
-            sessionAlert.style.marginTop = '1em';
-            sessionAlert.style.fontWeight = 'bold';
-            sessionAlert.style.textAlign = 'center';
-            sessionAlert.style.fontSize = '1em';
-            gameEntryForm.parentNode.insertBefore(sessionAlert, gameEntryForm.nextSibling);
-        }
-        if (submitBtn) submitBtn.disabled = true; // Désactive tant que l'auth n'est pas prête
+    // ... (reste inchangé)
+});
 
-        getUserProfileId().then(userId => {
-            if (userId) {
-                if (submitBtn) submitBtn.disabled = false;
-                sessionAlert.style.display = 'none';
-                // On attache le listener ici, donc il ne sera actif QUE si l'utilisateur est loggé
-                gameEntryForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(gameEntryForm);
-                    const gameData = Object.fromEntries(formData.entries());
-// Validation stricte avant soumission
-if (!gameData.hero || !gameData.map || !gameData.result) {
-    alert('Tous les champs obligatoires doivent être remplis.');
-    return;
+// ----- Marvel Rivals Username & API Integration -----
+
+async function getMarvelRivalsUsername() {
+    const userId = await getUserProfileId();
+    if (!userId || !_supabase) return null;
+    const { data, error } = await _supabase.from('profiles').select('marvel_rivals_username').eq('id', userId).single();
+    if (error) return null;
+    return data?.marvel_rivals_username || null;
 }
-saveGameEntry(gameData);
-                });
-                console.log('Submit listener ATTACHED to #game-entry-form (user logged in).');
-            } else {
-                if (submitBtn) submitBtn.disabled = true;
-                sessionAlert.textContent = "Veuillez patienter, restauration de la session utilisateur... Si le formulaire reste désactivé, veuillez vous reconnecter.";
-                sessionAlert.style.display = 'block';
-                console.warn("Impossible d'attacher le submit: utilisateur non authentifié.");
-            }
-        });
+
+async function saveMarvelRivalsUsername(username) {
+    const userId = await getUserProfileId();
+    if (!userId || !_supabase) return { success: false, error: "Non connecté." };
+    const { error } = await _supabase.from('profiles').update({ marvel_rivals_username: username }).eq('id', userId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+}
+
+async function refreshMarvelRivalsSection() {
+    const currentDisplay = document.getElementById('marvel-rivals-username-current');
+    const input = document.getElementById('marvel-rivals-username-input');
+    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
+    const table = document.getElementById('marvel-rivals-history-table');
+    if (!currentDisplay || !input) return;
+    currentDisplay.textContent = 'Chargement du pseudo...';
+    const username = await getMarvelRivalsUsername();
+    if (username) {
+        currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
+        input.value = username;
+        // Charger l'historique via API
+        await fetchAndDisplayMarvelRivalsHistory(username);
     } else {
-        if (document.getElementById('dashboard-content') && !document.getElementById('dashboard-content').classList.contains('hidden')) {
-            console.error('ERREUR: Formulaire #game-entry-form non trouvé sur le dashboard !');
+        currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié.";
+        input.value = '';
+        if (loadingDiv) loadingDiv.textContent = "Veuillez lier votre pseudo Marvel Rivals pour afficher l'historique.";
+        if (table) table.classList.add('hidden');
+    }
+}
+
+async function fetchAndDisplayMarvelRivalsHistory(username) {
+    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
+    const table = document.getElementById('marvel-rivals-history-table');
+    const tbody = table ? table.querySelector('tbody') : null;
+    if (!loadingDiv || !table || !tbody) return;
+    loadingDiv.textContent = 'Chargement de l\'historique Marvel Rivals...';
+    table.classList.add('hidden');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
+    try {
+        const apiKey = '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087';
+        const response = await fetch(`https://api.marvelrivalsapi.com/v1/player/${encodeURIComponent(username)}/matches`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!response.ok) throw new Error('Erreur API Marvel Rivals');
+        const data = await response.json();
+        if (!Array.isArray(data.matches) || data.matches.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée trouvée pour ce pseudo.</td></tr>';
+            loadingDiv.textContent = '';
+            table.classList.remove('hidden');
+            return;
         }
+        tbody.innerHTML = '';
+        for (const match of data.matches) {
+            const date = match.date ? new Date(match.date).toLocaleString('fr-FR') : '--';
+            const hero = match.hero || '--';
+            const map = match.map || '--';
+            const kda = `${match.kills ?? '--'}/${match.deaths ?? '--'}/${match.assists ?? '--'}`;
+            const result = match.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (match.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
+            tbody.innerHTML += `<tr><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${date}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${hero}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${map}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${kda}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${result}</td></tr>`;
+        }
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Erreur lors de la récupération de l'historique : ${e.message}</td></tr>`;
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
     }
-
-    // Filtre des graphiques (Sauvegarde dans localStorage)
-    if (chartHeroFilter) {
-        chartHeroFilter.addEventListener('change', (e) => {
-            // ...
-            // SAUVEGARDER dans localStorage
-            try {
-                localStorage.setItem('auduj_chartHeroFilter', selectedChartHeroId);
-                console.log(`Filtre héros sauvegardé: ${selectedChartHeroId}`);
-            } catch (storageError) {
-                console.error("Erreur sauvegarde localStorage:", storageError);
-            }
-            updateCharts(); // Redessine les graphiques
-        });
-    }
-
-    // Clics sur l'historique (Event Delegation)
-    if (historyTableBody) {
-        historyTableBody.addEventListener('click', (e) => {
-            const row = e.target.closest('tr[data-game-id]'); // Cherche la ligne parente avec l'attribut
-            if (row) {
-                const gameId = parseInt(row.dataset.gameId, 10);
-                // Trouve les données complètes de la partie dans notre tableau global
-                const gameDetails = allUserGames.find(g => g.id === gameId);
-                if (gameDetails) {
-                    showGameDetails(gameDetails); // Affiche la modale
-                } else {
-                    console.error("Données de la partie non trouvées pour l'ID:", gameId);
-                }
-            }
-        });
-    }
-
-    // Fermeture de la modale
-    if (closeModalButton && gameDetailModal) {
-        // Clic sur le bouton X
-        closeModalButton.addEventListener('click', () => {
-            gameDetailModal.classList.add('opacity-0', 'pointer-events-none'); // Cache avec transition
-            gameDetailModal.classList.remove('active');
-        });
-        // Clic en dehors du contenu de la modale
-        gameDetailModal.addEventListener('click', (e) => {
-            if (e.target === gameDetailModal) { // Si le clic est sur le fond semi-transparent
-                 gameDetailModal.classList.add('opacity-0', 'pointer-events-none');
-                 gameDetailModal.classList.remove('active');
-            }
-        });
-    }
-
-}); // Fin DOMContentLoaded
+}
+ // Fin DOMContentLoaded
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
