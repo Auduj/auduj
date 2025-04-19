@@ -1165,40 +1165,6 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     }
 }
 
-        tbody.innerHTML = '';
-        matches.forEach(match => {
-            // Extraction des infos du match selon la structure réelle de l'API
-            const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
-            const hero = match.player_performance && match.player_performance.hero_name ? match.player_performance.hero_name : '-';
-            const map = match.map_id ? `Map #${match.map_id}` : '-';
-            const kda = match.player_performance && (match.player_performance.kills !== undefined && match.player_performance.deaths !== undefined && match.player_performance.assists !== undefined)
-                ? `${match.player_performance.kills}/${match.player_performance.deaths}/${match.player_performance.assists}` : '-';
-            let result = '-';
-            if (match.winner_side !== undefined && match.player_performance && match.player_performance.side !== undefined) {
-                if (match.winner_side === match.player_performance.side) {
-                    result = '<span class="text-win font-semibold">Victoire</span>';
-                } else {
-                    result = '<span class="text-loss font-semibold">Défaite</span>';
-                }
-            }
-            const row = `<tr>
-                <td class="px-3 py-2">${date}</td>
-                <td class="px-3 py-2">${escapeHTML(hero)}</td>
-                <td class="px-3 py-2">${escapeHTML(map)}</td>
-                <td class="px-3 py-2">${kda}</td>
-                <td class="px-3 py-2">${result}</td>
-            </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
-        loadingDiv.textContent = '';
-        table.classList.remove('hidden');
-    } catch (error) {
-        console.error('Erreur lors de la récupération de l\'historique Marvel Rivals:', error);
-        loadingDiv.textContent = "Erreur lors de la récupération de l'historique Marvel Rivals.";
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>';
-        table.classList.remove('hidden');
-    }
-}
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
