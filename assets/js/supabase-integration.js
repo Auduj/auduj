@@ -1125,36 +1125,25 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         // 3. Affichage du tableau avec toutes les stats possibles
         tbody.innerHTML = '';
         allMatches.forEach(match => {
-    const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
-    // HERO
-    const heroName = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
-    const heroData = getHeroData(heroName);
-    const heroImg = `<img src="${heroData.img}" alt="${heroData.name}" class="inline w-8 h-8 mr-1 align-middle object-cover" onerror="this.onerror=null;this.src='https://static.marvelrivals.com/heroes/unknown.png';">`;
-    // MAP
-    const mapId = match.match_map_id ? String(match.match_map_id) : null;
-    const mapData = getMapData(mapId);
-    const mapImg = `<img src="${mapData.img}" alt="${mapData.name}" class="inline w-8 h-8 mr-1 align-middle object-cover" onerror="this.onerror=null;this.src='https://static.marvelrivals.com/maps/unknown.jpg';">`;
-    const duration = match.match_play_duration || (match.match_player && match.match_player.player_hero && match.match_player.player_hero.play_time && match.match_player.player_hero.play_time.formatted) || '-';
-    const kills = match.match_player && match.match_player.kills !== undefined ? match.match_player.kills : '-';
-    const deaths = match.match_player && match.match_player.deaths !== undefined ? match.match_player.deaths : '-';
-    const assists = match.match_player && match.match_player.assists !== undefined ? match.match_player.assists : '-';
-    const damage = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_hero_damage !== undefined ? match.match_player.player_hero.total_hero_damage : '-';
-    const damageTaken = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_damage_taken !== undefined ? match.match_player.player_hero.total_damage_taken : '-';
-    const healing = match.match_player && match.match_player.player_hero && match.match_player.player_hero.total_hero_heal !== undefined ? match.match_player.player_hero.total_hero_heal : '-';
-    const result = match.match_player && match.match_player.is_win && match.match_player.is_win.is_win ? '<span class="text-win font-semibold">Victoire</span>' : '<span class="text-loss font-semibold">Défaite</span>';
-    const mvp = match.mvp_uid ? match.mvp_uid : '-';
-    const svp = match.svp_uid ? match.svp_uid : '-';
-    const row = `<tr class="text-xs md:text-sm">
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${heroImg}<span class="ml-1">${heroData.name}</span></td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${mapImg}<span class="ml-1">${mapData.name}</span></td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${duration}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${kills}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${deaths}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${assists}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damage}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damageTaken}</td>
-        <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${healing}</td>
+            const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
+            // HERO
+            const heroName = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
+            const heroData = getHeroData(heroName);
+            const heroImg = `<img src="${heroData.img}" alt="${heroData.name}" class="inline w-8 h-8 mr-1 align-middle object-cover" onerror="this.onerror=null;this.src='https://static.marvelrivals.com/heroes/unknown.png';">`;
+            const row = `<tr class="text-xs md:text-sm">
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${heroImg}<span class="ml-1">${heroData.name}</span></td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${mapImg}<span class="ml-1">${mapData.name}</span></td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${duration}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${kills}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${deaths}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${assists}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damage}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damageTaken}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${healing}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${result}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mvp}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${svp}</td>
             </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
