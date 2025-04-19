@@ -125,7 +125,92 @@
 </section>
 
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
-                 <h2 class="text-3xl font-heading mb-8 text-marvel-yellow text-center"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
+                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+    <h2 class="text-3xl font-heading text-marvel-yellow text-center md:text-left flex-1"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
+    <div class="flex items-center gap-2 justify-center md:justify-end">
+        <span class="text-gray-400 font-medium">Ou upload un screen</span>
+        <input type="file" accept="image/*" id="screenshotInput" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-marvel-yellow file:text-marvel-red hover:file:bg-yellow-200" />
+    </div>
+</div>
+<!-- Tableau OCR caché par défaut -->
+<div id="ocr-result-container" class="hidden mt-6">
+    <h3 class="text-lg font-semibold mb-2 text-marvel-yellow">Résultat OCR</h3>
+    <table id="dashboardTable" class="min-w-full divide-y divide-gray-700" border="1">
+        <thead class="bg-gray-800">
+            <tr>
+                <th>Nom</th>
+                <th>K</th>
+                <th>D</th>
+                <th>A</th>
+                <th>Solo</th>
+                <th>Éliminations</th>
+                <th>Dégâts</th>
+                <th>Dégâts Bloqués</th>
+                <th>Soins</th>
+                <th>Précision</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<!-- Tesseract.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+document.getElementById('screenshotInput').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // OCR avec Tesseract.js
+    const { data: { text } } = await Tesseract.recognize(file, 'fra');
+    console.log(text); // Pour debug, copie-colle ici si besoin
+
+    // Recherche de la ligne contenant "Diwaan" (adapter dynamiquement si besoin)
+    const targetName = "Diwaan";
+    const lines = text.split('\n');
+    const playerLine = lines.find(line => line.includes(targetName));
+
+    if (!playerLine) {
+        alert("Joueur non trouvé dans le screenshot !");
+        return;
+    }
+
+    // Découpage de la ligne (adapter selon le résultat réel de l’OCR)
+    const columns = playerLine.trim().split(/\s+/);
+
+    const playerData = {
+        name: columns[0] || '',
+        k: columns[1] || '',
+        d: columns[2] || '',
+        a: columns[3] || '',
+        solo: columns[4] || '',
+        elims: columns[5] || '',
+        degats: columns[6] || '',
+        degats_bloques: columns[7] || '',
+        soins: columns[8] || '',
+        precision: columns[9] || ''
+    };
+
+    // Affichage dans le tableau OCR
+    const container = document.getElementById('ocr-result-container');
+    container.classList.remove('hidden');
+    const tbody = document.querySelector('#dashboardTable tbody');
+    tbody.innerHTML = '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${playerData.name}</td>
+        <td>${playerData.k}</td>
+        <td>${playerData.d}</td>
+        <td>${playerData.a}</td>
+        <td>${playerData.solo}</td>
+        <td>${playerData.elims}</td>
+        <td>${playerData.degats}</td>
+        <td>${playerData.degats_bloques}</td>
+        <td>${playerData.soins}</td>
+        <td>${playerData.precision}</td>
+    `;
+    tbody.appendChild(tr);
+});
+</script>
                 <form id="game-entry-form" action="#" method="POST" class="space-y-6">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
 
