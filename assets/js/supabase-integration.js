@@ -1048,37 +1048,35 @@ async function saveMarvelRivalsUsername(username) {
 
 async function refreshMarvelRivalsSection() {
     const currentDisplay = document.getElementById('marvel-rivals-username-current');
-    const input = document.getElementById('marvel-rivals-username-input');
     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
     const table = document.getElementById('marvel-rivals-history-table');
-    if (!currentDisplay || !input) return;
+    if (!currentDisplay) return;
     currentDisplay.textContent = 'Chargement du pseudo...';
     const username = await getMarvelRivalsUsername();
     if (username) {
         currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
-        input.value = username;
-        // Charger l'historique via API
         await fetchAndDisplayMarvelRivalsHistory(username);
     } else {
-        currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié.";
-        input.value = '';
-        if (loadingDiv) loadingDiv.textContent = "Veuillez lier votre pseudo Marvel Rivals pour afficher l'historique.";
+        currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié à votre compte. Veuillez contacter un admin.";
+        if (loadingDiv) loadingDiv.textContent = "Pseudo non lié. Contactez un administrateur.";
         if (table) table.classList.add('hidden');
     }
 }
+
+
 
 async function fetchAndDisplayMarvelRivalsHistory(username) {
     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
     const table = document.getElementById('marvel-rivals-history-table');
     const tbody = table ? table.querySelector('tbody') : null;
     if (!loadingDiv || !table || !tbody) return;
-    loadingDiv.textContent = 'Chargement de l\'historique Marvel Rivals...';
+    loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
     table.classList.add('hidden');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
     try {
         const apiKey = '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087';
-        const response = await fetch(`https://api.marvelrivalsapi.com/v1/player/${encodeURIComponent(username)}/matches`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
+        const response = await fetch(`https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}/matches`, {
+            headers: { 'x-api-key': apiKey }
         });
         if (!response.ok) throw new Error('Erreur API Marvel Rivals');
         const data = await response.json();
@@ -1105,7 +1103,38 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         table.classList.remove('hidden');
     }
 }
- // Fin DOMContentLoaded
+
+    try {
+        const apiKey = '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087';
+        const response = await fetch(`https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}/matches`, {
+            headers: { 'x-api-key': apiKey }
+        });
+        if (!response.ok) throw new Error('Erreur API Marvel Rivals');
+        const data = await response.json();
+        if (!Array.isArray(data.matches) || data.matches.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée trouvée pour ce pseudo.</td></tr>';
+            loadingDiv.textContent = '';
+            table.classList.remove('hidden');
+            return;
+        }
+        tbody.innerHTML = '';
+        for (const match of data.matches) {
+            const date = match.date ? new Date(match.date).toLocaleString('fr-FR') : '--';
+            const hero = match.hero || '--';
+            const map = match.map || '--';
+            const kda = `${match.kills ?? '--'}/${match.deaths ?? '--'}/${match.assists ?? '--'}`;
+            const result = match.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' : (match.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' : '--');
+            tbody.innerHTML += `<tr><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${date}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${hero}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${map}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${kda}</td><td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${result}</td></tr>`;
+        }
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Erreur lors de la récupération de l'historique : ${e.message}</td></tr>`;
+        loadingDiv.textContent = '';
+        table.classList.remove('hidden');
+    }
+//}
+// (ligne supprimée : Fin DOMContentLoaded n'est pas une déclaration JS valide)
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur

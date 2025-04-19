@@ -107,15 +107,11 @@
             <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
-            <!-- Marvel Rivals Username Section -->
-            <section id="marvel-rivals-username-section" class="mb-8 bg-card-bg p-6 rounded-lg shadow border border-gray-700 max-w-xl mx-auto">
-                <h2 class="text-xl font-heading text-marvel-yellow mb-4 flex items-center"><i class="fas fa-link mr-2"></i>Lier votre pseudo Marvel Rivals</h2>
-                <form id="marvel-rivals-username-form" class="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                    <input type="text" id="marvel-rivals-username-input" name="marvel_rivals_username" class="px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue transition duration-200 text-sm" placeholder="Entrez votre pseudo Marvel Rivals" required />
-                    <button type="submit" class="btn-marvel btn-blue px-6 py-2">Enregistrer</button>
-                    <span id="marvel-rivals-username-feedback" class="text-sm ml-2"></span>
-                </form>
-                <div id="marvel-rivals-username-current" class="mt-2 text-gray-400 text-sm text-center"></div>
+            <!-- Marvel Rivals Username Section (automatique, sans formulaire) -->
+            <section id="marvel-rivals-username-section" class="mb-8 bg-card-bg p-6 rounded-lg shadow border-2 border-marvel-yellow max-w-xl mx-auto">
+                <h2 class="text-xl font-heading text-marvel-yellow mb-2 flex items-center justify-center"><i class="fas fa-link mr-2"></i>Marvel Rivals lié à votre compte</h2>
+                <div id="marvel-rivals-username-current" class="mt-2 text-lg text-center font-semibold text-marvel-yellow"></div>
+                <div class="text-gray-400 text-sm text-center mt-2">Le pseudo Marvel Rivals est automatiquement synchronisé.<br>Contactez un administrateur pour le modifier.</div>
             </section>
 
             <!-- TAB NAVIGATION (ajout Historique Marvel Rivals) -->
