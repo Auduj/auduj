@@ -1102,7 +1102,8 @@ async function refreshMarvelRivalsSection() {
 
 
 
-import { getHeroData, getMapData } from './marvel-mappings.js';
+import { getHeroData } from './marvel-mappings.js';
+import { fetchMarvelMaps } from './marvel-maps-api.js';
 import { getMapNameById, setMapIdToNameMapping } from './map-name-utils.js';
 
 async function fetchAndDisplayMarvelRivalsHistory(username) {
@@ -1161,7 +1162,11 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             return;
         }
 
-        // 3. Affichage du tableau avec toutes les stats possibles
+        // 3. Récupération et mapping dynamique des maps
+        const maps = await fetchMarvelMaps();
+        setMapIdToNameMapping(maps);
+
+        // 4. Affichage du tableau avec toutes les stats possibles
         tbody.innerHTML = '';
         allMatches.forEach(match => {
             console.group('[Marvel Rivals API] Exploration match');
@@ -1180,7 +1185,7 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             const heroData = getHeroData(heroName);
             // MAP
             const mapId = match.match_map_id ? String(match.match_map_id) : null;
-            const mapData = getMapData(mapId);
+            const mapName = getMapNameById(mapId);
             // DURATION
             let duration = '-';
             if (match.match_play_duration) {
@@ -1205,7 +1210,7 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             const row = `<tr class="text-xs md:text-sm">
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${heroData.name}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mapData.name}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mapName}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${duration}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${kills}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${deaths}</td>
