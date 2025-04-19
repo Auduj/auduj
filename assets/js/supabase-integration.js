@@ -706,7 +706,7 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
     if (!gamesToDisplay) {
         console.warn("Aucune donnée à afficher.");
         if (historyTableBody) {
-            historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+            historyTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>`;
         }
         if (showMoreButton) showMoreButton.style.display = 'none';
         return;
@@ -725,7 +725,7 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
             historyTableBody.innerHTML = '';
         }
         if (totalGames === 0) {
-            historyTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>';
+            historyTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">Aucune partie enregistrée.</td></tr>`;
             if (showMoreButton) showMoreButton.style.display = 'none';
         } else {
             // Afficher le prochain lot de parties
@@ -806,15 +806,16 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
         // Vider les tableaux si aucune partie
         const heroTableBody = document.querySelector('[data-tab-content="par-heros"] tbody');
         const mapTableBody = document.querySelector('[data-tab-content="par-map"] tbody');
-        if(heroTableBody) heroTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
-        if(mapTableBody) mapTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>';
+        if(heroTableBody) heroTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
+        if(mapTableBody) mapTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">Aucune donnée disponible.</td></tr>`;
     }
+}
 
-    /**
-     * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
-     * @param {object|null} user L'objet utilisateur Supabase ou null.
-     */
-    async function updateUserUI(user) {
+/**
+ * Met à jour l'interface utilisateur globale en fonction de l'état de connexion.
+ * @param {object|null} user L'objet utilisateur Supabase ou null.
+ */
+async function updateUserUI(user) {
     console.log("Updating UI for user:", user ? user.email : 'null');
     const userInfoDiv = document.getElementById('user-info');
     const userGreetingSpan = document.getElementById('user-greeting');
@@ -1122,7 +1123,7 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
 
         if (allMatches.length === 0) {
             loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>`;
             return;
         }
 
@@ -1189,7 +1190,7 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'historique Marvel Rivals:', error);
         loadingDiv.textContent = "Erreur lors de la récupération de l'historique Marvel Rivals.";
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>`;
         table.classList.remove('hidden');
     }
 }
