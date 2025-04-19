@@ -8,7 +8,14 @@
  */
 export async function fetchMarvelMaps() {
     try {
-        const response = await fetch('https://marvelrivalsapi.com/api/v2/maps/all-maps');
+        // Utilise le nouvel endpoint Marvel Rivals API v1 avec clé API
+        const apiKey = window.MARVEL_RIVALS_API_KEY;
+        if (!apiKey) throw new Error('Clé API Marvel Rivals manquante. Définissez window.MARVEL_RIVALS_API_KEY dans votre projet.');
+        const response = await fetch('https://marvelrivalsapi.com/api/v1/maps?page=1&limit=100', {
+            headers: {
+                'x-api-key': apiKey
+            }
+        });
         if (!response.ok) throw new Error('Erreur HTTP ' + response.status);
         const data = await response.json();
         if (!data.maps || !Array.isArray(data.maps)) throw new Error('Format inattendu');
