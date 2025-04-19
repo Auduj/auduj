@@ -1102,15 +1102,20 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         // Affichage des résultats dans le tableau
         tbody.innerHTML = '';
         matches.forEach(match => {
-            const date = match.date ? new Date(match.date).toLocaleDateString('fr-FR') : '-';
-            // L'API ne fournit pas explicitement hero/map, donc on affiche '-' ou adaptez si dispo
-            const hero = match.hero || '-';
-            const map = match.map || '-';
-            const kda = match.kills !== undefined && match.deaths !== undefined && match.assists !== undefined
-                ? `${match.kills}/${match.deaths}/${match.assists}` : '-';
-            const result = match.result === 'win' ? '<span class="text-win font-semibold">Victoire</span>' :
-                           match.result === 'loss' ? '<span class="text-loss font-semibold">Défaite</span>' :
-                           (match.result || '-');
+            // Extraction des infos du match selon la structure réelle de l'API
+            const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
+            const hero = match.player_performance && match.player_performance.hero_name ? match.player_performance.hero_name : '-';
+            const map = match.map_id ? `Map #${match.map_id}` : '-';
+            const kda = match.player_performance && (match.player_performance.kills !== undefined && match.player_performance.deaths !== undefined && match.player_performance.assists !== undefined)
+                ? `${match.player_performance.kills}/${match.player_performance.deaths}/${match.player_performance.assists}` : '-';
+            let result = '-';
+            if (match.winner_side !== undefined && match.player_performance && match.player_performance.side !== undefined) {
+                if (match.winner_side === match.player_performance.side) {
+                    result = '<span class="text-win font-semibold">Victoire</span>';
+                } else {
+                    result = '<span class="text-loss font-semibold">Défaite</span>';
+                }
+            }
             const row = `<tr>
                 <td class="px-3 py-2">${date}</td>
                 <td class="px-3 py-2">${escapeHTML(hero)}</td>
