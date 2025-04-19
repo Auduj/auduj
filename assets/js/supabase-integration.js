@@ -1134,13 +1134,27 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             const mapId = match.match_map_id ? String(match.match_map_id) : null;
             const mapData = getMapData(mapId);
             const mapImg = `<img src="${mapData.img}" alt="${mapData.name}" class="inline w-8 h-8 mr-1 align-middle object-cover" onerror="this.onerror=null;this.src='https://static.marvelrivals.com/maps/unknown.jpg';">`;
+            // DURATION
+            let duration = '-';
+            if (match.match_play_duration) {
+                duration = match.match_play_duration;
+            } else if (match.match_player && match.match_player.player_hero && match.match_player.player_hero.play_time && match.match_player.player_hero.play_time.formatted) {
+                duration = match.match_player.player_hero.play_time.formatted;
+            }
             const row = `<tr class="text-xs md:text-sm">
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${heroImg}<span class="ml-1">${heroData.name}</span></td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2 flex items-center">${mapImg}<span class="ml-1">${mapData.name}</span></td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${duration}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${kills}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${deaths}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_kills}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_deaths}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_assists}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_damage}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_damage_taken}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_healing}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_result}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_mvp}</td>
+                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_svp}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${assists}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damage}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damageTaken}</td>
