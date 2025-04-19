@@ -1075,12 +1075,12 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
 
     try {
-        // Remplacez par l'URL réelle de l'API Marvel Rivals
-        const endpoint = `https://marvelrivalapis.com/api/match-history/${encodeURIComponent(username)}`;
+        // Utilise le nouvel endpoint officiel Marvel Rivals API
+        const endpoint = `https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}`;
         const response = await fetch(endpoint, {
             method: 'GET',
             headers: {
-                'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087', // Remplacer par la vraie clé API ou variable d'env côté serveur
+                'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
                 'Accept': 'application/json'
             }
         });
@@ -1089,8 +1089,9 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
             throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
         }
         const data = await response.json();
+        const matches = Array.isArray(data.match_history) ? data.match_history : [];
 
-        if (!data || !Array.isArray(data.matches) || data.matches.length === 0) {
+        if (matches.length === 0) {
             loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>';
             return;
@@ -1098,8 +1099,9 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
 
         // Affichage des résultats dans le tableau
         tbody.innerHTML = '';
-        data.matches.forEach(match => {
+        matches.forEach(match => {
             const date = match.date ? new Date(match.date).toLocaleDateString('fr-FR') : '-';
+            // L'API ne fournit pas explicitement hero/map, donc on affiche '-' ou adaptez si dispo
             const hero = match.hero || '-';
             const map = match.map || '-';
             const kda = match.kills !== undefined && match.deaths !== undefined && match.assists !== undefined
