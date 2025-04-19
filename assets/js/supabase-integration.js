@@ -1165,40 +1165,6 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
     }
 }
 
-    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
-    const table = document.getElementById('marvel-rivals-history-table');
-    const tbody = table ? table.querySelector('tbody') : null;
-    if (!loadingDiv || !table || !tbody) return;
-    loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
-    table.classList.add('hidden');
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
-
-    try {
-        // Utilise le nouvel endpoint officiel Marvel Rivals API
-        const endpoint = `https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}`;
-        const response = await fetch(endpoint, {
-            method: 'GET',
-            headers: {
-                'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
-        }
-        const data = await response.json();
-        console.log('[Marvel Rivals API] Réponse brute :', data);
-        const matches = Array.isArray(data.match_history) ? data.match_history : [];
-        console.log('[Marvel Rivals API] match_history :', matches);
-
-        if (matches.length === 0) {
-            loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>';
-            return;
-        }
-
-        // Affichage des résultats dans le tableau
         tbody.innerHTML = '';
         matches.forEach(match => {
             // Extraction des infos du match selon la structure réelle de l'API
@@ -1233,11 +1199,6 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
         table.classList.remove('hidden');
     }
 }
-
-
-
-//}
-// (ligne supprimée : Fin DOMContentLoaded n'est pas une déclaration JS valide)
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
