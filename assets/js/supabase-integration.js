@@ -1155,13 +1155,6 @@ async function fetchAndDisplayMarvelRivalsHistory(username) {
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_result}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_mvp}</td>
                 <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${match.match_svp}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${assists}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damage}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damageTaken}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${healing}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${result}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mvp}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${svp}</td>
             </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
