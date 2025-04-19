@@ -200,14 +200,22 @@ async function populateDropdowns() {
 
     try {
         // Récupérer les héros et les maps en parallèle pour plus d'efficacité
-        const [{ data: heroes, error: heroesError }, { data: maps, error: mapsError }] = await Promise.all([
+        // Récupérer les héros depuis Supabase et les maps depuis l'API officielle
+        const [{ data: heroes, error: heroesError }, marvelMaps] = await Promise.all([
             _supabase.from('heroes').select('id, name').order('name'), // Tri par nom
-            _supabase.from('maps').select('id, name').order('name')   // Tri par nom
+            (async () => {
+                try {
+                    const { fetchMarvelMaps } = await import('./marvel-maps-api.js');
+                    return await fetchMarvelMaps();
+                } catch (e) {
+                    console.error('Erreur import ou fetch Marvel Maps:', e);
+                    return [];
+                }
+            })()
         ]);
 
-        // Gérer les erreurs potentielles de requête
         if (heroesError) throw heroesError;
-        if (mapsError) throw mapsError;
+        // marvelMaps est toujours un tableau (vide si erreur)
 
         // Sauvegarder la valeur actuelle du filtre avant de vider
         const currentFilterValue = heroSelectFilter.value;
@@ -216,7 +224,7 @@ async function populateDropdowns() {
         heroSelectForm.length = 1; mapSelectForm.length = 1;
         heroSelectForm.options[0].text = "Choisir Héros..."; mapSelectForm.options[0].text = "Choisir Map...";
         heroes.forEach(hero => heroSelectForm.add(new Option(hero.name, hero.id)));
-        maps.forEach(map => mapSelectForm.add(new Option(map.name, map.id)));
+        marvelMaps.forEach(map => mapSelectForm.add(new Option(map.name, map.id)));
 
         // Remplir filtre graphique
         heroSelectFilter.length = 1; // Garde "Tous les héros"
