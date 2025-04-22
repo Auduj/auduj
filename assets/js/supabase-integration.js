@@ -774,6 +774,18 @@ function displayDashboardData(gamesToDisplay, forceReset = false) {
 
     // --- Affichage de l'historique des parties (avec Show More) ---
     if (historyTableBody) {
+        // Ajout d'un écouteur global pour afficher les détails d'une partie au clic sur une ligne
+        historyTableBody.onclick = function(event) {
+            let row = event.target;
+            // Remonte jusqu'à la ligne <tr> si clic sur une cellule
+            while (row && row.tagName !== 'TR') row = row.parentElement;
+            if (row && row.hasAttribute('data-game-idx')) {
+                const idx = parseInt(row.getAttribute('data-game-idx'), 10);
+                if (!isNaN(idx) && lastSortedGames[idx]) {
+                    showGameDetails(lastSortedGames[idx]);
+                }
+            }
+        };
         if (forceReset || lastSortedGames.length !== gamesToDisplay.length) {
             displayedHistoryCount = 0;
             lastSortedGames = [...gamesToDisplay].sort((a, b) => new Date(b.played_at) - new Date(a.played_at));
