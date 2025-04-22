@@ -65,20 +65,10 @@
             <p class="mt-4 text-sm">Auduj n'est pas affilié à Marvel ou aux développeurs de Marvel Rivals.</p>
         </div>
     </footer>
-    <script src="assets/js/script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Charger Chart.js d'abord, puis Supabase, puis ton JS custom en module -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="assets/js/supabase-integration.js"></script>
-    <script>
-        // Example: displayGames() should populate #statsTable tbody with rows in this format:
-        // <tr>
-        //   <td>match_id</td>
-        //   <td>pseudo</td>
-        //   <td><span class="mvp-badge">MVP</span> ou vide</td>
-        //   <td><img class="hero-img" src="..." alt="..."> Nom</td>
-        //   <td>kdaRatio</td> ...
-        // </tr>
-        // (Le JS dynamique est dans supabase-integration.js)
-    </script>
+    <!-- Le JS dynamique est dans supabase-integration.js -->
 </body>
 </html>

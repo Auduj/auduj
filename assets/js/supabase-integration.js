@@ -14,21 +14,28 @@
 // ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
 // Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
 
-let _supabase; // Variable pour le client Supabase
-// supabase-integration.js - Dashboard Marvel Rivals
-// Version moderne, extraction et affichage dynamique des stats "games"
+// IMPORTANT : Ce fichier suppose que le script CDN Supabase est chargé AVANT ce fichier !
+// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+// <script type="module" src="assets/js/supabase-integration.js"></script>
+
+// --- Configuration ---
+// ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
+// Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
 
 const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE';
 // (déclaration unique, ne pas redéclarer plus bas)
 
-
 let supabase = null;
-if (typeof window.supabase !== 'undefined') {
+if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (!supabase) {
+        console.error('Echec création client Supabase.');
+    }
 } else {
-    console.error('Supabase SDK non chargé.');
+    console.error('Supabase SDK non chargé : vérifiez l\'ordre des <script> dans votre HTML.');
 }
+// (ne plus utiliser _supabase, tout passe par la variable "supabase")
 
 // --- Sélecteurs DOM ---
 const statsTable = document.getElementById('statsTable');
