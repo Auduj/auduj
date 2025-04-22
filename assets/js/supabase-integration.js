@@ -1004,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
             fetchAndRefreshDashboard();
         }
         // Rafraîchir le pseudo Marvel Rivals et l'historique si changement d'état
-        await refreshMarvelRivalsSection();
+        // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
     });
 
     // Marvel Rivals Username Form
@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
             if (result.success) {
                 feedback.textContent = "Pseudo enregistré !";
                 feedback.classList.remove('text-red-500');
-                await refreshMarvelRivalsSection();
+                // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
             } else {
                 feedback.textContent = result.error || "Erreur lors de la sauvegarde.";
                 feedback.classList.add('text-red-500');
@@ -1069,32 +1069,27 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
 //     return { success: true };
 // }
 
-// async function refreshMarvelRivalsSection() {
-//     const currentDisplay = document.getElementById('marvel-rivals-username-current');
-//     const usernameForm = document.getElementById('marvel-rivals-username-form');
-//     const usernameInput = document.getElementById('marvel-rivals-username-input');
-//     const usernameFeedback = document.getElementById('marvel-rivals-username-feedback');
-//     const usernameHelp = document.getElementById('marvel-rivals-username-help');
-//     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
-//     const table = document.getElementById('marvel-rivals-history-table');
-//     if (!currentDisplay) return;
-//     currentDisplay.textContent = 'Chargement du pseudo...';
-//     const username = await getMarvelRivalsUsername();
-//     if (username) {
-//         currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
-//         if (usernameForm) usernameForm.classList.add('hidden');
-//         if (usernameHelp) usernameHelp.textContent = "Le pseudo Marvel Rivals est enregistré et utilisé pour synchroniser vos stats.";
-//         await fetchAndDisplayMarvelRivalsHistory(username);
-//     } else {
-//         currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié à votre compte.";
-//         if (usernameForm) usernameForm.classList.remove('hidden');
-//         if (usernameInput) usernameInput.value = '';
-//         if (usernameFeedback) usernameFeedback.textContent = '';
-//         if (usernameHelp) usernameHelp.textContent = "Saisissez votre pseudo Marvel Rivals pour activer la synchronisation de vos stats.";
-//         if (loadingDiv) loadingDiv.textContent = "Veuillez saisir votre pseudo Marvel Rivals.";
-//         if (table) table.classList.add('hidden');
-//     }
-// }
+async function refreshMarvelRivalsSection() {
+    const currentDisplay = document.getElementById('marvel-rivals-username-current');
+    const usernameForm = document.getElementById('marvel-rivals-username-form');
+    const usernameInput = document.getElementById('marvel-rivals-username-input');
+    const usernameFeedback = document.getElementById('marvel-rivals-username-feedback');
+    const usernameHelp = document.getElementById('marvel-rivals-username-help');
+    if (!currentDisplay) return;
+    currentDisplay.textContent = 'Chargement du pseudo...';
+    const username = await getMarvelRivalsUsername();
+    if (username) {
+        currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
+        if (usernameForm) usernameForm.classList.add('hidden');
+        if (usernameHelp) usernameHelp.textContent = "Le pseudo Marvel Rivals est enregistré.";
+    } else {
+        currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié à votre compte.";
+        if (usernameForm) usernameForm.classList.remove('hidden');
+        if (usernameInput) usernameInput.value = '';
+        if (usernameFeedback) usernameFeedback.textContent = '';
+        if (usernameHelp) usernameHelp.textContent = "Saisissez votre pseudo Marvel Rivals pour l'enregistrer.";
+    }
+}
 
 
 
