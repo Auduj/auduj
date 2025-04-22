@@ -7,10 +7,7 @@
     <meta name="description" content="Accédez à votre espace personnel Auduj pour saisir vos parties Marvel Rivals, consulter vos statistiques détaillées et analyser votre progression.">
     <title>Tableau de Bord - Auduj | Suivi Stats Marvel Rivals</title>
     <!-- Sécurité CDN : SRI + crossorigin -->
-<script>
-  // Définir ici votre clé API Marvel Rivals (remplacez par votre vraie clé)
-  window.MARVEL_RIVALS_API_KEY = "4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087";
-</script>
+
 <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,94 +108,7 @@
             <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
-            <!-- Marvel Rivals Username Section (automatique, sans formulaire) HISTORIQUE/SCREEN/LIEN PSEUDO COMMENTED -->
-            <!--
-<section id="marvel-rivals-username-section" class="mb-8 bg-card-bg p-6 rounded-lg shadow border-2 border-marvel-yellow max-w-xl mx-auto">
-    <h2 class="text-xl font-heading text-marvel-yellow mb-2 flex items-center justify-center"><i class="fas fa-link mr-2"></i>Marvel Rivals lié à votre compte</h2>
-    <div id="marvel-rivals-username-current" class="mt-2 text-lg text-center font-semibold text-marvel-yellow"></div>
-    Formulaire d'ajout de pseudo Marvel Rivals, affiché seulement si aucun pseudo n'est encore lié -->
-    <!-- <form id="marvel-rivals-username-form" class="mt-4 flex flex-col items-center space-y-2 hidden">
-        <input type="text" id="marvel-rivals-username-input" class="px-4 py-2 rounded bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-marvel-blue focus:border-marvel-blue text-center" placeholder="Entrez votre pseudo Marvel Rivals..." minlength="3" required>
-        <button type="submit" class="btn-marvel btn-yellow">Enregistrer le pseudo</button>
-        <div id="marvel-rivals-username-feedback" class="text-sm mt-1"></div>
-    </form>
-    <div id="marvel-rivals-username-help" class="text-gray-400 text-sm text-center mt-2">Le pseudo Marvel Rivals sera utilisé pour synchroniser vos stats.<br>Vous pouvez le modifier tant qu'il n'est pas validé.</div>
-</section> -->
-
-
             <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
-                 <!--
-<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-    <h2 class="text-3xl font-heading text-marvel-yellow text-center md:text-left flex-1"><i class="fas fa-pencil-alt mr-2"></i>Saisir une Nouvelle Partie</h2>
-    <div class="flex items-center gap-2 justify-center md:justify-end">
-        <span class="text-gray-400 font-medium">Ou upload un screen</span>
-        <input type="file" accept="image/*" id="screenshotInput" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-marvel-yellow file:text-marvel-red hover:file:bg-yellow-200" />
-    </div>
-    <!-- Preview de l'image uploadée -->
-    <div id="screenshotPreviewContainer" class="mt-2 hidden">
-        <span class="text-xs text-gray-400">Prévisualisation du screen :</span>
-        <img id="screenshotPreview" src="" alt="Preview Screenshot" class="max-h-48 rounded border mt-1 mx-auto" />
-    </div>
-</div>
-<!-- Tableau OCR caché par défaut -->
-<div id="ocr-result-container" class="hidden mt-6">
-    <h3 class="text-lg font-semibold mb-2 text-marvel-yellow">Résultat OCR</h3>
-    <table id="dashboardTable" class="min-w-full divide-y divide-gray-700" border="1">
-        <thead class="bg-gray-800">
-            <tr>
-                <th>Nom</th>
-                <th>K</th>
-                <th>D</th>
-                <th>A</th>
-                <th>Solo</th>
-                <th>Éliminations</th>
-                <th>Dégâts</th>
-                <th>Dégâts Bloqués</th>
-                <th>Soins</th>
-                <th>Précision</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-<!-- Tesseract.js via CDN -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script>
-// Ajout preview image et OCR adapté à la structure Marvel Rivals
-const screenshotInput = document.getElementById('screenshotInput');
-const previewContainer = document.getElementById('screenshotPreviewContainer');
-const previewImg = document.getElementById('screenshotPreview');
-
-function normalize(str) {
-    return str
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève accents
-        .replace(/[^a-z0-9]/g, ' ') // remplace tout sauf lettres/chiffres par espace
-        .replace(/\s+/g, ' ') // espaces multiples en simple
-        .trim();
-}
-
-screenshotInput.addEventListener('change', async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Affiche la preview de l'image
-    const url = URL.createObjectURL(file);
-    previewImg.src = url;
-    previewContainer.classList.remove('hidden');
-
-    // OCR avec Tesseract.js
-    const { data: { text } } = await Tesseract.recognize(file, 'fra');
-    console.log('[OCR brut]', text);
-
-    // Découper le texte OCR en lignes
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    // L'en-tête attendu (normalisé)
-    const headerPattern = normalize('x 4 k Médailles Éliminations Dégâts DégâtsBloqués Soins Précision');
-
-    let headerIndex = -1;
-    for (let i = 0; i < lines.length; i++) {
-        if (normalize(lines[i]).includes(normalize('k medailles eliminations degats degats bloques soins precision'))) {
             headerIndex = i;
             break;
         }
@@ -226,7 +136,7 @@ screenshotInput.addEventListener('change', async (event) => {
     document.getElementById('ocr-result-container').classList.remove('hidden');
 });
 </script>
--->
+
                 <form id="game-entry-form" action="#" method="POST" class="space-y-6">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
 
@@ -374,15 +284,6 @@ screenshotInput.addEventListener('change', async (event) => {
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- Bouton pour uploader un screenshot -->
-                        <input type="file" accept="image/*" id="screenshotInput" />
-    <tr>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Héros</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Map</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Durée</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Kills</th>
         <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deaths</th>
         <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Assists</th>
         <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Dégâts</th>
@@ -443,7 +344,7 @@ screenshotInput.addEventListener('change', async (event) => {
     <script src="assets/js/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script type="module" src="assets/js/marvel-mappings.js"></script>
+    
 <script type="module" src="assets/js/supabase-integration.js"></script>
     <script>
         const tabButtons = document.querySelectorAll('.tab-button');
@@ -474,6 +375,6 @@ screenshotInput.addEventListener('change', async (event) => {
             });
         });
     </script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 </body>
 </html>

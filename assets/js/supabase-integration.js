@@ -199,23 +199,9 @@ async function populateDropdowns() {
 
 
     try {
-        // Récupérer les héros et les maps en parallèle pour plus d'efficacité
-        // Récupérer les héros depuis Supabase et les maps depuis l'API officielle
-        const [{ data: heroes, error: heroesError }, marvelMaps] = await Promise.all([
-            _supabase.from('heroes').select('id, name').order('name'), // Tri par nom
-            (async () => {
-                try {
-                    const { fetchMarvelMaps } = await import('./marvel-maps-api.js');
-                    return await fetchMarvelMaps();
-                } catch (e) {
-                    console.error('Erreur import ou fetch Marvel Maps:', e);
-                    return [];
-                }
-            })()
-        ]);
-
+        // Récupérer les héros depuis Supabase uniquement
+        const { data: heroes, error: heroesError } = await _supabase.from('heroes').select('id, name').order('name'); // Tri par nom
         if (heroesError) throw heroesError;
-        // marvelMaps est toujours un tableau (vide si erreur)
 
         // Sauvegarder la valeur actuelle du filtre avant de vider
         const currentFilterValue = heroSelectFilter.value;
@@ -224,7 +210,7 @@ async function populateDropdowns() {
         heroSelectForm.length = 1; mapSelectForm.length = 1;
         heroSelectForm.options[0].text = "Choisir Héros..."; mapSelectForm.options[0].text = "Choisir Map...";
         heroes.forEach(hero => heroSelectForm.add(new Option(hero.name, hero.id)));
-        marvelMaps.forEach(map => mapSelectForm.add(new Option(map.name, map.id)));
+        // Suppression du remplissage via API Marvel Rivals
 
         // Remplir filtre graphique
         heroSelectFilter.length = 1; // Garde "Tous les héros"
@@ -1048,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     }
 
     // Rafraîchir l'affichage du pseudo et de l'historique Marvel Rivals au chargement
-    await refreshMarvelRivalsSection();
+    // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
 
     // ... (reste inchangé)
 
@@ -1065,255 +1051,147 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     // ... (reste inchangé)
 });
 
-// ----- Marvel Rivals Username & API Integration -----
+// // ----- Marvel Rivals Username & API Integration -----
 
-async function getMarvelRivalsUsername() {
-    const userId = await getUserProfileId();
-    if (!userId || !_supabase) return null;
-    const { data, error } = await _supabase.from('profiles').select('marvel_rivals_username').eq('id', userId).single();
-    if (error) return null;
-    return data?.marvel_rivals_username || null;
-}
+// async function getMarvelRivalsUsername() {
+//     const userId = await getUserProfileId();
+//     if (!userId || !_supabase) return null;
+//     const { data, error } = await _supabase.from('profiles').select('marvel_rivals_username').eq('id', userId).single();
+//     if (error) return null;
+//     return data?.marvel_rivals_username || null;
+// }
 
-async function saveMarvelRivalsUsername(username) {
-    const userId = await getUserProfileId();
-    if (!userId || !_supabase) return { success: false, error: "Non connecté." };
-    const { error } = await _supabase.from('profiles').update({ marvel_rivals_username: username }).eq('id', userId);
-    if (error) return { success: false, error: error.message };
-    return { success: true };
-}
+// async function saveMarvelRivalsUsername(username) {
+//     const userId = await getUserProfileId();
+//     if (!userId || !_supabase) return { success: false, error: "Non connecté." };
+//     const { error } = await _supabase.from('profiles').update({ marvel_rivals_username: username }).eq('id', userId);
+//     if (error) return { success: false, error: error.message };
+//     return { success: true };
+// }
 
-async function refreshMarvelRivalsSection() {
-    const currentDisplay = document.getElementById('marvel-rivals-username-current');
-    const usernameForm = document.getElementById('marvel-rivals-username-form');
-    const usernameInput = document.getElementById('marvel-rivals-username-input');
-    const usernameFeedback = document.getElementById('marvel-rivals-username-feedback');
-    const usernameHelp = document.getElementById('marvel-rivals-username-help');
-    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
-    const table = document.getElementById('marvel-rivals-history-table');
-    if (!currentDisplay) return;
-    currentDisplay.textContent = 'Chargement du pseudo...';
-    const username = await getMarvelRivalsUsername();
-    if (username) {
-        currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
-        if (usernameForm) usernameForm.classList.add('hidden');
-        if (usernameHelp) usernameHelp.textContent = "Le pseudo Marvel Rivals est enregistré et utilisé pour synchroniser vos stats.";
-        await fetchAndDisplayMarvelRivalsHistory(username);
-    } else {
-        currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié à votre compte.";
-        if (usernameForm) usernameForm.classList.remove('hidden');
-        if (usernameInput) usernameInput.value = '';
-        if (usernameFeedback) usernameFeedback.textContent = '';
-        if (usernameHelp) usernameHelp.textContent = "Saisissez votre pseudo Marvel Rivals pour activer la synchronisation de vos stats.";
-        if (loadingDiv) loadingDiv.textContent = "Veuillez saisir votre pseudo Marvel Rivals.";
-        if (table) table.classList.add('hidden');
-    }
-}
-
-
+// async function refreshMarvelRivalsSection() {
+//     const currentDisplay = document.getElementById('marvel-rivals-username-current');
+//     const usernameForm = document.getElementById('marvel-rivals-username-form');
+//     const usernameInput = document.getElementById('marvel-rivals-username-input');
+//     const usernameFeedback = document.getElementById('marvel-rivals-username-feedback');
+//     const usernameHelp = document.getElementById('marvel-rivals-username-help');
+//     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
+//     const table = document.getElementById('marvel-rivals-history-table');
+//     if (!currentDisplay) return;
+//     currentDisplay.textContent = 'Chargement du pseudo...';
+//     const username = await getMarvelRivalsUsername();
+//     if (username) {
+//         currentDisplay.textContent = `Pseudo Marvel Rivals lié : ${username}`;
+//         if (usernameForm) usernameForm.classList.add('hidden');
+//         if (usernameHelp) usernameHelp.textContent = "Le pseudo Marvel Rivals est enregistré et utilisé pour synchroniser vos stats.";
+//         await fetchAndDisplayMarvelRivalsHistory(username);
+//     } else {
+//         currentDisplay.textContent = "Aucun pseudo Marvel Rivals lié à votre compte.";
+//         if (usernameForm) usernameForm.classList.remove('hidden');
+//         if (usernameInput) usernameInput.value = '';
+//         if (usernameFeedback) usernameFeedback.textContent = '';
+//         if (usernameHelp) usernameHelp.textContent = "Saisissez votre pseudo Marvel Rivals pour activer la synchronisation de vos stats.";
+//         if (loadingDiv) loadingDiv.textContent = "Veuillez saisir votre pseudo Marvel Rivals.";
+//         if (table) table.classList.add('hidden');
+//     }
+// }
 
 
-import { getHeroData } from './marvel-mappings.js';
-import { fetchMarvelMaps } from './marvel-maps-api.js';
-import { getMapNameById, setMapIdToNameMapping } from './map-name-utils.js';
 
-async function fetchAndDisplayMarvelRivalsHistory(username) {
-    const loadingDiv = document.getElementById('marvel-rivals-history-loading');
-    const table = document.getElementById('marvel-rivals-history-table');
-    const tbody = table ? table.querySelector('tbody') : null;
-    if (!loadingDiv || !table || !tbody) return;
-    loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
-    table.classList.add('hidden');
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
 
-    try {
-        // 1. Update player data (si possible, pour forcer un refresh)
-        try {
-            await fetch(`https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}/update`, {
-                method: 'GET',
-                headers: {
-                    'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
-                    'Accept': 'application/json'
-                }
-            });
-        } catch (updateErr) {
-            // Silencieux, car peut échouer si trop fréquent
-        }
+// import { getHeroData } from './marvel-mappings.js';
+// import { fetchMarvelMaps } from './marvel-maps-api.js';
+// import { getMapNameById, setMapIdToNameMapping } from './map-name-utils.js';
 
-        // 2. Récupérer toute l'historique paginée
-        let allMatches = [];
-        let page = 1;
-        const limit = 100; // Max autorisé, pour moins d'appels
-        let hasMore = true;
-        while (hasMore) {
-            const endpoint = `https://marvelrivalsapi.com/api/v2/player/${encodeURIComponent(username)}/match-history?page=${page}&limit=${limit}`;
-            const response = await fetch(endpoint, {
-                method: 'GET',
-                headers: {
-                    'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
-                    'Accept': 'application/json'
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
-            }
-            const data = await response.json();
-            console.log('[Marvel Rivals API] Réponse page', page, data);
-            if (Array.isArray(data.match_history)) {
-                allMatches = allMatches.concat(data.match_history);
-            }
-            // Pagination
-            hasMore = data.pagination && data.pagination.has_more;
-            page++;
-        }
+// async function fetchAndDisplayMarvelRivalsHistory(username) {
+//     const loadingDiv = document.getElementById('marvel-rivals-history-loading');
+//     const table = document.getElementById('marvel-rivals-history-table');
+//     const tbody = table ? table.querySelector('tbody') : null;
+//     if (!loadingDiv || !table || !tbody) return;
+//     loadingDiv.textContent = "Chargement de l'historique Marvel Rivals...";
+//     table.classList.add('hidden');
+//     tbody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Chargement...</td></tr>';
 
-        if (allMatches.length === 0) {
-            loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
-            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>`;
-            return;
-        }
+//     try {
+//         // 1. Update player data (si possible, pour forcer un refresh)
+//         try {
+//             await fetch(`https://marvelrivalsapi.com/api/v1/player/${encodeURIComponent(username)}/update`, {
+//                 method: 'GET',
+//                 headers: {
+//                     'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
+//                     'Accept': 'application/json'
+//                 }
+//             });
+//         } catch (updateErr) {
+//             // Silencieux, car peut échouer si trop fréquent
+//         }
 
-        // 3. Récupération et mapping dynamique des maps
-        const maps = await fetchMarvelMaps();
-        setMapIdToNameMapping(maps);
+//         // 2. Récupérer toute l'historique paginée
+//         let allMatches = [];
+//         let page = 1;
+//         const limit = 100; // Max autorisé, pour moins d'appels
+//         let hasMore = true;
+//         while (hasMore) {
+//             const endpoint = `https://marvelrivalsapi.com/api/v2/player/${encodeURIComponent(username)}/match-history?page=${page}&limit=${limit}`;
+//             const response = await fetch(endpoint, {
+//                 method: 'GET',
+//                 headers: {
+//                     'x-api-key': '4feadddebe802fef0e9463f0828ed31f305af46ab7cb3e92aa70717a91acd087',
+//                     'Accept': 'application/json'
+//                 }
+//             });
+//             if (!response.ok) {
+//                 throw new Error(`Erreur API (${response.status}): ${response.statusText}`);
+//             }
+//             const data = await response.json();
+//             console.log('[Marvel Rivals API] Réponse page', page, data);
+//             if (Array.isArray(data.match_history)) {
+//                 allMatches = allMatches.concat(data.match_history);
+//             }
+//             // Pagination
+//             hasMore = data.pagination && data.pagination.has_more;
+//             page++;
+//         }
 
-        // 4. Affichage du tableau avec toutes les stats possibles
-        tbody.innerHTML = '';
-        allMatches.forEach(match => {
-            console.group('[Marvel Rivals API] Exploration match');
-            console.dir(match, {depth: null});
-            console.table(match);
-            if (match.match_player) {
-                console.log('match_player:', match.match_player);
-                if (match.match_player.player_hero) {
-                    console.log('player_hero:', match.match_player.player_hero);
-                }
-            }
-            console.groupEnd();
-            const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
-            // HERO
-            const heroName = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
-            const heroData = getHeroData(heroName);
-            // MAP
-            const mapId = match.match_map_id ? String(match.match_map_id) : null;
-            const mapName = getMapNameById(mapId);
-            // DURATION
-            let duration = '-';
-            if (match.match_play_duration) {
-                duration = match.match_play_duration;
-            } else if (match.match_player && match.match_player.player_hero && match.match_player.player_hero.play_time && match.match_player.player_hero.play_time.formatted) {
-                duration = match.match_player.player_hero.play_time.formatted;
-            }
-            // Extraction robuste de toutes les stats existantes dans match_player
-            const getStat = (key) => (match.match_player && match.match_player[key] !== undefined && match.match_player[key] !== null) ? match.match_player[key] : '-';
-            const kills = getStat('kills');
-            const deaths = getStat('deaths');
-            const assists = getStat('assists');
-            const damage = getStat('damage');
-            const damageTaken = getStat('damage_taken');
-            const healing = getStat('healing');
-            const isWin = getStat('is_win');
-            const mvp = match.mvp_uid !== undefined && match.mvp_uid !== null ? match.mvp_uid : '-';
-            const svp = match.svp_uid !== undefined && match.svp_uid !== null ? match.svp_uid : '-';
-            // Ajoute d'autres stats si besoin en suivant ce modèle
+//         if (allMatches.length === 0) {
+//             loadingDiv.textContent = "Aucun historique trouvé pour ce pseudo.";
+//             tbody.innerHTML = `<tr><td colspan="10" class="text-center text-gray-500 py-4">Aucune donnée trouvée.</td></tr>`;
+//             return;
+//         }
 
-            const result = match.match_result !== undefined && match.match_result !== null ? match.match_result : '-';
-            const row = `<tr class="text-xs md:text-sm">
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${date}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${heroData.name}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mapName}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${duration}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${kills}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${deaths}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${assists}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damage}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${damageTaken}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${healing}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${result}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${mvp}</td>
-                <td class="whitespace-nowrap px-2 py-1 md:px-3 md:py-2">${svp}</td>
-            </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
-        loadingDiv.textContent = '';
-        table.classList.remove('hidden');
-    } catch (error) {
-        console.error('Erreur lors de la récupération de l\'historique Marvel Rivals:', error);
-        loadingDiv.textContent = "Erreur lors de la récupération de l'historique Marvel Rivals.";
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 py-4">Erreur lors de la récupération.</td></tr>`;
-        table.classList.remove('hidden');
-    }
-}
+//         // 3. Récupération et mapping dynamique des maps
+//         const maps = await fetchMarvelMaps();
+//         setMapIdToNameMapping(maps);
+
+//         // 4. Affichage du tableau avec toutes les stats possibles
+//         tbody.innerHTML = '';
+//         allMatches.forEach(match => {
+//             console.group('[Marvel Rivals API] Exploration match');
+//             console.dir(match, {depth: null});
+//             console.table(match);
+//             if (match.match_player) {
+//                 console.log('match_player:', match.match_player);
+//                 if (match.match_player.player_hero) {
+//                     console.log('player_hero:', match.match_player.player_hero);
+//                 }
+//             }
+//             console.groupEnd();
+//             const date = match.match_time_stamp ? new Date(match.match_time_stamp * 1000).toLocaleDateString('fr-FR') : '-';
+//             // HERO
+//             const heroName = match.match_player && match.match_player.player_hero && match.match_player.player_hero.hero_name ? match.match_player.player_hero.hero_name : '-';
+//             const heroData = getHeroData(heroName);
+//             // MAP
+//             const mapId = match.match_map_id ? String(match.match_map_id) : null;
+//             const mapName = getMapNameById(mapId);
+//             // DURATION
+// (Suppression de toute la logique d'affichage et de récupération de l'historique Marvel Rivals)
+
 
 // --- CONFIG ---
 // const RENDER_OCR_API_URL = "https://auduj-render.onrender.com/ocr"; // URL correcte de l'API Render de l'utilisateur
 
-// --- Extraction OCR automatique via API Render (DÉSACTIVÉE TEMPORAIREMENT) ---
-/*
-if (document.getElementById('extract-stats-btn')) {
-  document.getElementById('extract-stats-btn').addEventListener('click', async function() {
-    const fileInput = document.getElementById('screenshot-upload');
-    const feedback = document.getElementById('ocr-feedback');
-    feedback.textContent = '';
-    if (!fileInput.files.length) {
-      feedback.textContent = "Merci de sélectionner une capture d'écran.";
-      return;
-    }
-    feedback.textContent = 'Envoi à l’IA sur Render...';
-    const formData = new FormData();
-    formData.append('image', fileInput.files[0]);
-    try {
-      // const response = await fetch(RENDER_OCR_API_URL, {
-      //   method: 'POST',
-      //   body: formData
-      // });
-      // const data = await response.json();
-      // if (!data.lines || !data.lines.length) {
-      //   feedback.innerHTML = '<span class="text-marvel-yellow">Aucune ligne détectée par l’IA. Vérifiez la capture.</span>';
-      //   return;
-      // }
-      // // On cherche la ligne qui a le plus de chiffres (probablement la ligne du joueur)
-      // let bestLine = '';
-      // let maxDigits = 0;
-      // for (const l of data.lines) {
-      //   const n = (l.match(/\d+/g) || []).length;
-      //   if (n > maxDigits) {
-      //     maxDigits = n;
-      //     bestLine = l;
-      //   }
-      // }
-      // if (!bestLine || maxDigits < 6) {
-      //   feedback.innerHTML = '<span class="text-marvel-yellow">Impossible de trouver une ligne de stats. Vérifiez la capture.<br><code>' + data.lines.join('<br>') + '</code></span>';
-      //   return;
-      // }
-      // // Extraction des stats sur la meilleure ligne trouvée
-      // const numbers = bestLine.match(/\d+/g);
-      // const accuracyMatch = bestLine.match(/(\d{1,3}) ?%/);
-      // // Mapping :
-      // // numbers[0] = kills (épée)
-      // // numbers[1] = deaths (coeur)
-      // // numbers[2] = assists (mains)
-      // // numbers[3] = médailles (non utilisé)
-      // // numbers[4] = last kills (éliminations)
-      // // numbers[5] = dégâts
-      // // numbers[6] = dégâts bloqués
-      // // numbers[7] = soins
-      // // numbers[8] = précision (parfois, sinon accuracyMatch)
-      // document.getElementById('kills').value = numbers[0] || '';
-      // document.getElementById('deaths').value = numbers[1] || '';
-      // document.getElementById('assists').value = numbers[2] || '';
-      // if(document.getElementById('last_kills')) document.getElementById('last_kills').value = numbers[4] || '';
-      // if(document.getElementById('damage_dealt')) document.getElementById('damage_dealt').value = numbers[5] || '';
-      // if(document.getElementById('damage_blocked')) document.getElementById('damage_blocked').value = numbers[6] || '';
-      // if(document.getElementById('healing_done')) document.getElementById('healing_done').value = numbers[7] || '';
-      // if(document.getElementById('accuracy')) document.getElementById('accuracy').value = accuracyMatch ? accuracyMatch[1] : (numbers[8] || '');
-      // feedback.innerHTML = '<span class="text-green-400">Champs remplis automatiquement à partir de l’IA ! Vérifiez et corrigez si besoin.</span>';
-    } catch (e) {
-      // feedback.innerHTML = '<span class="text-marvel-yellow">Erreur lors de l’appel à l’API OCR IA : ' + e.message + '</span>';
-    }
-  });
-}
-*/
+// (Suppression de la logique d'OCR automatique via API Render)
+
       // numbers[0] = kills (épée)
       // numbers[1] = deaths (coeur)
       // numbers[2] = assists (mains)
@@ -1336,4 +1214,4 @@ if (document.getElementById('extract-stats-btn')) {
  //     feedback.innerHTML = '<span class="text-marvel-yellow">Erreur lors de l’appel à l’API OCR IA : ' + e.message + '</span>';
 //    }
 // });
-//}
+// }
