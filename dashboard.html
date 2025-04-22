@@ -108,35 +108,6 @@
             <h1 class="text-4xl md:text-5xl font-heading text-center mb-10 text-marvel-red drop-shadow-md">Votre Tableau de Bord Auduj</h1>
             <p class="text-lg text-center mb-12 max-w-3xl mx-auto text-gray-300">Saisissez vos dernières parties, consultez vos statistiques globales et plongez dans les analyses détaillées.</p>
 
-            <section id="saisie-partie" class="mb-12 bg-card-bg p-8 rounded-lg shadow-lg border border-gray-700">
-            headerIndex = i;
-            break;
-        }
-    }
-
-    if (headerIndex === -1 || headerIndex >= lines.length - 1) {
-        alert("Impossible de trouver la ligne d'en-tête des stats. Vérifie le screen ou la qualité OCR.");
-        document.getElementById('ocr-result-container').classList.add('hidden');
-        return;
-    }
-
-    // La ligne juste après l'en-tête est celle qui nous intéresse
-    const statLine = lines[headerIndex + 1];
-    if (!statLine || statLine.length < 5) {
-        alert("Impossible de trouver la ligne de stats après l'en-tête.");
-        document.getElementById('ocr-result-container').classList.add('hidden');
-        return;
-    }
-    // Découpage flexible (séparateur espace/tab)
-    const columns = statLine.split(/\s+/);
-    // Affichage dans le tableau OCR
-    const tbody = document.querySelector('#dashboardTable tbody');
-    tbody.innerHTML = '';
-    tbody.innerHTML = `<tr>` + columns.map(val => `<td>${val}</td>`).join('') + `</tr>`;
-    document.getElementById('ocr-result-container').classList.remove('hidden');
-});
-</script>
-
                 <form id="game-entry-form" action="#" method="POST" class="space-y-6">
                      <div id="entry-feedback" class="mb-4 text-center hidden"></div>
 
@@ -282,21 +253,6 @@
                                 <tbody class="bg-card-bg divide-y divide-gray-700">
                                     <tr><td colspan="6" class="text-center text-gray-500 py-4">Chargement de l'historique...</td></tr>
                                 </tbody>
-                            </table>
-                        </div>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deaths</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Assists</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Dégâts</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Dégâts subis</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Soins</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Résultat</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">MVP</th>
-        <th class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">SVP</th>
-    </tr>
-</thead>
-<tbody class="bg-card-bg divide-y divide-gray-700">
-    <tr><td colspan="13" class="text-center text-gray-500 py-4">Aucune donnée à afficher.</td></tr>
-</tbody>
                             </table>
                         </div>
                      </div>
