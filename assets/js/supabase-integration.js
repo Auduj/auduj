@@ -13,42 +13,134 @@
 // --- Configuration ---
 // ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
 // Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
-// REMPLACEZ par vos propres URL et Clé Anon Supabase !
-const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co'; // Vos clés réelles
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE'; // Vos clés réelles
 
 let _supabase; // Variable pour le client Supabase
-const IS_PROD = window.location.hostname !== 'localhost'; // Désactive les logs en prod
-function audujLog(...args) { if (!IS_PROD) console.log(...args); }
-function audujWarn(...args) { if (!IS_PROD) console.warn(...args); }
-function audujError(...args) { if (!IS_PROD) console.error(...args); }
-let progressionChartInstance = null; // Instance pour le graphique KDA
-let accuracyChartInstance = null;    // Instance pour le graphique Précision
-let allUserGames = []; // Stocker toutes les parties récupérées (cache ou fetch)
-let selectedChartHeroId = 'all'; // ID du héros sélectionné pour filtrer les graphiques ('all' par défaut)
-const CACHE_KEY_GAMES = 'auduj_cachedGames'; // Clé pour le cache local
+// supabase-integration.js - Dashboard Marvel Rivals
+// Version moderne, extraction et affichage dynamique des stats "games"
 
-// --- Initialisation et Vérification des Clés ---
-// Vérification simple que les clés sont définies (CORRIGÉ)
-if (!SUPABASE_URL || SUPABASE_URL === 'VOTRE_SUPABASE_URL' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'VOTRE_SUPABASE_ANON_KEY') {
-    console.error("Erreur: Veuillez définir SUPABASE_URL et SUPABASE_ANON_KEY dans supabase-integration.js");
-    // Pourrait afficher un message à l'utilisateur ici ou désactiver les fonctionnalités
+const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE';
+// (déclaration unique, ne pas redéclarer plus bas)
+
+
+let supabase = null;
+if (typeof window.supabase !== 'undefined') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } else {
-    // Initialisation du client Supabase
-    // Assurez-vous que le SDK Supabase est chargé avant ce script via CDN:
-    // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    if (typeof supabase !== 'undefined') {
-        const { createClient } = supabase; // Accède à la fonction depuis le SDK global
-        _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase Client Initialized');
+    console.error('Supabase SDK non chargé.');
+}
+
+// --- Sélecteurs DOM ---
+const statsTable = document.getElementById('statsTable');
+const statsTbody = statsTable ? statsTable.querySelector('tbody') : null;
+const currentPseudoSpan = document.getElementById('currentPseudo');
+const changePseudoBtn = document.getElementById('changePseudoBtn');
+const noDataDiv = document.getElementById('noData');
+
+// --- Utilitaires stockage local ---
+function getUserPseudo() {
+    return new Promise(resolve => {
+        if (window.chrome && chrome.storage && chrome.storage.local) {
+            chrome.storage.local.get(['marvelPseudo'], res => resolve(res.marvelPseudo || ''));
+        } else {
+            resolve(localStorage.getItem('marvelPseudo') || '');
+        }
+    });
+}
+function setUserPseudo(pseudo) {
+    if (window.chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ marvelPseudo: pseudo });
     } else {
-        console.error("Erreur: SDK Supabase non trouvé. Assurez-vous qu'il est inclus dans le HTML.");
+        localStorage.setItem('marvelPseudo', pseudo);
     }
 }
 
-// --- Éléments du DOM (Commun + Nouveaux) ---
-// Note: Ces éléments doivent exister dans votre HTML pour que le script fonctionne
-const userGreeting = document.getElementById('user-greeting');
+// --- Affichage du pseudo et changement ---
+async function updatePseudoDisplay() {
+    const pseudo = await getUserPseudo();
+    if (currentPseudoSpan) currentPseudoSpan.textContent = pseudo ? `Pseudo : ${pseudo}` : 'Pseudo non défini';
+}
+if (changePseudoBtn) {
+    changePseudoBtn.onclick = async () => {
+        const newPseudo = prompt('Entrez votre pseudo Marvel Rivals :');
+        if (newPseudo) {
+            setUserPseudo(newPseudo.trim());
+            await updatePseudoDisplay();
+            await displayGames();
+        }
+    };
+}
+
+// --- Récupération des parties via Supabase ---
+async function fetchGamesForUser(pseudo) {
+    if (!supabase || !pseudo) return [];
+    const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .eq('pseudo', pseudo)
+        .order('id', { ascending: false });
+    if (error) {
+        console.error('Erreur récupération games:', error);
+        return [];
+    }
+    return data;
+}
+
+// --- Affichage dynamique du tableau ---
+function renderGamesTable(games) {
+    if (!statsTbody) return;
+    statsTbody.innerHTML = '';
+    if (!games || games.length === 0) {
+        if (noDataDiv) noDataDiv.style.display = '';
+        return;
+    }
+    if (noDataDiv) noDataDiv.style.display = 'none';
+    for (const game of games) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${game.match_id || ''}</td>
+            <td>${escapeHTML(game.pseudo)}</td>
+            <td>${game.isMVP ? '<span class="mvp-badge">MVP</span>' : ''}</td>
+            <td>${game.heroImg ? `<img class="hero-img" src="${escapeHTML(game.heroImg)}" alt="${escapeHTML(game.hero)}">` : ''} ${escapeHTML(game.hero)}</td>
+            <td>${escapeHTML(game.kdaRatio)}</td>
+            <td>${escapeHTML(game.kills)}</td>
+            <td>${escapeHTML(game.deaths)}</td>
+            <td>${escapeHTML(game.assists)}</td>
+            <td>${escapeHTML(game.soloKills)}</td>
+            <td>${escapeHTML(game.headshotKills)}</td>
+            <td>${escapeHTML(game.lastKills)}</td>
+            <td>${escapeHTML(game.damage)}</td>
+            <td>${escapeHTML(game.blocked)}</td>
+            <td>${escapeHTML(game.healing)}</td>
+            <td>${escapeHTML(game.accuracy)}</td>
+        `;
+        statsTbody.appendChild(tr);
+    }
+}
+
+// --- Fonction principale d'affichage ---
+async function displayGames() {
+    const pseudo = await getUserPseudo();
+    await updatePseudoDisplay();
+    if (!pseudo) {
+        renderGamesTable([]);
+        return;
+    }
+    const games = await fetchGamesForUser(pseudo);
+    renderGamesTable(games);
+}
+
+// --- Sécurité XSS ---
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>"]/g, function(c) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+}
+
+// --- Init automatique au chargement ---
+document.addEventListener('DOMContentLoaded', displayGames);
+
 const userInfo = document.getElementById('user-info'); // Conteneur pour greeting + logout button
 const logoutButton = document.getElementById('logout-button');
 const loginButtonHeader = document.getElementById('login-button-header');
