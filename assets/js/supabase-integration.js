@@ -1004,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
             fetchAndRefreshDashboard();
         }
         // Rafraîchir le pseudo Marvel Rivals et l'historique si changement d'état
-        // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
+        await refreshMarvelRivalsSection();
     });
 
     // Marvel Rivals Username Form
@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
             if (result.success) {
                 feedback.textContent = "Pseudo enregistré !";
                 feedback.classList.remove('text-red-500');
-                // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
+                await refreshMarvelRivalsSection();
             } else {
                 feedback.textContent = result.error || "Erreur lors de la sauvegarde.";
                 feedback.classList.add('text-red-500');
@@ -1034,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
     }
 
     // Rafraîchir l'affichage du pseudo et de l'historique Marvel Rivals au chargement
-    // await refreshMarvelRivalsSection(); // supprimé car la fonction est désactivée
+    await refreshMarvelRivalsSection();
 
     // ... (reste inchangé)
 
