@@ -10,18 +10,6 @@
  * - Implémentation du CACHE LOCAL pour affichage rapide
  */
 
-// --- Configuration ---
-// ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
-// Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
-
-// IMPORTANT : Ce fichier suppose que le script CDN Supabase est chargé AVANT ce fichier !
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-// <script type="module" src="assets/js/supabase-integration.js"></script>
-
-// --- Configuration ---
-// ATTENTION : Ne JAMAIS mettre de clé secrète (service_role) dans ce fichier. Seules les clés ANON peuvent être exposées côté client.
-// Si vous avez besoin d'opérations sensibles, créez une API intermédiaire côté serveur.
-
 const SUPABASE_URL = 'https://mbkiwpsbprcqhyafyifl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ia2l3cHNicHJjcWh5YWZ5aWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MDYzNDEsImV4cCI6MjA2MDI4MjM0MX0.d5QxMFrOcF91cz0zhrYuC2mFCzI8Juu54eDNF2GC7qE';
 // (déclaration unique, ne pas redéclarer plus bas)
@@ -35,7 +23,7 @@ if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
 } else {
     console.error('Supabase SDK non chargé : vérifiez l\'ordre des <script> dans votre HTML.');
 }
-// (ne plus utiliser _supabase, tout passe par la variable "supabase")
+// (ne plus utiliser supabase, tout passe par la variable "supabase")
 
 // --- Sélecteurs DOM ---
 const statsTable = document.getElementById('statsTable');
@@ -174,7 +162,7 @@ async function handleSignUp(email, password, username) {
     const feedbackDiv = document.getElementById('form-feedback-signup');
     if(feedbackDiv) feedbackDiv.classList.add('hidden'); // Cacher ancien message
 
-    if (!_supabase) {
+    if (!supabase) {
         console.error("Supabase client non initialisé.");
         if(feedbackDiv) { feedbackDiv.textContent = "Erreur: Client Supabase non initialisé."; feedbackDiv.classList.remove('hidden'); }
         return;
@@ -182,7 +170,7 @@ async function handleSignUp(email, password, username) {
 
     try {
         // Appel à Supabase pour l'inscription
-        const { data, error } = await _supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -219,7 +207,7 @@ async function handleLogin(email, password) {
     const feedbackDiv = document.getElementById('form-feedback-login');
     if(feedbackDiv) feedbackDiv.classList.add('hidden');
 
-     if (!_supabase) {
+     if (!supabase) {
         console.error("Supabase client non initialisé.");
         if(feedbackDiv) { feedbackDiv.textContent = "Erreur: Client Supabase non initialisé."; feedbackDiv.classList.remove('hidden'); }
         return;
@@ -227,7 +215,7 @@ async function handleLogin(email, password) {
 
     try {
         // Appel à Supabase pour la connexion
-        const { data, error } = await _supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password,
         });
@@ -252,13 +240,13 @@ async function handleLogin(email, password) {
  * Gère la déconnexion de l'utilisateur.
  */
 async function handleLogout() {
-     if (!_supabase) {
+     if (!supabase) {
         console.error("Supabase client non initialisé.");
         return;
     }
     try {
         // Appel à Supabase pour la déconnexion
-        const { error } = await _supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut();
         if (error) throw error;
         // Effacer les données en cache lors de la déconnexion
         localStorage.removeItem(CACHE_KEY_GAMES);
@@ -278,9 +266,9 @@ async function handleLogout() {
  * @returns {Promise<string|null>} L'UUID de l'utilisateur ou null.
  */
 async function getUserProfileId() {
-    if (!_supabase) return null;
+    if (!supabase) return null;
     // Utilise la méthode recommandée pour obtenir l'utilisateur actuel
-    const { data: { user } } = await _supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     return user?.id ?? null; // Renvoie l'ID ou null si personne n'est connecté
 }
 
@@ -292,14 +280,14 @@ async function populateDropdowns() {
     const mapSelectForm = document.getElementById('map');
     const heroSelectFilter = document.getElementById('chartHeroFilter'); // Nouveau filtre
 
-    if (!_supabase) return;
+    if (!supabase) return;
     // Vérifier si les éléments existent (évite erreur si pas sur dashboard)
     if (!heroSelectForm || !mapSelectForm || !heroSelectFilter) return;
 
 
     try {
         // Récupérer les héros depuis Supabase uniquement
-        const { data: heroes, error: heroesError } = await _supabase.from('heroes').select('id, name').order('name'); // Tri par nom
+        const { data: heroes, error: heroesError } = await supabase.from('heroes').select('id, name').order('name'); // Tri par nom
         if (heroesError) throw heroesError;
 
         // Sauvegarder la valeur actuelle du filtre avant de vider
@@ -344,7 +332,7 @@ async function saveGameEntry(gameData) {
 
     // Vérifications initiales
     if (!userId) { alert("Erreur: Utilisateur non connecté."); return; }
-    if (!_supabase) { alert("Erreur: Client Supabase non initialisé."); return; }
+    if (!supabase) { alert("Erreur: Client Supabase non initialisé."); return; }
 
     // Réinitialiser le message de feedback
     if (feedbackDiv) {
@@ -389,7 +377,7 @@ async function saveGameEntry(gameData) {
         }
 
         // Envoyer les données à Supabase
-        const { data, error } = await _supabase
+        const { data, error } = await supabase
             .from('games')
             .insert([dataToInsert]) // L'API insert attend un tableau d'objets
             .select(); // Optionnel: récupérer la ligne insérée
@@ -755,7 +743,7 @@ function showGameDetails(game) {
  */
 async function fetchAndRefreshDashboard() { // Anciennement fetchAndDisplayUserStats
     const userId = await getUserProfileId();
-    if (!userId || !_supabase) return;
+    if (!userId || !supabase) return;
     const dashboardContent = document.getElementById('dashboard-content');
     if (!dashboardContent || dashboardContent.classList.contains('hidden')) { return; }
 
@@ -763,7 +751,7 @@ async function fetchAndRefreshDashboard() { // Anciennement fetchAndDisplayUserS
 
     try {
         // Récupérer TOUTES les parties de l'utilisateur
-        const { data: games, error } = await _supabase
+        const { data: games, error } = await supabase
             .from('games')
             .select(`*, heroes ( id, name ), maps ( id, name )`) // Jointures essentielles
             .eq('user_id', userId)
@@ -965,9 +953,9 @@ async function updateUserUI(user) {
         if (mobileLogout) mobileLogout.style.display = 'block';
 
         let displayName = user.email;
-        if (_supabase) {
+        if (supabase) {
             try {
-                const { data: profile, error } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
+                const { data: profile, error } = await supabase.from('profiles').select('username').eq('id', user.id).single();
                 if (error && error.code !== 'PGRST116') throw error; // Ignorer '0 rows'
                 if (profile && profile.username) displayName = profile.username;
             } catch (profileError) { console.error("Erreur récupération profil:", profileError.message); }
@@ -1069,9 +1057,9 @@ function loadFilterPreference() {
  * Vérifie l'état de connexion au chargement, gère l'UI et lance le fetch de données fraîches.
  */
 async function checkAuthStateAndRedirect() {
-    if (!_supabase) { console.log("Supabase client not ready."); return; }
+    if (!supabase) { console.log("Supabase client not ready."); return; }
 
-    const { data: { session }, error } = await _supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
     if (error) { console.error("Erreur getSession:", error); return; }
 
     const user = session?.user ?? null;
@@ -1096,7 +1084,7 @@ async function checkAuthStateAndRedirect() {
 
 
 document.addEventListener('DOMContentLoaded', async () => { // Rendu async
-    if (!_supabase) { console.error("DOM Loaded, Supabase non initialisé."); return; }
+    if (!supabase) { console.error("DOM Loaded, Supabase non initialisé."); return; }
 
     // 1. Essayer d'afficher depuis le cache IMMEDIATEMENT (si sur dashboard)
     let displayedFromCache = false;
@@ -1108,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
 
     await checkAuthStateAndRedirect();
 
-    _supabase.auth.onAuthStateChange(async (event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth State Change Event:', event, session);
         await updateUserUI(session?.user ?? null);
         if (event === 'SIGNED_IN' && document.getElementById('dashboard-content')) {
@@ -1166,16 +1154,16 @@ document.addEventListener('DOMContentLoaded', async () => { // Rendu async
 
 // async function getMarvelRivalsUsername() {
 //     const userId = await getUserProfileId();
-//     if (!userId || !_supabase) return null;
-//     const { data, error } = await _supabase.from('profiles').select('marvel_rivals_username').eq('id', userId).single();
+//     if (!userId || !supabase) return null;
+//     const { data, error } = await supabase.from('profiles').select('marvel_rivals_username').eq('id', userId).single();
 //     if (error) return null;
 //     return data?.marvel_rivals_username || null;
 // }
 
 // async function saveMarvelRivalsUsername(username) {
 //     const userId = await getUserProfileId();
-//     if (!userId || !_supabase) return { success: false, error: "Non connecté." };
-//     const { error } = await _supabase.from('profiles').update({ marvel_rivals_username: username }).eq('id', userId);
+//     if (!userId || !supabase) return { success: false, error: "Non connecté." };
+//     const { error } = await supabase.from('profiles').update({ marvel_rivals_username: username }).eq('id', userId);
 //     if (error) return { success: false, error: error.message };
 //     return { success: true };
 // }
